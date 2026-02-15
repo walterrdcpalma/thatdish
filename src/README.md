@@ -33,10 +33,17 @@ dotnet run --project ThatDish.Api
 
 | Project | Role |
 |--------|------|
-| **ThatDish.Api** | HTTP endpoints, DI registration |
+| **ThatDish.Api** | HTTP endpoints, DI registration, global exception handling |
 | **ThatDish.Application** | Use cases, DTOs, interfaces (e.g. `IDishRepository`) |
 | **ThatDish.Domain** | Entities, enums (no dependencies) |
 | **ThatDish.Infrastructure** | EF Core, DbContext, repository implementations |
+
+## Error handling (industry-style)
+
+Unhandled exceptions are caught by a **global exception handler** (`IExceptionHandler`):
+
+- **Logging:** Each error is logged with a **log event id** (see `ThatDish.Api/Logging/LogEvents.cs`). Use these IDs in logs/monitoring to correlate and search (e.g. `UnhandledException` = 5000, `ConfigurationError` = 5001, `NotFound` = 5002, `ValidationError` = 5003, `PersistenceError` = 5004).
+- **Response:** Clients receive **RFC 7807 ProblemDetails** (JSON): `type`, `title`, `status`, `instance`, `traceId`, plus `logEventId` and `logEventName` for correlation. In Development, `detail` (stack trace) and `exceptionType` are also included.
 
 ## Tests
 

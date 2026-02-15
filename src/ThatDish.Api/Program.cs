@@ -1,9 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using ThatDish.Api.Exceptions;
 using ThatDish.Application.Dishes;
 using ThatDish.Infrastructure.Dishes;
 using ThatDish.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // DbContext: SQLite in Development (no PostgreSQL required), PostgreSQL otherwise
 builder.Services.AddDbContext<ThatDishDbContext>(options =>
@@ -56,6 +60,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseExceptionHandler();
 
 app.MapHealthChecks("/health");
 app.MapControllers();
