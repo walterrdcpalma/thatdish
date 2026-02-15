@@ -27,7 +27,13 @@
 !.vscode/*.code-snippets
 .history/
 
-# Build results
+# Build results (bin/obj everywhere)
+[Bb]in/
+[Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
+**/[Bb]in/**
+**/[Oo]bj/**
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -38,13 +44,9 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
-[Oo]bj/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
-**/[Bb]in/*
-**/obj/*
 
 # Visual Studio cache
 *.[Cc]ache
