@@ -1,0 +1,41 @@
+using Microsoft.EntityFrameworkCore;
+using ThatDish.Application.Dishes;
+using ThatDish.Domain.Entities;
+using ThatDish.Domain.Enums;
+using ThatDish.Infrastructure.Persistence;
+
+namespace ThatDish.Infrastructure.Dishes;
+
+public class DishRepository : IDishRepository
+{
+    private readonly ThatDishDbContext _db;
+
+    public DishRepository(ThatDishDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<List<Dish>> GetPagedAsync(FoodType? foodType, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var query = _db.Dishes
+            .AsNoTracking()
+            .Include(d => d.Restaurant)
+            .Where(d => !foodType.HasValue || d.FoodType == foodType.Value);
+
+        return await query
+            .OrderBy(d => d.Restaurant.Name)
+            .ThenBy(d => d.SortOrder)
+            .ThenBy(d => d.CreatedAtUtc)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Dish?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _db.Dishes
+            .AsNoTracking()
+            .Include(d => d.Restaurant)
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+    }
+}

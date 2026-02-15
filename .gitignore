@@ -27,13 +27,15 @@
 !.vscode/*.code-snippets
 .history/
 
-# Build results (bin/obj everywhere)
+# Build results (bin/obj everywhere, including bin\Debug from some tools)
 [Bb]in/
 [Oo]bj/
 **/[Bb]in/
 **/[Oo]bj/
 **/[Bb]in/**
 **/[Oo]bj/**
+**/bin\*
+**/obj\*
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
