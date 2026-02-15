@@ -62,6 +62,9 @@ public static class SeedData
 
         db.Restaurants.AddRange(restaurants);
 
+        // Placeholder image (no external example photos); replace with real URLs when you have uploads
+        var placeholderImage = "https://placehold.co/800x600/e8e8e8/999?text=Prato";
+
         var dishes = new[]
         {
             new Dish
@@ -70,7 +73,7 @@ public static class SeedData
                 RestaurantId = restaurant1Id,
                 Name = "Bacalhau à Brás",
                 Description = "Bacalhau desfiado com batata palha, ovo e azeitonas. Clássico português.",
-                ImageUrl = "https://images.unsplash.com/photo-1544025162-d76694265947?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.Traditional,
                 IsMainDish = true,
                 SortOrder = 0,
@@ -82,7 +85,7 @@ public static class SeedData
                 RestaurantId = restaurant1Id,
                 Name = "Caldo Verde",
                 Description = "Sopa de couve-galega com chouriço e batata.",
-                ImageUrl = "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.Soup,
                 IsMainDish = false,
                 SortOrder = 1,
@@ -94,7 +97,7 @@ public static class SeedData
                 RestaurantId = restaurant1Id,
                 Name = "Pastel de Nata",
                 Description = "Doce de nata com massa folhada, canela por cima.",
-                ImageUrl = "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.Dessert,
                 IsMainDish = false,
                 SortOrder = 2,
@@ -106,7 +109,7 @@ public static class SeedData
                 RestaurantId = restaurant2Id,
                 Name = "Arroz de Marisco",
                 Description = "Arroz cremoso com mistura de marisco e cor de açafrão.",
-                ImageUrl = "https://images.unsplash.com/photo-1559847844-5315695dadae?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.Seafood,
                 IsMainDish = true,
                 SortOrder = 0,
@@ -118,7 +121,7 @@ public static class SeedData
                 RestaurantId = restaurant2Id,
                 Name = "Cataplana de Amêijoas",
                 Description = "Amêijoas à bulhão pato na cataplana.",
-                ImageUrl = "https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.Seafood,
                 IsMainDish = false,
                 SortOrder = 1,
@@ -130,7 +133,7 @@ public static class SeedData
                 RestaurantId = restaurant3Id,
                 Name = "Bifana no Pão",
                 Description = "Carne de porco marinada, grelhada, no pão com mostarda.",
-                ImageUrl = "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.StreetFood,
                 IsMainDish = true,
                 SortOrder = 0,
@@ -142,7 +145,7 @@ public static class SeedData
                 RestaurantId = restaurant3Id,
                 Name = "Prego no Pão",
                 Description = "Bife de vaca grelhado no pão com manteiga de alho.",
-                ImageUrl = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.StreetFood,
                 IsMainDish = false,
                 SortOrder = 1,
@@ -154,7 +157,7 @@ public static class SeedData
                 RestaurantId = restaurant4Id,
                 Name = "Arroz de Pato",
                 Description = "Arroz de pato confitado com chouriço e grelos.",
-                ImageUrl = "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.Rice,
                 IsMainDish = true,
                 SortOrder = 0,
@@ -166,10 +169,34 @@ public static class SeedData
                 RestaurantId = restaurant4Id,
                 Name = "Francesinha",
                 Description = "Sanduíche com carnes, queijo, ovo e molho de cerveja.",
-                ImageUrl = "https://images.unsplash.com/photo-1525059696034-4967a8e1dca2?w=800",
+                ImageUrl = placeholderImage,
                 FoodType = FoodType.Sandwich,
                 IsMainDish = false,
                 SortOrder = 1,
+                CreatedAtUtc = now,
+            },
+            new Dish
+            {
+                Id = Guid.Parse("e0000005-0005-0005-0005-000000000001"),
+                RestaurantId = restaurant1Id,
+                Name = "Bowl de Quinoa e Legumes",
+                Description = "Quinoa, grão, abacate, tomate e tahini. 100% vegetariano.",
+                ImageUrl = placeholderImage,
+                FoodType = FoodType.Vegetarian,
+                IsMainDish = true,
+                SortOrder = 3,
+                CreatedAtUtc = now,
+            },
+            new Dish
+            {
+                Id = Guid.Parse("e0000005-0005-0005-0005-000000000002"),
+                RestaurantId = restaurant4Id,
+                Name = "Creme de Legumes Vegan",
+                Description = "Creme de courgette e batata, sem lacticínios.",
+                ImageUrl = placeholderImage,
+                FoodType = FoodType.Vegan,
+                IsMainDish = true,
+                SortOrder = 2,
                 CreatedAtUtc = now,
             },
         };

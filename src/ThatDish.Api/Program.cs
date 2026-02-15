@@ -23,6 +23,16 @@ builder.Services.AddScoped<DishListService>();
 
 builder.Services.AddControllers();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:8081", "http://localhost:19006", "http://127.0.0.1:8081", "http://127.0.0.1:19006")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 // Health checks (add .AddNpgSql(...) when AspNetCore.HealthChecks.NpgSql is installed for DB check)
 builder.Services.AddHealthChecks();
 
@@ -45,6 +55,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 
 app.MapHealthChecks("/health");
 app.MapControllers();
