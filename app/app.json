@@ -1,17 +1,1 @@
-{
-  "expo": {
-    "name": "That Dish",
-    "slug": "thatdish",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
-    "scheme": "thatdish",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.thatdish.app"
-    },
-    "android": {
-      "package": "com.thatdish.app"
-    }
-  }
-}
+{"expo":{"name":"That Dish","slug":"thatdish","version":"1.0.0","sdkVersion":"54.0.0","orientation":"portrait","userInterfaceStyle":"automatic","scheme":"thatdish","ios":{"supportsTablet":true,"bundleIdentifier":"com.thatdish.app"},"android":{"package":"com.thatdish.app"}}}
