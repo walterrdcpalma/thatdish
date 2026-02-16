@@ -27,7 +27,7 @@ app/
 ├── services/
 ├── theme/
 ├── .env.example
-├── .eslintrc.cjs
+├── eslint.config.mjs   # ESLint 9 flat config
 ├── .prettierrc
 ├── app.json
 ├── babel.config.js
@@ -38,3 +38,5 @@ app/
 - **Theme**: `@/theme` (colors, spacing)
 - **Env**: copy `.env.example` → `.env`
 - **Lint**: `npm run lint` | **Format**: `npm run format`
+
+Some `npm install` deprecation warnings (@babel/plugin-proposal-*, rimraf, @xmldom/xmldom, and sometimes tar/glob) come from Expo’s dependency tree. We override `tar` and `send` for security; the rest will improve when Expo updates its dependencies.
