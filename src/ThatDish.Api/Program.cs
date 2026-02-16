@@ -1,4 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ThatDish.Api.Exceptions;
 using ThatDish.Application.Dishes;
 using ThatDish.Infrastructure.Dishes;
@@ -27,11 +30,38 @@ builder.Services.AddScoped<DishListService>();
 
 builder.Services.AddControllers();
 
+// Only enable JWT auth when Supabase is properly configured (not placeholders)
+var supabaseIssuer = builder.Configuration["Supabase:Issuer"];
+var supabaseJwtSecret = builder.Configuration["Supabase:JwtSecret"];
+var isSupabaseConfigured = !string.IsNullOrWhiteSpace(supabaseIssuer)
+    && !string.IsNullOrWhiteSpace(supabaseJwtSecret)
+    && !supabaseJwtSecret.Contains("YOUR_JWT_SECRET", StringComparison.OrdinalIgnoreCase)
+    && !supabaseIssuer.Contains("YOUR_PROJECT_REF", StringComparison.OrdinalIgnoreCase);
+
+if (isSupabaseConfigured)
+{
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidIssuer = supabaseIssuer,
+                ValidAudience = "authenticated",
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(supabaseJwtSecret!)),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                NameClaimType = "sub",
+            };
+        });
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:8081", "http://localhost:19006", "http://127.0.0.1:8081", "http://127.0.0.1:19006")
+        policy.AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
@@ -58,9 +88,12 @@ if (app.Environment.IsDevelopment())
     }
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 app.UseCors();
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapHealthChecks("/health");
 app.MapControllers();
