@@ -6,12 +6,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { DishCard } from "../components";
 import { useDishStore } from "../state";
 import { getRestaurantSignature } from "../services";
+import { getRankedDishes } from "../utils/getRankedDishes";
+import { getDishBadges } from "../utils/getDishBadges";
 import { AnimatedPressable } from "@/src/shared/components";
 
 export function DishFeedScreen() {
   const router = useRouter();
   const allDishes = useDishStore((s) => s.dishes);
-  const dishes = allDishes.filter((d) => !d.isArchived);
+  const dishes = getRankedDishes(allDishes);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -37,8 +39,9 @@ export function DishFeedScreen() {
         showsVerticalScrollIndicator={false}
       >
         {dishes.map((dish, index) => {
-          const signature = getRestaurantSignature(dishes, dish.restaurantId);
+          const signature = getRestaurantSignature(allDishes, dish.restaurantId);
           const isSignature = signature?.id === dish.id;
+          const badges = getDishBadges(dish, allDishes);
           return (
             <Animated.View
               key={dish.id}
@@ -48,6 +51,7 @@ export function DishFeedScreen() {
                 dish={dish}
                 onPress={() => router.push({ pathname: "/dish/[id]", params: { id: dish.id } })}
                 isSignature={isSignature}
+                badges={badges}
               />
             </Animated.View>
           );

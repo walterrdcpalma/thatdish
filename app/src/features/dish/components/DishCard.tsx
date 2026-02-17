@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { Dish } from "../types";
+import type { DishBadges } from "../utils/getDishBadges";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
@@ -10,9 +11,10 @@ interface DishCardProps {
   dish: Dish;
   onPress: () => void;
   isSignature?: boolean;
+  badges?: DishBadges;
 }
 
-export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
+export function DishCard({ dish, onPress, isSignature, badges }: DishCardProps) {
   const toggleSave = useDishStore((s) => s.toggleSave);
   const currentUser = useUserStore((s) => s.currentUser);
   const isSaved = currentUser.savedDishIds.includes(dish.id);
@@ -41,13 +43,36 @@ export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
           resizeMode="cover"
         />
         <View className="absolute inset-0 bg-black/40" />
-        {isSignature && (
-          <View className="absolute right-3 top-3 rounded-full bg-black/60 px-3 py-1.5">
-            <Text className="text-xs font-semibold uppercase tracking-wide text-white">
-              Especialidade da Casa
-            </Text>
-          </View>
-        )}
+        <View className="absolute right-3 top-3 flex-row flex-wrap justify-end gap-1.5">
+          {badges?.isTop && (
+            <View className="rounded-full bg-amber-500/90 px-2.5 py-1">
+              <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
+                Top
+              </Text>
+            </View>
+          )}
+          {!badges?.isTop && badges?.isTrending && (
+            <View className="rounded-full bg-orange-500/90 px-2.5 py-1">
+              <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
+                Trending
+              </Text>
+            </View>
+          )}
+          {!badges?.isTop && !badges?.isTrending && badges?.isNew && (
+            <View className="rounded-full bg-emerald-500/90 px-2.5 py-1">
+              <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
+                New
+              </Text>
+            </View>
+          )}
+          {isSignature && (
+            <View className="rounded-full bg-black/60 px-3 py-1.5">
+              <Text className="text-xs font-semibold uppercase tracking-wide text-white">
+                Especialidade da Casa
+              </Text>
+            </View>
+          )}
+        </View>
         <View className="absolute bottom-0 left-0 right-0 p-4">
           <Text className="text-xl font-bold text-white">{dish.name}</Text>
           <Text className="mt-1 text-sm text-white/90">{restaurantName}</Text>
