@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
+import { useUserStore } from "@/src/features/user/state";
 import { getRestaurantSignature } from "../services";
 
 export function DishDetailScreen() {
@@ -11,7 +12,7 @@ export function DishDetailScreen() {
   const router = useRouter();
   const dishes = useDishStore((s) => s.dishes);
   const toggleSave = useDishStore((s) => s.toggleSave);
-  const savedByUser = useDishStore((s) => s.savedByUser);
+  const currentUser = useUserStore((s) => s.currentUser);
   const dish = id ? dishes.find((d) => d.id === id) : undefined;
   const restaurantName = dish
     ? useRestaurantStore((s) =>
@@ -22,7 +23,7 @@ export function DishDetailScreen() {
     ? getRestaurantSignature(dishes, dish.restaurantId)
     : undefined;
   const isSignature = dish && signature?.id === dish.id;
-  const isSaved = dish ? savedByUser[dish.id] : false;
+  const isSaved = dish ? currentUser.savedDishIds.includes(dish.id) : false;
 
   if (!dish) {
     return (

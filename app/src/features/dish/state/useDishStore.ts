@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import type { Dish } from "../types";
 import { MOCK_DISHES } from "../services/mockDishes";
+import { useUserStore } from "@/src/features/user/state";
 
 interface DishStore {
   dishes: Dish[];
-  savedByUser: Record<string, boolean>;
   toggleSave: (dishId: string) => void;
   addDish: (dish: Dish) => void;
 }
@@ -13,19 +13,21 @@ const initialDishes: Dish[] = MOCK_DISHES.map((d) => ({ ...d }));
 
 export const useDishStore = create<DishStore>((set) => ({
   dishes: initialDishes,
-  savedByUser: {},
 
-  toggleSave: (dishId: string) =>
+  toggleSave: (dishId: string) => {
+    const userStore = useUserStore.getState();
+    const isSaved = userStore.currentUser.savedDishIds.includes(dishId);
+    userStore.toggleSavedDish(dishId);
     set((state) => {
-      const isSaved = state.savedByUser[dishId];
-      const nextSavedByUser = { ...state.savedByUser, [dishId]: !isSaved };
-      const nextDishes = state.dishes.map((d) => {
-        if (d.id !== dishId) return d;
-        const delta = isSaved ? -1 : 1;
-        return { ...d, savedCount: Math.max(0, d.savedCount + delta) };
-      });
-      return { dishes: nextDishes, savedByUser: nextSavedByUser };
-    }),
+      const delta = isSaved ? -1 : 1;
+      const nextDishes = state.dishes.map((d) =>
+        d.id === dishId
+          ? { ...d, savedCount: Math.max(0, d.savedCount + delta) }
+          : d
+      );
+      return { dishes: nextDishes };
+    });
+  },
 
   addDish: (dish: Dish) =>
     set((state) => ({ dishes: [...state.dishes, dish] })),

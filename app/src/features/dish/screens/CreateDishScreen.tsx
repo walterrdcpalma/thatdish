@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
+import { useUserStore } from "@/src/features/user/state";
 import type { Dish } from "../types";
 
 const SUGGESTION_LIMIT = 5;
@@ -16,6 +17,7 @@ export function CreateDishScreen() {
   const addDish = useDishStore((s) => s.addDish);
   const restaurants = useRestaurantStore((s) => s.restaurants);
   const addRestaurant = useRestaurantStore((s) => s.addRestaurant);
+  const currentUser = useUserStore((s) => s.currentUser);
   const [name, setName] = useState("");
   const [restaurantSearch, setRestaurantSearch] = useState("");
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(
@@ -71,6 +73,7 @@ export function CreateDishScreen() {
       restaurantId,
       savedCount: 0,
       createdAt: new Date().toISOString(),
+      createdByUserId: currentUser.id,
     };
     addDish(dish);
     router.back();

@@ -12,11 +12,20 @@ export function DishFeedScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="border-b border-gray-100 bg-white px-5 pt-2 pb-3">
-        <Text className="text-2xl font-bold text-black">Discover</Text>
-        <Text className="mt-1 text-base text-gray-500">
-          What are you eating today?
-        </Text>
+      <View className="flex-row items-center justify-between border-b border-gray-100 bg-white px-5 pt-2 pb-3">
+        <View>
+          <Text className="text-2xl font-bold text-black">Discover</Text>
+          <Text className="mt-1 text-base text-gray-500">
+            What are you eating today?
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => router.push("/(tabs)/saved")}
+          className="rounded-full p-2 active:opacity-70"
+          hitSlop={8}
+        >
+          <Ionicons name="bookmark" size={24} color="#f97316" />
+        </Pressable>
       </View>
       <ScrollView
         className="flex-1"

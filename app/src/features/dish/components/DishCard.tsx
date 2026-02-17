@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import type { Dish } from "../types";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
+import { useUserStore } from "@/src/features/user/state";
 
 interface DishCardProps {
   dish: Dish;
@@ -12,7 +13,8 @@ interface DishCardProps {
 
 export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
   const toggleSave = useDishStore((s) => s.toggleSave);
-  const isSaved = useDishStore((s) => s.savedByUser[dish.id]);
+  const currentUser = useUserStore((s) => s.currentUser);
+  const isSaved = currentUser.savedDishIds.includes(dish.id);
   const restaurantName =
     useRestaurantStore((s) => s.restaurants.find((r) => r.id === dish.restaurantId)?.name) ??
     "Unknown";

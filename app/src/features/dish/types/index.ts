@@ -5,4 +5,5 @@ export interface Dish {
   imagePlaceholder?: string;
   savedCount: number;
   createdAt: string;
+  createdByUserId: string;
 }
