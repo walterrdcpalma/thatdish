@@ -1,1 +1,1 @@
-// Search screens barrel
+export { SearchScreen } from "./SearchScreen";

@@ -29,26 +29,34 @@ export function ProfileScreen() {
             </Text>
           </View>
 
-          <View className="mt-8 gap-1">
+          <View className="mt-8 w-full gap-1">
             <AnimatedPressable
               onPress={() => router.push("/my-restaurants")}
-              className="flex-row items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
+              className="w-full rounded-xl bg-gray-50 px-4 py-3"
             >
-              <View className="flex-row items-center gap-3">
-                <Ionicons name="restaurant-outline" size={22} color="#374151" />
-                <Text className="text-base text-gray-800">My Restaurants</Text>
+              <View className="flex-row items-center justify-between" style={{ width: "100%" }}>
+                <View className="flex-row flex-1 items-center gap-3" style={{ minWidth: 0 }}>
+                  <Ionicons name="restaurant-outline" size={22} color="#374151" />
+                  <Text className="text-base text-gray-800" numberOfLines={1}>
+                    My Restaurants
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
             </AnimatedPressable>
             <AnimatedPressable
               onPress={() => router.push("/my-contributions")}
-              className="flex-row items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
+              className="w-full rounded-xl bg-gray-50 px-4 py-3"
             >
-              <View className="flex-row items-center gap-3">
-                <Ionicons name="bookmark-outline" size={22} color="#374151" />
-                <Text className="text-base text-gray-800">My Contributions</Text>
+              <View className="flex-row items-center justify-between" style={{ width: "100%" }}>
+                <View className="flex-row flex-1 items-center gap-3" style={{ minWidth: 0 }}>
+                  <Ionicons name="bookmark-outline" size={22} color="#374151" />
+                  <Text className="text-base text-gray-800" numberOfLines={1}>
+                    My Contributions
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
             </AnimatedPressable>
           </View>
         </View>

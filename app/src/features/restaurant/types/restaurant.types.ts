@@ -12,4 +12,6 @@ export interface Restaurant {
   ownerUserId: string | null;
   claimStatus: ClaimStatus;
   imageUrl?: string;
+  /** Cuisine type for filtering (e.g. Portuguese, Italian). */
+  cuisine?: string;
 }

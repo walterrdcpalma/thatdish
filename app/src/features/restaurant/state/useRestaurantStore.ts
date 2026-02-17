@@ -6,9 +6,9 @@ const RESTAURANT_IMG = (seed: string) =>
   `https://picsum.photos/seed/${encodeURIComponent(seed)}/600/320`;
 
 const INITIAL_RESTAURANTS: Restaurant[] = [
-  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-1-joes") },
-  { id: "2", name: "Flavor Corner", location: "Porto, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-2-flavor") },
-  { id: "3", name: "Front Table", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-3-front") },
+  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-1-joes"), cuisine: "Portuguese" },
+  { id: "2", name: "Flavor Corner", location: "Porto, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-2-flavor"), cuisine: "Portuguese" },
+  { id: "3", name: "Front Table", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-3-front"), cuisine: "International" },
 ];
 
 interface RestaurantStore {
@@ -35,6 +35,7 @@ export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
           imageUrl: restaurant.imageUrl,
           latitude: restaurant.latitude,
           longitude: restaurant.longitude,
+          cuisine: restaurant.cuisine,
         },
       ],
     })),
