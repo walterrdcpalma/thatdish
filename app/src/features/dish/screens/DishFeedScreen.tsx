@@ -1,6 +1,7 @@
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { DishCard } from "../components";
 import { useDishStore } from "../state";
 import { getRestaurantSignature } from "../services";
@@ -19,7 +20,7 @@ export function DishFeedScreen() {
       </View>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}
       >
         {dishes.map((dish) => {
@@ -35,6 +36,12 @@ export function DishFeedScreen() {
           );
         })}
       </ScrollView>
+      <Pressable
+        onPress={() => router.push("/dish/create")}
+        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-orange-500 shadow-lg active:opacity-90"
+      >
+        <Ionicons name="add" size={28} color="white" />
+      </Pressable>
     </SafeAreaView>
   );
 }

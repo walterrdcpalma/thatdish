@@ -6,6 +6,7 @@ interface DishStore {
   dishes: Dish[];
   savedByUser: Record<string, boolean>;
   toggleSave: (dishId: string) => void;
+  addDish: (dish: Dish) => void;
 }
 
 const initialDishes: Dish[] = MOCK_DISHES.map((d) => ({ ...d }));
@@ -25,4 +26,7 @@ export const useDishStore = create<DishStore>((set) => ({
       });
       return { dishes: nextDishes, savedByUser: nextSavedByUser };
     }),
+
+  addDish: (dish: Dish) =>
+    set((state) => ({ dishes: [...state.dishes, dish] })),
 }));

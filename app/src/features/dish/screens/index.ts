@@ -1,2 +1,3 @@
-export { DishFeedScreen } from "./DishFeedScreen";
+export { CreateDishScreen } from "./CreateDishScreen";
 export { DishDetailScreen } from "./DishDetailScreen";
+export { DishFeedScreen } from "./DishFeedScreen";
