@@ -1,1 +1,1 @@
-// Shared UI components used across features
+export { AnimatedPressable } from "./AnimatedPressable";

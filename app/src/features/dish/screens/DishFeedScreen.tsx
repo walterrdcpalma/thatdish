@@ -1,10 +1,12 @@
-import { ScrollView, Text, View, Pressable } from "react-native";
+import { ScrollView, Text, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { DishCard } from "../components";
 import { useDishStore } from "../state";
 import { getRestaurantSignature } from "../services";
+import { AnimatedPressable } from "@/src/shared/components";
 
 export function DishFeedScreen() {
   const router = useRouter();
@@ -19,38 +21,44 @@ export function DishFeedScreen() {
             What are you eating today?
           </Text>
         </View>
-        <Pressable
+        <AnimatedPressable
           onPress={() => router.push("/(tabs)/saved")}
-          className="rounded-full p-2 active:opacity-70"
+          scale={0.9}
+          className="rounded-full p-2"
           hitSlop={8}
         >
           <Ionicons name="bookmark" size={24} color="#f97316" />
-        </Pressable>
+        </AnimatedPressable>
       </View>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}
       >
-        {dishes.map((dish) => {
+        {dishes.map((dish, index) => {
           const signature = getRestaurantSignature(dishes, dish.restaurantId);
           const isSignature = signature?.id === dish.id;
           return (
-            <DishCard
+            <Animated.View
               key={dish.id}
-              dish={dish}
-              onPress={() => router.push({ pathname: "/dish/[id]", params: { id: dish.id } })}
-              isSignature={isSignature}
-            />
+              entering={FadeInDown.delay(index * 60).springify().damping(15)}
+            >
+              <DishCard
+                dish={dish}
+                onPress={() => router.push({ pathname: "/dish/[id]", params: { id: dish.id } })}
+                isSignature={isSignature}
+              />
+            </Animated.View>
           );
         })}
       </ScrollView>
-      <Pressable
+      <AnimatedPressable
         onPress={() => router.push("/dish/create")}
-        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-orange-500 shadow-lg active:opacity-90"
+        scale={0.92}
+        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-orange-500 shadow-lg"
       >
         <Ionicons name="add" size={28} color="white" />
-      </Pressable>
+      </AnimatedPressable>
     </SafeAreaView>
   );
 }

@@ -1,9 +1,10 @@
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
+import { AnimatedPressable } from "@/src/shared/components";
 
 export function ClaimFlowScreen() {
   const { restaurantId } = useLocalSearchParams<{ restaurantId: string }>();
@@ -34,9 +35,14 @@ export function ClaimFlowScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <View className="flex-row items-center border-b border-gray-200 px-4 py-3">
-        <Pressable onPress={() => router.back()} className="mr-3 p-1" hitSlop={8}>
+        <AnimatedPressable
+          onPress={() => router.back()}
+          scale={0.9}
+          className="mr-3 p-1"
+          hitSlop={8}
+        >
           <Ionicons name="arrow-back" size={24} color="#000" />
-        </Pressable>
+        </AnimatedPressable>
         <Text className="text-xl font-bold text-black">Claim Restaurant</Text>
       </View>
       <ScrollView
@@ -67,14 +73,15 @@ export function ClaimFlowScreen() {
           </Text>
         </View>
 
-        <Pressable
+        <AnimatedPressable
           onPress={handleSubmit}
-          className="mt-10 flex-row items-center justify-center rounded-xl bg-orange-500 py-3 active:opacity-90"
+          scale={0.98}
+          className="mt-10 flex-row items-center justify-center rounded-xl bg-orange-500 py-3"
         >
           <Text className="text-base font-semibold text-white">
             Submit Claim
           </Text>
-        </Pressable>
+        </AnimatedPressable>
       </ScrollView>
     </SafeAreaView>
   );

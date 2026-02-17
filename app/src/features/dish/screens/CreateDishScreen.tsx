@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { View, Text, TextInput, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
 import type { Dish } from "../types";
+import { AnimatedPressable } from "@/src/shared/components";
 
 const SUGGESTION_LIMIT = 5;
 
@@ -63,6 +64,9 @@ export function CreateDishScreen() {
           id: restaurantId,
           name: trimmedSearch,
           location: "",
+          signatureDishId: null,
+          ownerUserId: null,
+          claimStatus: "unclaimed",
         });
       }
     }
@@ -128,10 +132,11 @@ export function CreateDishScreen() {
             {restaurantSuggestions.length > 0 && (
               <View className="mt-1 rounded-xl border border-gray-200 bg-white">
                 {restaurantSuggestions.map((r) => (
-                  <Pressable
+                  <AnimatedPressable
                     key={r.id}
                     onPress={() => handleSelectRestaurant(r.id, r.name)}
-                    className="border-b border-gray-100 px-4 py-3 last:border-b-0 active:bg-gray-50"
+                    scale={0.99}
+                    className="border-b border-gray-100 px-4 py-3 last:border-b-0"
                   >
                     <Text className="text-base text-black">{r.name}</Text>
                     {r.location ? (
@@ -139,7 +144,7 @@ export function CreateDishScreen() {
                         {r.location}
                       </Text>
                     ) : null}
-                  </Pressable>
+                  </AnimatedPressable>
                 ))}
               </View>
             )}
@@ -151,13 +156,14 @@ export function CreateDishScreen() {
           </>
         )}
 
-        <Pressable
+        <AnimatedPressable
           onPress={handleCreate}
           disabled={!canCreate}
-          className="mt-6 rounded-xl bg-orange-500 py-3.5 active:opacity-90 disabled:opacity-50"
+          scale={0.98}
+          className="mt-6 rounded-xl bg-orange-500 py-3.5 disabled:opacity-50"
         >
           <Text className="text-center font-semibold text-white">Create</Text>
-        </Pressable>
+        </AnimatedPressable>
       </ScrollView>
     </SafeAreaView>
   );

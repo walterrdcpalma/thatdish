@@ -1,9 +1,11 @@
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
+import { AnimatedPressable } from "@/src/shared/components";
 
 export function MyRestaurantsScreen() {
   const router = useRouter();
@@ -18,13 +20,14 @@ export function MyRestaurantsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <View className="flex-row items-center border-b border-gray-200 px-4 py-3">
-        <Pressable
+        <AnimatedPressable
           onPress={() => router.back()}
+          scale={0.9}
           className="mr-3 p-1"
           hitSlop={8}
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
-        </Pressable>
+        </AnimatedPressable>
         <Text className="text-xl font-bold text-black">My Restaurants</Text>
       </View>
       <ScrollView
@@ -39,17 +42,20 @@ export function MyRestaurantsScreen() {
             </Text>
           </View>
         ) : (
-          myRestaurants.map((restaurant) => (
-            <Pressable
+          myRestaurants.map((restaurant, index) => (
+            <Animated.View
               key={restaurant.id}
-              onPress={() =>
-                router.push({
-                  pathname: "/restaurant/[id]",
-                  params: { id: restaurant.id },
-                })
-              }
-              className="mb-3 overflow-hidden rounded-2xl bg-gray-100 active:opacity-90"
+              entering={FadeInDown.delay(index * 60).springify().damping(15)}
             >
+              <AnimatedPressable
+                onPress={() =>
+                  router.push({
+                    pathname: "/restaurant/[id]",
+                    params: { id: restaurant.id },
+                  })
+                }
+                className="mb-3 overflow-hidden rounded-2xl bg-gray-100"
+              >
               <View className="h-32 bg-gray-300" />
               <View className="flex-row items-center justify-between p-4">
                 <Text className="text-lg font-semibold text-black flex-1">
@@ -65,14 +71,15 @@ export function MyRestaurantsScreen() {
                         Pending
                       </Text>
                     </View>
-                    <Pressable
+                    <AnimatedPressable
                       onPress={() => setClaimStatus(restaurant.id, "verified")}
-                      className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 active:opacity-80"
+                      scale={0.96}
+                      className="rounded-lg border border-gray-300 bg-white px-3 py-1.5"
                     >
                       <Text className="text-xs font-medium text-gray-600">
                         Simulate verify
                       </Text>
-                    </Pressable>
+                    </AnimatedPressable>
                   </>
                 )}
                 {restaurant.claimStatus === "verified" && (
@@ -84,7 +91,8 @@ export function MyRestaurantsScreen() {
                   </View>
                 )}
               </View>
-            </Pressable>
+              </AnimatedPressable>
+            </Animated.View>
           ))
         )}
       </ScrollView>

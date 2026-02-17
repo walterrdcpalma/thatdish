@@ -4,6 +4,7 @@ import type { Dish } from "../types";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
+import { AnimatedPressable } from "@/src/shared/components";
 
 interface DishCardProps {
   dish: Dish;
@@ -25,9 +26,9 @@ export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
   };
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
-      className="mb-4 overflow-hidden rounded-2xl bg-white shadow-sm active:opacity-90"
+      className="mb-4 overflow-hidden rounded-2xl bg-white shadow-sm"
     >
       <View className="relative h-56 w-full overflow-hidden rounded-2xl bg-gray-200">
         <Image
@@ -48,9 +49,10 @@ export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
           <Text className="mt-1 text-sm text-white/90">{restaurantName}</Text>
           <View className="mt-2 flex-row items-center justify-between">
             <Text className="text-xs text-white/80">{dish.savedCount} saved</Text>
-            <Pressable
+            <AnimatedPressable
               onPress={handleSavePress}
-              className="rounded-full bg-white/20 p-2 active:opacity-80"
+              scale={0.9}
+              className="rounded-full bg-white/20 p-2"
               hitSlop={8}
             >
               <Ionicons
@@ -58,10 +60,10 @@ export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
                 size={22}
                 color="white"
               />
-            </Pressable>
+            </AnimatedPressable>
           </View>
         </View>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Image } from "react-native";
+import { View, Text, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -6,6 +6,7 @@ import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
 import { getRestaurantSignature } from "../services";
+import { AnimatedPressable } from "@/src/shared/components";
 
 export function DishDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -54,9 +55,10 @@ export function DishDetailScreen() {
         <Text className="mt-1 text-base text-gray-600">{restaurantName ?? "Unknown"}</Text>
         <View className="mt-3 flex-row items-center justify-between">
           <Text className="text-sm text-gray-500">{dish.savedCount} saved</Text>
-          <Pressable
+          <AnimatedPressable
             onPress={() => toggleSave(dish.id)}
-            className="flex-row items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-4 py-2 active:opacity-80"
+            scale={0.97}
+            className="flex-row items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-4 py-2"
           >
             <Ionicons
               name={isSaved ? "bookmark" : "bookmark-outline"}
@@ -66,21 +68,22 @@ export function DishDetailScreen() {
             <Text className="text-sm font-medium text-gray-700">
               {isSaved ? "Saved" : "Save"}
             </Text>
-          </Pressable>
+          </AnimatedPressable>
         </View>
-        <Pressable
+        <AnimatedPressable
           onPress={() =>
             router.push({
               pathname: "/restaurant/[id]",
               params: { id: dish.restaurantId },
             })
           }
-          className="mt-6 rounded-xl bg-orange-500 py-3.5 active:opacity-90"
+          scale={0.98}
+          className="mt-6 rounded-xl bg-orange-500 py-3.5"
         >
           <Text className="text-center font-semibold text-white">
             View Restaurant
           </Text>
-        </Pressable>
+        </AnimatedPressable>
       </View>
     </SafeAreaView>
   );

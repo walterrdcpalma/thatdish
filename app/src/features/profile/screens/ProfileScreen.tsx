@@ -1,8 +1,9 @@
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useUserStore } from "@/src/features/user/state";
+import { AnimatedPressable } from "@/src/shared/components";
 
 export function ProfileScreen() {
   const router = useRouter();
@@ -29,26 +30,26 @@ export function ProfileScreen() {
           </View>
 
           <View className="mt-8 gap-1">
-            <Pressable
+            <AnimatedPressable
               onPress={() => router.push("/my-restaurants")}
-              className="flex-row items-center justify-between rounded-xl bg-gray-50 px-4 py-3 active:opacity-80"
+              className="flex-row items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
             >
               <View className="flex-row items-center gap-3">
                 <Ionicons name="restaurant-outline" size={22} color="#374151" />
                 <Text className="text-base text-gray-800">My Restaurants</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-            </Pressable>
-            <Pressable
+            </AnimatedPressable>
+            <AnimatedPressable
               onPress={() => router.push("/my-contributions")}
-              className="flex-row items-center justify-between rounded-xl bg-gray-50 px-4 py-3 active:opacity-80"
+              className="flex-row items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
             >
               <View className="flex-row items-center gap-3">
                 <Ionicons name="bookmark-outline" size={22} color="#374151" />
                 <Text className="text-base text-gray-800">My Contributions</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-            </Pressable>
+            </AnimatedPressable>
           </View>
         </View>
       </ScrollView>

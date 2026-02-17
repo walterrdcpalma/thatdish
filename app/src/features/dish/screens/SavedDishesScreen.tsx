@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { View, Text, FlatList } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { DishCard } from "../components";
@@ -17,17 +18,27 @@ export function SavedDishesScreen() {
     [dishes, currentUser.savedDishIds]
   );
 
-  const renderItem = ({ item: dish }: { item: (typeof savedDishes)[0] }) => {
+  const renderItem = ({
+    item: dish,
+    index,
+  }: {
+    item: (typeof savedDishes)[0];
+    index: number;
+  }) => {
     const signature = getRestaurantSignature(dishes, dish.restaurantId);
     const isSignature = signature?.id === dish.id;
     return (
-      <DishCard
-        dish={dish}
-        onPress={() =>
-          router.push({ pathname: "/dish/[id]", params: { id: dish.id } })
-        }
-        isSignature={isSignature}
-      />
+      <Animated.View
+        entering={FadeInDown.delay(index * 60).springify().damping(15)}
+      >
+        <DishCard
+          dish={dish}
+          onPress={() =>
+            router.push({ pathname: "/dish/[id]", params: { id: dish.id } })
+          }
+          isSignature={isSignature}
+        />
+      </Animated.View>
     );
   };
 

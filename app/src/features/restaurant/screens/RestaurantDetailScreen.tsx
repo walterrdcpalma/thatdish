@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, Image } from "react-native";
+import { View, Text, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,6 +6,7 @@ import { useRestaurantStore } from "../state";
 import { useDishStore } from "@/src/features/dish/state";
 import { useUserStore } from "@/src/features/user/state";
 import { getSignatureDish } from "../services";
+import { AnimatedPressable } from "@/src/shared/components";
 
 const MAX_RESTAURANT_PHOTOS = 3;
 
@@ -55,19 +56,20 @@ export function RestaurantDetailScreen() {
               </View>
             )}
             {restaurant.claimStatus === "unclaimed" && (
-              <Pressable
+              <AnimatedPressable
                 onPress={() =>
                   router.push({
                     pathname: "/claim/[restaurantId]",
                     params: { restaurantId: restaurant.id },
                   })
                 }
-                className="rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 active:opacity-80"
+                scale={0.98}
+                className="rounded-lg border border-orange-300 bg-orange-50 px-3 py-2"
               >
                 <Text className="text-sm font-medium text-orange-700">
                   Claim Restaurant
                 </Text>
-              </Pressable>
+              </AnimatedPressable>
             )}
           </View>
         </View>
@@ -86,14 +88,14 @@ export function RestaurantDetailScreen() {
                   style={index > 0 ? { marginLeft: 12 } : undefined}
                   className="w-64"
                 >
-                  <Pressable
+                  <AnimatedPressable
                     onPress={() =>
                       router.push({
                         pathname: "/dish/[id]",
                         params: { id: dish.id },
                       })
                     }
-                    className="overflow-hidden rounded-2xl bg-gray-200 active:opacity-90"
+                    className="overflow-hidden rounded-2xl bg-gray-200"
                   >
                     <View className="relative h-40 w-full">
                       <Image
@@ -117,22 +119,23 @@ export function RestaurantDetailScreen() {
                         </Text>
                       </View>
                     </View>
-                  </Pressable>
+                  </AnimatedPressable>
                   {isOwner && (
-                    <Pressable
+                    <AnimatedPressable
                       onPress={() => setSignatureDish(restaurant.id, dish.id)}
-                      className="mt-2 rounded-lg border border-gray-300 bg-white py-2 active:opacity-80"
+                      scale={0.98}
+                      className="mt-2 rounded-lg border border-gray-300 bg-white py-2"
                     >
                       <Text className="text-center text-xs font-medium text-gray-700">
                         Definir como Assinatura
                       </Text>
-                    </Pressable>
+                    </AnimatedPressable>
                   )}
                 </View>
               );
             })}
             {restaurantDishes.length < MAX_RESTAURANT_PHOTOS && (
-              <Pressable
+              <AnimatedPressable
                 style={
                   restaurantDishes.length > 0 ? { marginLeft: 12 } : undefined
                 }
@@ -142,13 +145,14 @@ export function RestaurantDetailScreen() {
                     params: { restaurantId: restaurant.id },
                   })
                 }
-                className="h-40 w-64 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 active:opacity-80"
+                scale={0.98}
+                className="h-40 w-64 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50"
               >
                 <Ionicons name="add" size={40} color="#9ca3af" />
                 <Text className="mt-2 text-sm font-medium text-gray-500">
                   Add dish
                 </Text>
-              </Pressable>
+              </AnimatedPressable>
             )}
           </ScrollView>
         </View>
