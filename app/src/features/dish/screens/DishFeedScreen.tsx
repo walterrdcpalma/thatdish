@@ -74,41 +74,31 @@ export function DishFeedScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="flex-row items-center justify-between border-b border-gray-100 bg-white px-5 pt-2 pb-3">
-        <View>
-          <Text className="text-2xl font-bold text-black">Discover</Text>
-          <Text className="mt-1 text-base text-gray-500">
-            What are you eating today?
-          </Text>
-        </View>
-        <AnimatedPressable
-          onPress={() => router.push("/(tabs)/saved")}
-          scale={0.9}
-          className="rounded-full p-2"
-          hitSlop={8}
-        >
-          <Ionicons name="bookmark" size={24} color="#f97316" />
-        </AnimatedPressable>
+      <View className="border-b border-gray-100 bg-white px-5 pt-2 pb-3">
+        <Text className="text-2xl font-bold text-black">Discover</Text>
+        <Text className="mt-1 text-base text-gray-500">
+          What are you eating today?
+        </Text>
       </View>
-      <View className="flex-row border-b border-gray-100 bg-white px-4 pb-2">
+      <View className="flex-row border-b border-gray-100 bg-white">
         <AnimatedPressable
           onPress={() => setTab("All")}
-          scale={0.98}
-          className={`mr-2 rounded-lg px-4 py-2.5 ${tab === "All" ? "bg-gray-900" : "bg-gray-100"}`}
+          scale={0.99}
+          className="flex-1 items-center justify-center py-3"
         >
           <Text
-            className={`text-sm font-medium ${tab === "All" ? "text-white" : "text-gray-600"}`}
+            className={`text-sm ${tab === "All" ? "font-semibold text-black" : "text-gray-500"}`}
           >
             All
           </Text>
         </AnimatedPressable>
         <AnimatedPressable
           onPress={() => setTab("Nearby")}
-          scale={0.98}
-          className={`rounded-lg px-4 py-2.5 ${tab === "Nearby" ? "bg-gray-900" : "bg-gray-100"}`}
+          scale={0.99}
+          className="flex-1 items-center justify-center py-3"
         >
           <Text
-            className={`text-sm font-medium ${tab === "Nearby" ? "text-white" : "text-gray-600"}`}
+            className={`text-sm ${tab === "Nearby" ? "font-semibold text-black" : "text-gray-500"}`}
           >
             Nearby
           </Text>
