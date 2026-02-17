@@ -7,11 +7,14 @@ interface DishStore {
   dishes: Dish[];
   toggleSave: (dishId: string) => void;
   addDish: (dish: Dish) => void;
+  archiveDish: (dishId: string) => void;
+  restoreDish: (dishId: string) => void;
+  updateDish: (dishId: string, updates: Partial<Pick<Dish, "name">>) => void;
 }
 
 const initialDishes: Dish[] = MOCK_DISHES.map((d) => ({ ...d }));
 
-export const useDishStore = create<DishStore>((set) => ({
+export const useDishStore = create<DishStore>((set, get) => ({
   dishes: initialDishes,
 
   toggleSave: (dishId: string) => {
@@ -30,5 +33,40 @@ export const useDishStore = create<DishStore>((set) => ({
   },
 
   addDish: (dish: Dish) =>
-    set((state) => ({ dishes: [...state.dishes, dish] })),
+    set((state) => ({
+      dishes: [...state.dishes, { ...dish, isArchived: dish.isArchived ?? false }],
+    })),
+
+  archiveDish: (dishId: string) => {
+    const { currentUser } = useUserStore.getState();
+    const dish = get().dishes.find((d) => d.id === dishId);
+    if (!dish || dish.createdByUserId !== currentUser.id) return;
+    set((state) => ({
+      dishes: state.dishes.map((d) =>
+        d.id === dishId ? { ...d, isArchived: true } : d
+      ),
+    }));
+  },
+
+  restoreDish: (dishId: string) => {
+    const { currentUser } = useUserStore.getState();
+    const dish = get().dishes.find((d) => d.id === dishId);
+    if (!dish || dish.createdByUserId !== currentUser.id) return;
+    set((state) => ({
+      dishes: state.dishes.map((d) =>
+        d.id === dishId ? { ...d, isArchived: false } : d
+      ),
+    }));
+  },
+
+  updateDish: (dishId: string, updates: Partial<Pick<Dish, "name">>) => {
+    const { currentUser } = useUserStore.getState();
+    const dish = get().dishes.find((d) => d.id === dishId);
+    if (!dish || dish.createdByUserId !== currentUser.id) return;
+    set((state) => ({
+      dishes: state.dishes.map((d) =>
+        d.id === dishId ? { ...d, ...updates } : d
+      ),
+    }));
+  },
 }));

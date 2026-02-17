@@ -8,7 +8,9 @@ export function getRestaurantSignature(
   dishes: Dish[],
   restaurantId: string
 ): Dish | undefined {
-  const forRestaurant = dishes.filter((d) => d.restaurantId === restaurantId);
+  const forRestaurant = dishes.filter(
+    (d) => d.restaurantId === restaurantId && !d.isArchived
+  );
   if (forRestaurant.length === 0) return undefined;
   return forRestaurant.reduce((best, d) =>
     d.savedCount > best.savedCount ? d : best

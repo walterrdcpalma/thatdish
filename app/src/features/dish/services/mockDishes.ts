@@ -14,6 +14,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-01-15T12:00:00Z",
     createdByUserId: "u1",
     imagePlaceholder: DISH_IMG("dish-1-piri-piri"),
+    isArchived: false,
   },
   {
     id: "4",
@@ -23,6 +24,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-01-20T12:00:00Z",
     createdByUserId: "u2",
     imagePlaceholder: DISH_IMG("dish-4-sardines"),
+    isArchived: false,
   },
   {
     id: "5",
@@ -32,6 +34,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-02-01T12:00:00Z",
     createdByUserId: "u1",
     imagePlaceholder: DISH_IMG("dish-5-caldo"),
+    isArchived: false,
   },
   {
     id: "2",
@@ -41,6 +44,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-02-01T10:00:00Z",
     createdByUserId: "u2",
     imagePlaceholder: DISH_IMG("dish-2-burger"),
+    isArchived: false,
   },
   {
     id: "6",
@@ -50,6 +54,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-02-10T10:00:00Z",
     createdByUserId: "u1",
     imagePlaceholder: DISH_IMG("dish-6-tacos"),
+    isArchived: false,
   },
   {
     id: "7",
@@ -59,6 +64,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-02-15T10:00:00Z",
     createdByUserId: "u2",
     imagePlaceholder: DISH_IMG("dish-7-salad"),
+    isArchived: false,
   },
   {
     id: "3",
@@ -68,6 +74,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-01-20T14:00:00Z",
     createdByUserId: "u1",
     imagePlaceholder: DISH_IMG("dish-3-bacalhau"),
+    isArchived: false,
   },
   {
     id: "8",
@@ -77,6 +84,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-01-25T14:00:00Z",
     createdByUserId: "u2",
     imagePlaceholder: DISH_IMG("dish-8-octopus"),
+    isArchived: false,
   },
   {
     id: "9",
@@ -86,6 +94,7 @@ export const MOCK_DISHES: Dish[] = [
     createdAt: "2024-02-05T14:00:00Z",
     createdByUserId: "u2",
     imagePlaceholder: DISH_IMG("dish-9-nata"),
+    isArchived: false,
   },
 ];
 

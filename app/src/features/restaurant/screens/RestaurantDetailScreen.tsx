@@ -17,12 +17,17 @@ export function RestaurantDetailScreen() {
   const setSignatureDish = useRestaurantStore((s) => s.setSignatureDish);
   const restaurant = id ? restaurants.find((r) => r.id === id) : undefined;
   const dishes = useDishStore((s) => s.dishes);
+  const restoreDish = useDishStore((s) => s.restoreDish);
   const currentUser = useUserStore((s) => s.currentUser);
   const signature = restaurant
     ? getSignatureDish(restaurant.id, restaurants, dishes)
     : undefined;
   const restaurantDishes = restaurant
-    ? dishes.filter((d) => d.restaurantId === restaurant.id).slice(0, MAX_RESTAURANT_PHOTOS)
+    ? dishes
+        .filter(
+          (d) => d.restaurantId === restaurant.id && !d.isArchived
+        )
+        .slice(0, MAX_RESTAURANT_PHOTOS)
     : [];
 
   if (!restaurant) {
@@ -158,6 +163,75 @@ export function RestaurantDetailScreen() {
             )}
           </ScrollView>
         </View>
+
+        {restaurant.claimStatus === "verified" &&
+          restaurant.ownerUserId === currentUser.id && (
+            <View className="mt-6 px-4">
+              <Text className="mb-3 text-sm font-semibold text-gray-500">
+                Archived Dishes
+              </Text>
+              {dishes
+                .filter(
+                  (d) =>
+                    d.restaurantId === restaurant.id && d.isArchived
+                )
+                .map((dish) => (
+                  <View
+                    key={dish.id}
+                    className="mb-3 flex-row items-center rounded-xl border border-gray-200 bg-gray-50 p-3"
+                  >
+                    <AnimatedPressable
+                      onPress={() =>
+                        router.push({
+                          pathname: "/dish/[id]",
+                          params: { id: dish.id },
+                        })
+                      }
+                      scale={0.99}
+                      className="mr-3 flex-1 flex-row items-center"
+                    >
+                      <Image
+                        source={{
+                          uri:
+                            dish.imagePlaceholder ??
+                            "https://placehold.co/96/96/gray/white?text=Dish",
+                        }}
+                        className="h-14 w-14 rounded-lg bg-gray-200"
+                        resizeMode="cover"
+                      />
+                      <Text
+                        className="ml-3 flex-1 text-base text-gray-800"
+                        numberOfLines={1}
+                      >
+                        {dish.name}
+                      </Text>
+                    </AnimatedPressable>
+                    {dish.createdByUserId === currentUser.id ? (
+                      <AnimatedPressable
+                        onPress={() => restoreDish(dish.id)}
+                        scale={0.98}
+                        className="rounded-lg border border-gray-300 bg-white px-3 py-1.5"
+                      >
+                        <Text className="text-sm font-medium text-gray-700">
+                          Restore
+                        </Text>
+                      </AnimatedPressable>
+                    ) : (
+                      <Text className="text-xs text-gray-400">
+                        Only creator can restore
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              {dishes.filter(
+                (d) => d.restaurantId === restaurant.id && d.isArchived
+              ).length === 0 && (
+                <Text className="text-sm text-gray-400">
+                  No archived dishes for this restaurant.
+                </Text>
+              )}
+            </View>
+          )}
       </ScrollView>
     </SafeAreaView>
   );

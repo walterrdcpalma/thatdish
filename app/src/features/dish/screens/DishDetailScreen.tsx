@@ -13,6 +13,8 @@ export function DishDetailScreen() {
   const router = useRouter();
   const dishes = useDishStore((s) => s.dishes);
   const toggleSave = useDishStore((s) => s.toggleSave);
+  const archiveDish = useDishStore((s) => s.archiveDish);
+  const restoreDish = useDishStore((s) => s.restoreDish);
   const currentUser = useUserStore((s) => s.currentUser);
   const dish = id ? dishes.find((d) => d.id === id) : undefined;
   const restaurantName = dish
@@ -23,8 +25,9 @@ export function DishDetailScreen() {
   const signature = dish
     ? getRestaurantSignature(dishes, dish.restaurantId)
     : undefined;
-  const isSignature = dish && signature?.id === dish.id;
+  const isSignature = dish && !dish.isArchived && signature?.id === dish.id;
   const isSaved = dish ? currentUser.savedDishIds.includes(dish.id) : false;
+  const isCreator = dish ? dish.createdByUserId === currentUser.id : false;
 
   if (!dish) {
     return (
@@ -55,25 +58,69 @@ export function DishDetailScreen() {
         )}
       </View>
       <View className="flex-1 p-5">
+        {dish.isArchived && (
+          <View className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+            <Text className="text-sm font-medium text-amber-800">Archived</Text>
+          </View>
+        )}
         <Text className="text-2xl font-bold text-black">{dish.name}</Text>
         <Text className="mt-1 text-base text-gray-600">{restaurantName ?? "Unknown"}</Text>
         <View className="mt-3 flex-row items-center justify-between">
           <Text className="text-sm text-gray-500">{dish.savedCount} saved</Text>
-          <AnimatedPressable
-            onPress={() => toggleSave(dish.id)}
-            scale={0.97}
-            className="flex-row items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-4 py-2"
-          >
-            <Ionicons
-              name={isSaved ? "bookmark" : "bookmark-outline"}
-              size={20}
-              color="#f97316"
-            />
-            <Text className="text-sm font-medium text-gray-700">
-              {isSaved ? "Saved" : "Save"}
-            </Text>
-          </AnimatedPressable>
+          {!dish.isArchived && (
+            <AnimatedPressable
+              onPress={() => toggleSave(dish.id)}
+              scale={0.97}
+              className="flex-row items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-4 py-2"
+            >
+              <Ionicons
+                name={isSaved ? "bookmark" : "bookmark-outline"}
+                size={20}
+                color="#f97316"
+              />
+              <Text className="text-sm font-medium text-gray-700">
+                {isSaved ? "Saved" : "Save"}
+              </Text>
+            </AnimatedPressable>
+          )}
         </View>
+        {isCreator && (
+          <View className="mt-4 gap-2">
+            <AnimatedPressable
+              onPress={() =>
+                router.push({
+                  pathname: "/dish/edit",
+                  params: { id: dish.id },
+                })
+              }
+              scale={0.98}
+              className="flex-row items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white py-3"
+            >
+              <Text className="font-medium text-gray-700">Edit</Text>
+            </AnimatedPressable>
+            {dish.isArchived ? (
+              <AnimatedPressable
+                onPress={() => restoreDish(dish.id)}
+                scale={0.98}
+                className="rounded-xl border border-gray-300 bg-white py-3"
+              >
+                <Text className="text-center font-medium text-gray-700">
+                  Restore dish
+                </Text>
+              </AnimatedPressable>
+            ) : (
+              <AnimatedPressable
+                onPress={() => archiveDish(dish.id)}
+                scale={0.98}
+                className="rounded-xl border border-amber-300 bg-amber-50 py-3"
+              >
+                <Text className="text-center font-medium text-amber-800">
+                  Archive dish
+                </Text>
+              </AnimatedPressable>
+            )}
+          </View>
+        )}
         <AnimatedPressable
           onPress={() =>
             router.push({

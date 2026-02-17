@@ -14,7 +14,11 @@ export function SavedDishesScreen() {
   const dishes = useDishStore((s) => s.dishes);
 
   const savedDishes = useMemo(
-    () => dishes.filter((dish) => currentUser.savedDishIds.includes(dish.id)),
+    () =>
+      dishes.filter(
+        (dish) =>
+          currentUser.savedDishIds.includes(dish.id) && !dish.isArchived
+      ),
     [dishes, currentUser.savedDishIds]
   );
 

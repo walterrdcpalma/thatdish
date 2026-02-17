@@ -6,4 +6,5 @@ export interface Dish {
   savedCount: number;
   createdAt: string;
   createdByUserId: string;
+  isArchived: boolean;
 }

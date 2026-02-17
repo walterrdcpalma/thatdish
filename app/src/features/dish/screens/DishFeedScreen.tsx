@@ -10,7 +10,8 @@ import { AnimatedPressable } from "@/src/shared/components";
 
 export function DishFeedScreen() {
   const router = useRouter();
-  const dishes = useDishStore((s) => s.dishes);
+  const allDishes = useDishStore((s) => s.dishes);
+  const dishes = allDishes.filter((d) => !d.isArchived);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>

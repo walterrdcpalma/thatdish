@@ -81,6 +81,7 @@ export function CreateDishScreen() {
       createdAt: new Date().toISOString(),
       createdByUserId: currentUser.id,
       imagePlaceholder: `https://picsum.photos/seed/dish-${dishId}/800/500`,
+      isArchived: false,
     };
     addDish(dish);
     router.back();

@@ -15,7 +15,9 @@ export function getSignatureDish(
   const restaurant = restaurants.find((r) => r.id === restaurantId);
   if (!restaurant) return undefined;
 
-  const forRestaurant = dishes.filter((d) => d.restaurantId === restaurantId);
+  const forRestaurant = dishes.filter(
+    (d) => d.restaurantId === restaurantId && !d.isArchived
+  );
   if (forRestaurant.length === 0) return undefined;
 
   if (restaurant.signatureDishId) {
