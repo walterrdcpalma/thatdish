@@ -12,9 +12,10 @@ interface DishCardProps {
   onPress: () => void;
   isSignature?: boolean;
   badges?: DishBadges;
+  isNearby?: boolean;
 }
 
-export function DishCard({ dish, onPress, isSignature, badges }: DishCardProps) {
+export function DishCard({ dish, onPress, isSignature, badges, isNearby }: DishCardProps) {
   const toggleSave = useDishStore((s) => s.toggleSave);
   const currentUser = useUserStore((s) => s.currentUser);
   const isSaved = currentUser.savedDishIds.includes(dish.id);
@@ -44,6 +45,13 @@ export function DishCard({ dish, onPress, isSignature, badges }: DishCardProps) 
         />
         <View className="absolute inset-0 bg-black/40" />
         <View className="absolute right-3 top-3 flex-row flex-wrap justify-end gap-1.5">
+          {isNearby && (
+            <View className="rounded-full bg-sky-500/90 px-2.5 py-1">
+              <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
+                Nearby
+              </Text>
+            </View>
+          )}
           {badges?.isTop && (
             <View className="rounded-full bg-amber-500/90 px-2.5 py-1">
               <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
