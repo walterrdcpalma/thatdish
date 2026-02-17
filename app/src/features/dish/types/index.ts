@@ -5,6 +5,7 @@ export interface Dish {
   restaurantName: string;
   imagePlaceholder?: string;
   savedCount: number;
+  createdAt: string;
 }
 
 export interface Restaurant {

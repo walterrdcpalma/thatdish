@@ -2,7 +2,7 @@ import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { DishCard } from "../components";
-import { getMockDishes } from "../services";
+import { getMockDishes, getRestaurantSignature } from "../services";
 
 export function DishFeedScreen() {
   const router = useRouter();
@@ -21,13 +21,18 @@ export function DishFeedScreen() {
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        {dishes.map((dish) => (
-          <DishCard
-            key={dish.id}
-            dish={dish}
-            onPress={() => router.push({ pathname: "/dish/[id]", params: { id: dish.id } })}
-          />
-        ))}
+        {dishes.map((dish) => {
+          const signature = getRestaurantSignature(dishes, dish.restaurantId);
+          const isSignature = signature?.id === dish.id;
+          return (
+            <DishCard
+              key={dish.id}
+              dish={dish}
+              onPress={() => router.push({ pathname: "/dish/[id]", params: { id: dish.id } })}
+              isSignature={isSignature}
+            />
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
