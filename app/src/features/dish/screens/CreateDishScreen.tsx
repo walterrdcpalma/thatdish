@@ -1,24 +1,74 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useDishStore } from "../state";
+import { useRestaurantStore } from "@/src/features/restaurant/state";
 import type { Dish } from "../types";
+
+const SUGGESTION_LIMIT = 5;
 
 export function CreateDishScreen() {
   const router = useRouter();
+  const { restaurantId: paramRestaurantId } = useLocalSearchParams<{
+    restaurantId?: string;
+  }>();
   const addDish = useDishStore((s) => s.addDish);
+  const restaurants = useRestaurantStore((s) => s.restaurants);
+  const addRestaurant = useRestaurantStore((s) => s.addRestaurant);
   const [name, setName] = useState("");
-  const [restaurantName, setRestaurantName] = useState("");
+  const [restaurantSearch, setRestaurantSearch] = useState("");
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(
+    paramRestaurantId ?? null
+  );
+
+  const isFromRestaurant = Boolean(paramRestaurantId);
+  const preselectedRestaurant = paramRestaurantId
+    ? restaurants.find((r) => r.id === paramRestaurantId)
+    : undefined;
+
+  const restaurantSuggestions = restaurantSearch.trim()
+    ? restaurants
+        .filter((r) =>
+          r.name.toLowerCase().includes(restaurantSearch.trim().toLowerCase())
+        )
+        .slice(0, SUGGESTION_LIMIT)
+    : [];
+
+  const handleSelectRestaurant = (id: string, restaurantName: string) => {
+    setSelectedRestaurantId(id);
+    setRestaurantSearch(restaurantName);
+  };
 
   const handleCreate = () => {
-    const id = Date.now().toString();
-    const restaurantId = "new-" + id;
+    const trimmedName = name.trim();
+    let restaurantId: string;
+
+    if (isFromRestaurant && paramRestaurantId) {
+      restaurantId = paramRestaurantId;
+    } else if (selectedRestaurantId) {
+      restaurantId = selectedRestaurantId;
+    } else {
+      const trimmedSearch = restaurantSearch.trim();
+      const existing = restaurants.find(
+        (r) => r.name.toLowerCase() === trimmedSearch.toLowerCase()
+      );
+      if (existing) {
+        restaurantId = existing.id;
+      } else {
+        restaurantId = "new-" + Date.now().toString();
+        addRestaurant({
+          id: restaurantId,
+          name: trimmedSearch,
+          location: "",
+        });
+      }
+    }
+
     const dish: Dish = {
-      id,
-      name: name.trim(),
+      id: Date.now().toString(),
+      name: trimmedName,
       restaurantId,
-      restaurantName: restaurantName.trim(),
       savedCount: 0,
       createdAt: new Date().toISOString(),
     };
@@ -26,12 +76,28 @@ export function CreateDishScreen() {
     router.back();
   };
 
+  const canCreate = name.trim() && (isFromRestaurant || selectedRestaurantId || restaurantSearch.trim());
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="flex-1 p-5">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text className="mb-4 text-lg font-semibold text-black">
-          New dish
+          {isFromRestaurant ? "Add dish to restaurant" : "New dish"}
         </Text>
+
+        {isFromRestaurant && preselectedRestaurant && (
+          <View className="mb-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+            <Text className="text-xs text-gray-500">Restaurant</Text>
+            <Text className="mt-0.5 text-base font-medium text-black">
+              {preselectedRestaurant.name}
+            </Text>
+          </View>
+        )}
+
         <Text className="mb-1 text-sm text-gray-600">Dish name</Text>
         <TextInput
           value={name}
@@ -40,22 +106,56 @@ export function CreateDishScreen() {
           className="mb-4 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
           placeholderTextColor="#9ca3af"
         />
-        <Text className="mb-1 text-sm text-gray-600">Restaurant name</Text>
-        <TextInput
-          value={restaurantName}
-          onChangeText={setRestaurantName}
-          placeholder="e.g. Joe's Tavern"
-          className="mb-6 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
-          placeholderTextColor="#9ca3af"
-        />
+
+        {!isFromRestaurant && (
+          <>
+            <Text className="mb-1 text-sm text-gray-600">
+              Restaurant (search or type new)
+            </Text>
+            <TextInput
+              value={restaurantSearch}
+              onChangeText={(text) => {
+                setRestaurantSearch(text);
+                setSelectedRestaurantId(null);
+              }}
+              placeholder="Search or type restaurant name"
+              className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
+              placeholderTextColor="#9ca3af"
+            />
+            {restaurantSuggestions.length > 0 && (
+              <View className="mt-1 rounded-xl border border-gray-200 bg-white">
+                {restaurantSuggestions.map((r) => (
+                  <Pressable
+                    key={r.id}
+                    onPress={() => handleSelectRestaurant(r.id, r.name)}
+                    className="border-b border-gray-100 px-4 py-3 last:border-b-0 active:bg-gray-50"
+                  >
+                    <Text className="text-base text-black">{r.name}</Text>
+                    {r.location ? (
+                      <Text className="mt-0.5 text-xs text-gray-500">
+                        {r.location}
+                      </Text>
+                    ) : null}
+                  </Pressable>
+                ))}
+              </View>
+            )}
+            {selectedRestaurantId && (
+              <Text className="mt-2 text-xs text-gray-500">
+                Selected: {restaurants.find((r) => r.id === selectedRestaurantId)?.name}. Type to change.
+              </Text>
+            )}
+          </>
+        )}
+
         <Pressable
           onPress={handleCreate}
-          disabled={!name.trim() || !restaurantName.trim()}
-          className="rounded-xl bg-orange-500 py-3.5 active:opacity-90 disabled:opacity-50"
+          disabled={!canCreate}
+          className="mt-6 rounded-xl bg-orange-500 py-3.5 active:opacity-90 disabled:opacity-50"
         >
           <Text className="text-center font-semibold text-white">Create</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

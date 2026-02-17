@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDishStore } from "../state";
+import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { getRestaurantSignature } from "../services";
 
 export function DishDetailScreen() {
@@ -12,6 +13,11 @@ export function DishDetailScreen() {
   const toggleSave = useDishStore((s) => s.toggleSave);
   const savedByUser = useDishStore((s) => s.savedByUser);
   const dish = id ? dishes.find((d) => d.id === id) : undefined;
+  const restaurantName = dish
+    ? useRestaurantStore((s) =>
+        s.restaurants.find((r) => r.id === dish.restaurantId)?.name
+      )
+    : undefined;
   const signature = dish
     ? getRestaurantSignature(dishes, dish.restaurantId)
     : undefined;
@@ -44,7 +50,7 @@ export function DishDetailScreen() {
       </View>
       <View className="flex-1 p-5">
         <Text className="text-2xl font-bold text-black">{dish.name}</Text>
-        <Text className="mt-1 text-base text-gray-600">{dish.restaurantName}</Text>
+        <Text className="mt-1 text-base text-gray-600">{restaurantName ?? "Unknown"}</Text>
         <View className="mt-3 flex-row items-center justify-between">
           <Text className="text-sm text-gray-500">{dish.savedCount} saved</Text>
           <Pressable

@@ -2,6 +2,7 @@ import { View, Text, Pressable, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { Dish } from "../types";
 import { useDishStore } from "../state";
+import { useRestaurantStore } from "@/src/features/restaurant/state";
 
 interface DishCardProps {
   dish: Dish;
@@ -12,6 +13,9 @@ interface DishCardProps {
 export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
   const toggleSave = useDishStore((s) => s.toggleSave);
   const isSaved = useDishStore((s) => s.savedByUser[dish.id]);
+  const restaurantName =
+    useRestaurantStore((s) => s.restaurants.find((r) => r.id === dish.restaurantId)?.name) ??
+    "Unknown";
 
   const handleSavePress = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();
@@ -39,7 +43,7 @@ export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
         )}
         <View className="absolute bottom-0 left-0 right-0 p-4">
           <Text className="text-xl font-bold text-white">{dish.name}</Text>
-          <Text className="mt-1 text-sm text-white/90">{dish.restaurantName}</Text>
+          <Text className="mt-1 text-sm text-white/90">{restaurantName}</Text>
           <View className="mt-2 flex-row items-center justify-between">
             <Text className="text-xs text-white/80">{dish.savedCount} saved</Text>
             <Pressable

@@ -1,3 +1,1 @@
-// Restaurant feature types
-
-export type RestaurantPlaceholder = void;
+export type { Restaurant } from "./restaurant.types";
