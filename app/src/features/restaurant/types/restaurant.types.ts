@@ -3,4 +3,5 @@ export interface Restaurant {
   name: string;
   location: string;
   signatureDishId: string | null;
+  ownerUserId: string | null;
 }

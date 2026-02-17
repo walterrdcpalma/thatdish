@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useRestaurantStore } from "../state";
 import { useDishStore } from "@/src/features/dish/state";
+import { useUserStore } from "@/src/features/user/state";
 import { getSignatureDish } from "../services";
 
 const MAX_RESTAURANT_PHOTOS = 3;
@@ -12,8 +13,11 @@ export function RestaurantDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const restaurants = useRestaurantStore((s) => s.restaurants);
+  const claimRestaurant = useRestaurantStore((s) => s.claimRestaurant);
+  const setSignatureDish = useRestaurantStore((s) => s.setSignatureDish);
   const restaurant = id ? restaurants.find((r) => r.id === id) : undefined;
   const dishes = useDishStore((s) => s.dishes);
+  const currentUser = useUserStore((s) => s.currentUser);
   const signature = restaurant
     ? getSignatureDish(restaurant.id, restaurants, dishes)
     : undefined;
@@ -40,10 +44,22 @@ export function RestaurantDetailScreen() {
           <Text className="mt-2 text-base text-gray-600">
             {restaurant.location}
           </Text>
-          <View className="mt-4 flex-row items-center">
-            <View className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-              <Text className="text-sm text-gray-600">✓ Verified</Text>
-            </View>
+          <View className="mt-4 flex-row flex-wrap items-center gap-2">
+            {restaurant.ownerUserId != null && (
+              <View className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                <Text className="text-sm text-gray-600">✓ Verified</Text>
+              </View>
+            )}
+            {restaurant.ownerUserId === null && (
+              <Pressable
+                onPress={() => claimRestaurant(restaurant.id, currentUser.id)}
+                className="rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 active:opacity-80"
+              >
+                <Text className="text-sm font-medium text-orange-700">
+                  Claim Restaurant
+                </Text>
+              </Pressable>
+            )}
           </View>
         </View>
         <View className="px-4">
@@ -54,41 +70,56 @@ export function RestaurantDetailScreen() {
           >
             {restaurantDishes.map((dish, index) => {
               const isSignature = signature?.id === dish.id;
+              const isOwner = restaurant.ownerUserId === currentUser.id;
               return (
-                <Pressable
+                <View
                   key={dish.id}
                   style={index > 0 ? { marginLeft: 12 } : undefined}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/dish/[id]",
-                      params: { id: dish.id },
-                    })
-                  }
-                  className="w-64 overflow-hidden rounded-2xl bg-gray-200 active:opacity-90"
+                  className="w-64"
                 >
-                  <View className="relative h-40 w-full">
-                    <Image
-                      source={{
-                        uri: "https://placehold.co/256x160/gray/white?text=Dish",
-                      }}
-                      className="h-full w-full"
-                      resizeMode="cover"
-                    />
-                    <View className="absolute inset-0 bg-black/30" />
-                    {isSignature && (
-                      <View className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1">
-                        <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
-                          Especialidade da Casa
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/dish/[id]",
+                        params: { id: dish.id },
+                      })
+                    }
+                    className="overflow-hidden rounded-2xl bg-gray-200 active:opacity-90"
+                  >
+                    <View className="relative h-40 w-full">
+                      <Image
+                        source={{
+                          uri: "https://placehold.co/256x160/gray/white?text=Dish",
+                        }}
+                        className="h-full w-full"
+                        resizeMode="cover"
+                      />
+                      <View className="absolute inset-0 bg-black/30" />
+                      {isSignature && (
+                        <View className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1">
+                          <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
+                            Especialidade da Casa
+                          </Text>
+                        </View>
+                      )}
+                      <View className="absolute bottom-0 left-0 right-0 p-3">
+                        <Text className="text-sm font-bold text-white">
+                          {dish.name}
                         </Text>
                       </View>
-                    )}
-                    <View className="absolute bottom-0 left-0 right-0 p-3">
-                      <Text className="text-sm font-bold text-white">
-                        {dish.name}
-                      </Text>
                     </View>
-                  </View>
-                </Pressable>
+                  </Pressable>
+                  {isOwner && (
+                    <Pressable
+                      onPress={() => setSignatureDish(restaurant.id, dish.id)}
+                      className="mt-2 rounded-lg border border-gray-300 bg-white py-2 active:opacity-80"
+                    >
+                      <Text className="text-center text-xs font-medium text-gray-700">
+                        Definir como Assinatura
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
               );
             })}
             {restaurantDishes.length < MAX_RESTAURANT_PHOTOS && (
