@@ -2,11 +2,12 @@ import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { DishCard } from "../components";
-import { getMockDishes, getRestaurantSignature } from "../services";
+import { useDishStore } from "../state";
+import { getRestaurantSignature } from "../services";
 
 export function DishFeedScreen() {
   const router = useRouter();
-  const dishes = getMockDishes();
+  const dishes = useDishStore((s) => s.dishes);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
