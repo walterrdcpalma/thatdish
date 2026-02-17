@@ -2,9 +2,9 @@ import { create } from "zustand";
 import type { Restaurant } from "../types/restaurant.types";
 
 const INITIAL_RESTAURANTS: Restaurant[] = [
-  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal" },
-  { id: "2", name: "Flavor Corner", location: "Porto, Portugal" },
-  { id: "3", name: "Front Table", location: "Lisbon, Portugal" },
+  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal", signatureDishId: null },
+  { id: "2", name: "Flavor Corner", location: "Porto, Portugal", signatureDishId: null },
+  { id: "3", name: "Front Table", location: "Lisbon, Portugal", signatureDishId: null },
 ];
 
 interface RestaurantStore {
@@ -18,7 +18,10 @@ export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
 
   addRestaurant: (restaurant: Restaurant) =>
     set((state) => ({
-      restaurants: [...state.restaurants, restaurant],
+      restaurants: [
+        ...state.restaurants,
+        { ...restaurant, signatureDishId: restaurant.signatureDishId ?? null },
+      ],
     })),
 
   getRestaurantById: (id: string) =>

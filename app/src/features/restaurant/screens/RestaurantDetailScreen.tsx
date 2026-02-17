@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useRestaurantStore } from "../state";
 import { useDishStore } from "@/src/features/dish/state";
-import { getRestaurantSignature } from "@/src/features/dish/services";
+import { getSignatureDish } from "../services";
 
 const MAX_RESTAURANT_PHOTOS = 3;
 
@@ -15,7 +15,7 @@ export function RestaurantDetailScreen() {
   const restaurant = id ? restaurants.find((r) => r.id === id) : undefined;
   const dishes = useDishStore((s) => s.dishes);
   const signature = restaurant
-    ? getRestaurantSignature(dishes, restaurant.id)
+    ? getSignatureDish(restaurant.id, restaurants, dishes)
     : undefined;
   const restaurantDishes = restaurant
     ? dishes.filter((d) => d.restaurantId === restaurant.id).slice(0, MAX_RESTAURANT_PHOTOS)

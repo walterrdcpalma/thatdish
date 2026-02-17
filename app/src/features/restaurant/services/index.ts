@@ -1,1 +1,1 @@
-// Restaurant feature services (API/data) barrel
+export { getSignatureDish } from "./getSignatureDish";
