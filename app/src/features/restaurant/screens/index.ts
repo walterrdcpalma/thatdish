@@ -1,1 +1,1 @@
-// Restaurant screens barrel
+export { RestaurantDetailScreen } from "./RestaurantDetailScreen";
