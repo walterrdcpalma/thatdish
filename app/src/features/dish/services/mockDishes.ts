@@ -1,5 +1,6 @@
 import type { Dish } from "../types";
 
+// u1 = current user (Walter). u2 = other user. My Contributions shows only dishes with createdByUserId === currentUser.id (u1).
 export const MOCK_DISHES: Dish[] = [
   {
     id: "1",
@@ -15,7 +16,7 @@ export const MOCK_DISHES: Dish[] = [
     restaurantId: "1",
     savedCount: 0,
     createdAt: "2024-01-20T12:00:00Z",
-    createdByUserId: "u1",
+    createdByUserId: "u2",
   },
   {
     id: "5",
@@ -31,7 +32,7 @@ export const MOCK_DISHES: Dish[] = [
     restaurantId: "2",
     savedCount: 0,
     createdAt: "2024-02-01T10:00:00Z",
-    createdByUserId: "u1",
+    createdByUserId: "u2",
   },
   {
     id: "6",
@@ -47,7 +48,7 @@ export const MOCK_DISHES: Dish[] = [
     restaurantId: "2",
     savedCount: 0,
     createdAt: "2024-02-15T10:00:00Z",
-    createdByUserId: "u1",
+    createdByUserId: "u2",
   },
   {
     id: "3",
@@ -63,7 +64,7 @@ export const MOCK_DISHES: Dish[] = [
     restaurantId: "3",
     savedCount: 0,
     createdAt: "2024-01-25T14:00:00Z",
-    createdByUserId: "u1",
+    createdByUserId: "u2",
   },
   {
     id: "9",
@@ -71,7 +72,7 @@ export const MOCK_DISHES: Dish[] = [
     restaurantId: "3",
     savedCount: 0,
     createdAt: "2024-02-05T14:00:00Z",
-    createdByUserId: "u1",
+    createdByUserId: "u2",
   },
 ];
 

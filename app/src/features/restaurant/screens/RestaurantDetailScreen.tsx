@@ -13,7 +13,6 @@ export function RestaurantDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const restaurants = useRestaurantStore((s) => s.restaurants);
-  const claimRestaurant = useRestaurantStore((s) => s.claimRestaurant);
   const setSignatureDish = useRestaurantStore((s) => s.setSignatureDish);
   const restaurant = id ? restaurants.find((r) => r.id === id) : undefined;
   const dishes = useDishStore((s) => s.dishes);
@@ -45,14 +44,24 @@ export function RestaurantDetailScreen() {
             {restaurant.location}
           </Text>
           <View className="mt-4 flex-row flex-wrap items-center gap-2">
-            {restaurant.ownerUserId != null && (
+            {restaurant.claimStatus === "verified" && (
               <View className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
                 <Text className="text-sm text-gray-600">✓ Verified</Text>
               </View>
             )}
-            {restaurant.ownerUserId === null && (
+            {restaurant.claimStatus === "pending" && (
+              <View className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                <Text className="text-sm text-amber-700">Pending</Text>
+              </View>
+            )}
+            {restaurant.claimStatus === "unclaimed" && (
               <Pressable
-                onPress={() => claimRestaurant(restaurant.id, currentUser.id)}
+                onPress={() =>
+                  router.push({
+                    pathname: "/claim/[restaurantId]",
+                    params: { restaurantId: restaurant.id },
+                  })
+                }
                 className="rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 active:opacity-80"
               >
                 <Text className="text-sm font-medium text-orange-700">

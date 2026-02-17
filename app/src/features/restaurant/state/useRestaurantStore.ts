@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import type { Restaurant } from "../types/restaurant.types";
+import type { ClaimStatus, Restaurant } from "../types/restaurant.types";
 
 const INITIAL_RESTAURANTS: Restaurant[] = [
-  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null },
-  { id: "2", name: "Flavor Corner", location: "Porto, Portugal", signatureDishId: null, ownerUserId: null },
-  { id: "3", name: "Front Table", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null },
+  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed" },
+  { id: "2", name: "Flavor Corner", location: "Porto, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed" },
+  { id: "3", name: "Front Table", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed" },
 ];
 
 interface RestaurantStore {
@@ -13,6 +13,7 @@ interface RestaurantStore {
   getRestaurantById: (id: string) => Restaurant | undefined;
   claimRestaurant: (restaurantId: string, userId: string) => void;
   setSignatureDish: (restaurantId: string, dishId: string) => void;
+  setClaimStatus: (restaurantId: string, claimStatus: ClaimStatus) => void;
 }
 
 export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
@@ -26,6 +27,7 @@ export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
           ...restaurant,
           signatureDishId: restaurant.signatureDishId ?? null,
           ownerUserId: restaurant.ownerUserId ?? null,
+          claimStatus: restaurant.claimStatus ?? "unclaimed",
         },
       ],
     })),
@@ -36,7 +38,9 @@ export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
   claimRestaurant: (restaurantId: string, userId: string) =>
     set((state) => ({
       restaurants: state.restaurants.map((r) =>
-        r.id === restaurantId ? { ...r, ownerUserId: userId } : r
+        r.id === restaurantId
+          ? { ...r, ownerUserId: userId, claimStatus: "pending" as const }
+          : r
       ),
     })),
 
@@ -44,6 +48,13 @@ export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
     set((state) => ({
       restaurants: state.restaurants.map((r) =>
         r.id === restaurantId ? { ...r, signatureDishId: dishId } : r
+      ),
+    })),
+
+  setClaimStatus: (restaurantId: string, claimStatus: ClaimStatus) =>
+    set((state) => ({
+      restaurants: state.restaurants.map((r) =>
+        r.id === restaurantId ? { ...r, claimStatus } : r
       ),
     })),
 }));
