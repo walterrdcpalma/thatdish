@@ -62,10 +62,11 @@ export function EditDishScreen() {
         <AnimatedPressable
           onPress={() => router.back()}
           scale={0.9}
-          className="mr-3 p-1"
+          className="mr-3 flex-row items-center gap-2 py-1"
           hitSlop={8}
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
+          <Text className="text-base text-gray-700">Back</Text>
         </AnimatedPressable>
         <Text className="text-xl font-bold text-black">Edit dish</Text>
       </View>

@@ -23,10 +23,11 @@ export function MyRestaurantsScreen() {
         <AnimatedPressable
           onPress={() => router.back()}
           scale={0.9}
-          className="mr-3 p-1"
+          className="mr-3 flex-row items-center gap-2 py-1"
           hitSlop={8}
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
+          <Text className="text-base text-gray-700">Back</Text>
         </AnimatedPressable>
         <Text className="text-xl font-bold text-black">My Restaurants</Text>
       </View>
@@ -51,7 +52,7 @@ export function MyRestaurantsScreen() {
                 onPress={() =>
                   router.push({
                     pathname: "/restaurant/[id]",
-                    params: { id: restaurant.id },
+                    params: { id: restaurant.id, from: "my-restaurants" },
                   })
                 }
                 className="mb-3 overflow-hidden rounded-2xl bg-gray-100"

@@ -9,8 +9,15 @@ import { getRestaurantSignature, canEditDish } from "../services";
 import { AnimatedPressable } from "@/src/shared/components";
 
 export function DishDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, from, fromRestaurant } = useLocalSearchParams<{
+    id: string;
+    from?: string;
+    fromRestaurant?: string;
+  }>();
   const router = useRouter();
+  const showEditActions =
+    from === "contributions" || from === "my-restaurants";
+  const showViewRestaurant = !fromRestaurant;
   const dishes = useDishStore((s) => s.dishes);
   const toggleSave = useDishStore((s) => s.toggleSave);
   const archiveDish = useDishStore((s) => s.archiveDish);
@@ -40,6 +47,16 @@ export function DishDetailScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      <View className="flex-row items-center border-b border-gray-100 px-4 py-2">
+        <AnimatedPressable
+          onPress={() => router.back()}
+          scale={0.98}
+          className="mr-2 flex-row items-center gap-2 py-2"
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Text className="text-base text-gray-700">Back</Text>
+        </AnimatedPressable>
+      </View>
       <View className="relative h-72 w-full overflow-hidden bg-gray-200">
         <Image
           source={{
@@ -53,7 +70,7 @@ export function DishDetailScreen() {
         {isSignature && (
           <View className="absolute right-3 top-3 rounded-full bg-black/60 px-4 py-2">
             <Text className="text-xs font-semibold uppercase tracking-wide text-white">
-              Especialidade da Casa
+              House Special
             </Text>
           </View>
         )}
@@ -72,20 +89,17 @@ export function DishDetailScreen() {
             <AnimatedPressable
               onPress={() => toggleSave(dish.id)}
               scale={0.97}
-              className="flex-row items-center gap-2 rounded-full border border-gray-300 bg-gray-50 px-4 py-2"
+              className="rounded-full border border-gray-300 bg-gray-50 p-2.5"
             >
               <Ionicons
                 name={isSaved ? "bookmark" : "bookmark-outline"}
-                size={20}
+                size={22}
                 color="#f97316"
               />
-              <Text className="text-sm font-medium text-gray-700">
-                {isSaved ? "Saved" : "Save"}
-              </Text>
             </AnimatedPressable>
           )}
         </View>
-        {canEdit && (
+        {canEdit && showEditActions && (
           <View className="mt-4 gap-2">
             <AnimatedPressable
               onPress={() =>
@@ -124,20 +138,22 @@ export function DishDetailScreen() {
             )}
           </View>
         )}
-        <AnimatedPressable
-          onPress={() =>
-            router.push({
-              pathname: "/restaurant/[id]",
-              params: { id: dish.restaurantId },
-            })
-          }
-          scale={0.98}
-          className="mt-6 rounded-xl bg-orange-500 py-3.5"
-        >
-          <Text className="text-center font-semibold text-white">
-            View Restaurant
-          </Text>
-        </AnimatedPressable>
+        {showViewRestaurant && (
+          <AnimatedPressable
+            onPress={() =>
+              router.push({
+                pathname: "/restaurant/[id]",
+                params: { id: dish.restaurantId },
+              })
+            }
+            scale={0.98}
+            className="mt-6 rounded-xl bg-orange-500 py-3.5"
+          >
+            <Text className="text-center font-semibold text-white">
+              View Restaurant
+            </Text>
+          </AnimatedPressable>
+        )}
       </View>
     </SafeAreaView>
   );

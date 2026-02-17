@@ -58,6 +58,20 @@ export function ProfileScreen() {
                 <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
               </View>
             </AnimatedPressable>
+            <AnimatedPressable
+              onPress={() => router.push("/settings")}
+              className="w-full rounded-xl bg-gray-50 px-4 py-3"
+            >
+              <View className="flex-row items-center justify-between" style={{ width: "100%" }}>
+                <View className="flex-row flex-1 items-center gap-3" style={{ minWidth: 0 }}>
+                  <Ionicons name="settings-outline" size={22} color="#374151" />
+                  <Text className="text-base text-gray-800" numberOfLines={1}>
+                    Settings
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+              </View>
+            </AnimatedPressable>
           </View>
         </View>
       </ScrollView>

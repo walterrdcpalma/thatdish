@@ -11,8 +11,9 @@ import { AnimatedPressable } from "@/src/shared/components";
 const MAX_RESTAURANT_PHOTOS = 3;
 
 export function RestaurantDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const router = useRouter();
+  const fromMyRestaurants = from === "my-restaurants";
   const restaurants = useRestaurantStore((s) => s.restaurants);
   const setSignatureDish = useRestaurantStore((s) => s.setSignatureDish);
   const restaurant = id ? restaurants.find((r) => r.id === id) : undefined;
@@ -29,6 +30,13 @@ export function RestaurantDetailScreen() {
         )
         .slice(0, MAX_RESTAURANT_PHOTOS)
     : [];
+  const mainDish =
+    signature && restaurantDishes.some((d) => d.id === signature.id)
+      ? restaurantDishes.find((d) => d.id === signature.id)
+      : restaurantDishes[0];
+  const otherDishes = restaurantDishes
+    .filter((d) => d.id !== mainDish?.id)
+    .slice(0, 2);
 
   if (!restaurant) {
     return (
@@ -40,6 +48,16 @@ export function RestaurantDetailScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      <View className="flex-row items-center border-b border-gray-100 px-4 py-2">
+        <AnimatedPressable
+          onPress={() => router.back()}
+          scale={0.98}
+          className="mr-2 flex-row items-center gap-2 py-2"
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Text className="text-base text-gray-700">Back</Text>
+        </AnimatedPressable>
+      </View>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 24 }}
@@ -84,73 +102,108 @@ export function RestaurantDetailScreen() {
           </View>
         </View>
         <View className="px-4">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingRight: 16 }}
-          >
-            {restaurantDishes.map((dish, index) => {
-              const isSignature = signature?.id === dish.id;
-              const isOwner = restaurant.ownerUserId === currentUser.id;
-              return (
-                <View
-                  key={dish.id}
-                  style={index > 0 ? { marginLeft: 12 } : undefined}
-                  className="w-64"
+          {mainDish && (
+            <View className="mb-3">
+              <AnimatedPressable
+                onPress={() =>
+                  router.push({
+                    pathname: "/dish/[id]",
+                    params: {
+                      id: mainDish.id,
+                      ...(fromMyRestaurants && { from: "my-restaurants" }),
+                      fromRestaurant: "1",
+                    },
+                  })
+                }
+                className="overflow-hidden rounded-2xl bg-gray-200"
+              >
+                <View className="relative aspect-[4/3] w-full">
+                  <Image
+                    source={{
+                      uri:
+                        mainDish.imagePlaceholder ??
+                        "https://placehold.co/600x450/gray/white?text=Dish",
+                    }}
+                    className="h-full w-full"
+                    resizeMode="cover"
+                  />
+                  <View className="absolute inset-0 bg-black/30" />
+                  {signature?.id === mainDish.id && (
+                    <View className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1">
+                      <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
+                        House Special
+                      </Text>
+                    </View>
+                  )}
+                  <View className="absolute bottom-0 left-0 right-0 p-3">
+                    <Text className="text-base font-bold text-white">
+                      {mainDish.name}
+                    </Text>
+                  </View>
+                </View>
+              </AnimatedPressable>
+              {restaurant.ownerUserId === currentUser.id && (
+                <AnimatedPressable
+                  onPress={() => setSignatureDish(restaurant.id, mainDish.id)}
+                  scale={0.98}
+                  className="mt-2 rounded-lg border border-gray-300 bg-white py-2"
                 >
-                  <AnimatedPressable
-                    onPress={() =>
-                      router.push({
-                        pathname: "/dish/[id]",
-                        params: { id: dish.id },
-                      })
-                    }
-                    className="overflow-hidden rounded-2xl bg-gray-200"
-                  >
-                    <View className="relative h-40 w-full">
+                  <Text className="text-center text-xs font-medium text-gray-700">
+                    Set as Signature
+                  </Text>
+                </AnimatedPressable>
+              )}
+            </View>
+          )}
+          <View className="flex-row gap-2">
+            {otherDishes.map((dish) => (
+              <View key={dish.id} className="flex-1">
+                <AnimatedPressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/dish/[id]",
+                      params: {
+                        id: dish.id,
+                        ...(fromMyRestaurants && { from: "my-restaurants" }),
+                        fromRestaurant: "1",
+                      },
+                    })
+                  }
+                  className="overflow-hidden rounded-2xl bg-gray-200"
+                >
+                  <View className="relative aspect-square w-full">
                     <Image
                       source={{
                         uri:
                           dish.imagePlaceholder ??
-                          "https://placehold.co/256x160/gray/white?text=Dish",
+                          "https://placehold.co/400x400/gray/white?text=Dish",
                       }}
                       className="h-full w-full"
                       resizeMode="cover"
                     />
-                      <View className="absolute inset-0 bg-black/30" />
-                      {isSignature && (
-                        <View className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1">
-                          <Text className="text-[10px] font-semibold uppercase tracking-wide text-white">
-                            Especialidade da Casa
-                          </Text>
-                        </View>
-                      )}
-                      <View className="absolute bottom-0 left-0 right-0 p-3">
-                        <Text className="text-sm font-bold text-white">
-                          {dish.name}
-                        </Text>
-                      </View>
-                    </View>
-                  </AnimatedPressable>
-                  {isOwner && (
-                    <AnimatedPressable
-                      onPress={() => setSignatureDish(restaurant.id, dish.id)}
-                      scale={0.98}
-                      className="mt-2 rounded-lg border border-gray-300 bg-white py-2"
-                    >
-                      <Text className="text-center text-xs font-medium text-gray-700">
-                        Definir como Assinatura
+                    <View className="absolute inset-0 bg-black/30" />
+                    <View className="absolute bottom-0 left-0 right-0 p-2">
+                      <Text className="text-sm font-bold text-white" numberOfLines={1}>
+                        {dish.name}
                       </Text>
-                    </AnimatedPressable>
-                  )}
-                </View>
-              );
-            })}
+                    </View>
+                  </View>
+                </AnimatedPressable>
+                {restaurant.ownerUserId === currentUser.id && (
+                  <AnimatedPressable
+                    onPress={() => setSignatureDish(restaurant.id, dish.id)}
+                    scale={0.98}
+                    className="mt-2 rounded-lg border border-gray-300 bg-white py-2"
+                  >
+                    <Text className="text-center text-xs font-medium text-gray-700">
+                      Set as Signature
+                    </Text>
+                  </AnimatedPressable>
+                )}
+              </View>
+            ))}
             {restaurantDishes.length < MAX_RESTAURANT_PHOTOS && (
               <AnimatedPressable
-                style={
-                  restaurantDishes.length > 0 ? { marginLeft: 12 } : undefined
-                }
                 onPress={() =>
                   router.push({
                     pathname: "/dish/create",
@@ -158,15 +211,16 @@ export function RestaurantDetailScreen() {
                   })
                 }
                 scale={0.98}
-                className="h-40 w-64 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50"
+                className="flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50"
+                style={{ aspectRatio: 1 }}
               >
-                <Ionicons name="add" size={40} color="#9ca3af" />
-                <Text className="mt-2 text-sm font-medium text-gray-500">
+                <Ionicons name="add" size={36} color="#9ca3af" />
+                <Text className="mt-1.5 text-xs font-medium text-gray-500">
                   Add dish
                 </Text>
               </AnimatedPressable>
             )}
-          </ScrollView>
+          </View>
         </View>
 
         {restaurant.claimStatus === "verified" &&
@@ -189,7 +243,11 @@ export function RestaurantDetailScreen() {
                       onPress={() =>
                         router.push({
                           pathname: "/dish/[id]",
-                          params: { id: dish.id },
+                          params: {
+                            id: dish.id,
+                            ...(fromMyRestaurants && { from: "my-restaurants" }),
+                            fromRestaurant: "1",
+                          },
                         })
                       }
                       scale={0.99}

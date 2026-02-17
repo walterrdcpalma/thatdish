@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, TextInput, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
@@ -127,6 +128,16 @@ export function CreateDishScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      <View className="flex-row items-center border-b border-gray-100 px-4 py-2">
+        <AnimatedPressable
+          onPress={() => router.back()}
+          scale={0.98}
+          className="mr-2 flex-row items-center gap-2 py-2"
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Text className="text-base text-gray-700">Back</Text>
+        </AnimatedPressable>
+      </View>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}

@@ -73,8 +73,6 @@ export default function TabsLayout() {
         tabBarActiveTintColor: TAB_ORANGE,
         tabBarInactiveTintColor: "#000",
         tabBarLabelStyle: { fontSize: 12 },
-        tabBarStyle: { height: 64 },
-        tabBarSafeAreaInsets: { bottom: 0 },
         tabBarLabel: ({ focused, color, children }) => (
           <TabLabel focused={focused} color={color} children={children} />
         ),

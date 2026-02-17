@@ -34,10 +34,11 @@ export function UserContributionsScreen() {
         <AnimatedPressable
           onPress={() => router.back()}
           scale={0.9}
-          className="mr-3 p-1"
+          className="mr-3 flex-row items-center gap-2 py-1"
           hitSlop={8}
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
+          <Text className="text-base text-gray-700">Back</Text>
         </AnimatedPressable>
         <Text className="text-xl font-bold text-black">My Contributions</Text>
       </View>
@@ -82,7 +83,7 @@ export function UserContributionsScreen() {
                     onPress={() =>
                       router.push({
                         pathname: "/dish/[id]",
-                        params: { id: dish.id },
+                        params: { id: dish.id, from: "contributions" },
                       })
                     }
                     isSignature={isSignature}
@@ -108,7 +109,7 @@ export function UserContributionsScreen() {
                   onPress={() =>
                     router.push({
                       pathname: "/dish/[id]",
-                      params: { id: dish.id },
+                      params: { id: dish.id, from: "contributions" },
                     })
                   }
                   scale={0.99}

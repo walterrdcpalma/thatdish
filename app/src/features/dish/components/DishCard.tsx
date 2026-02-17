@@ -76,7 +76,7 @@ export function DishCard({ dish, onPress, isSignature, badges, isNearby }: DishC
           {isSignature && (
             <View className="rounded-full bg-black/60 px-3 py-1.5">
               <Text className="text-xs font-semibold uppercase tracking-wide text-white">
-                Especialidade da Casa
+                House Special
               </Text>
             </View>
           )}

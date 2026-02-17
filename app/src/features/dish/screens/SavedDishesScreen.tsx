@@ -51,7 +51,7 @@ export function SavedDishesScreen() {
       <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-center text-base text-gray-500">
-            Ainda não guardaste nenhum prato.
+            You haven&apos;t saved any dishes yet.
           </Text>
         </View>
       </SafeAreaView>
@@ -61,9 +61,9 @@ export function SavedDishesScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <View className="border-b border-gray-100 bg-white px-5 pt-2 pb-3">
-        <Text className="text-2xl font-bold text-black">Guardados</Text>
+        <Text className="text-2xl font-bold text-black">Saved</Text>
         <Text className="mt-1 text-base text-gray-500">
-          {savedDishes.length} prato{savedDishes.length !== 1 ? "s" : ""} guardado{savedDishes.length !== 1 ? "s" : ""}
+          {savedDishes.length} {savedDishes.length === 1 ? "dish" : "dishes"} saved
         </Text>
       </View>
       <FlatList
