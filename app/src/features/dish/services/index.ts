@@ -1,3 +1,4 @@
+export { canEditDish } from "./canEditDish";
 export {
   getMockDishes,
   getMockDishById,

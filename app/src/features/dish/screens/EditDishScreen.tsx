@@ -5,6 +5,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useDishStore } from "../state";
 import { useUserStore } from "@/src/features/user/state";
+import { useRestaurantStore } from "@/src/features/restaurant/state";
+import { canEditDish } from "../services/canEditDish";
 import { AnimatedPressable } from "@/src/shared/components";
 
 export function EditDishScreen() {
@@ -14,6 +16,10 @@ export function EditDishScreen() {
   const updateDish = useDishStore((s) => s.updateDish);
   const currentUser = useUserStore((s) => s.currentUser);
   const dish = id ? dishes.find((d) => d.id === id) : undefined;
+  const restaurants = useRestaurantStore((s) => s.restaurants);
+  const restaurant = dish
+    ? restaurants.find((r) => r.id === dish.restaurantId)
+    : undefined;
 
   const [name, setName] = useState("");
 
@@ -21,13 +27,14 @@ export function EditDishScreen() {
     if (dish) setName(dish.name);
   }, [dish?.id]);
 
-  const isCreator = dish ? dish.createdByUserId === currentUser.id : false;
+  const canEdit =
+    dish && canEditDish(dish, restaurant ?? undefined, currentUser);
 
   useEffect(() => {
-    if (dish && !isCreator) {
+    if (dish && !canEdit) {
       router.replace({ pathname: "/dish/[id]", params: { id: dish.id } });
     }
-  }, [dish, isCreator, router, id]);
+  }, [dish, canEdit, router, id]);
 
   const handleSave = () => {
     if (!dish || !id || !name.trim()) return;
@@ -45,7 +52,7 @@ export function EditDishScreen() {
     );
   }
 
-  if (!isCreator) {
+  if (!canEdit) {
     return null;
   }
 

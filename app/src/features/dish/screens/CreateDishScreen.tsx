@@ -73,13 +73,17 @@ export function CreateDishScreen() {
     }
 
     const dishId = Date.now().toString();
+    const now = new Date().toISOString();
     const dish: Dish = {
       id: dishId,
       name: trimmedName,
       restaurantId,
       savedCount: 0,
-      createdAt: new Date().toISOString(),
+      savedByUserIds: [],
+      createdAt: now,
+      updatedAt: now,
       createdByUserId: currentUser.id,
+      lastEditedByUserId: null,
       imagePlaceholder: `https://picsum.photos/seed/dish-${dishId}/800/500`,
       isArchived: false,
     };

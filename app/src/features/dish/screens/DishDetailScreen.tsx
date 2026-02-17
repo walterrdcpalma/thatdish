@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
-import { getRestaurantSignature } from "../services";
+import { getRestaurantSignature, canEditDish } from "../services";
 import { AnimatedPressable } from "@/src/shared/components";
 
 export function DishDetailScreen() {
@@ -17,17 +17,18 @@ export function DishDetailScreen() {
   const restoreDish = useDishStore((s) => s.restoreDish);
   const currentUser = useUserStore((s) => s.currentUser);
   const dish = id ? dishes.find((d) => d.id === id) : undefined;
-  const restaurantName = dish
-    ? useRestaurantStore((s) =>
-        s.restaurants.find((r) => r.id === dish.restaurantId)?.name
-      )
+  const restaurants = useRestaurantStore((s) => s.restaurants);
+  const restaurant = dish
+    ? restaurants.find((r) => r.id === dish.restaurantId)
     : undefined;
+  const restaurantName = restaurant?.name ?? "Unknown";
   const signature = dish
     ? getRestaurantSignature(dishes, dish.restaurantId)
     : undefined;
   const isSignature = dish && !dish.isArchived && signature?.id === dish.id;
   const isSaved = dish ? currentUser.savedDishIds.includes(dish.id) : false;
-  const isCreator = dish ? dish.createdByUserId === currentUser.id : false;
+  const canEdit =
+    dish && canEditDish(dish, restaurant ?? undefined, currentUser);
 
   if (!dish) {
     return (
@@ -64,7 +65,7 @@ export function DishDetailScreen() {
           </View>
         )}
         <Text className="text-2xl font-bold text-black">{dish.name}</Text>
-        <Text className="mt-1 text-base text-gray-600">{restaurantName ?? "Unknown"}</Text>
+        <Text className="mt-1 text-base text-gray-600">{restaurantName}</Text>
         <View className="mt-3 flex-row items-center justify-between">
           <Text className="text-sm text-gray-500">{dish.savedCount} saved</Text>
           {!dish.isArchived && (
@@ -84,7 +85,7 @@ export function DishDetailScreen() {
             </AnimatedPressable>
           )}
         </View>
-        {isCreator && (
+        {canEdit && (
           <View className="mt-4 gap-2">
             <AnimatedPressable
               onPress={() =>
@@ -96,28 +97,30 @@ export function DishDetailScreen() {
               scale={0.98}
               className="flex-row items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white py-3"
             >
-              <Text className="font-medium text-gray-700">Edit</Text>
+              <Text className="font-medium text-gray-700">Edit dish</Text>
             </AnimatedPressable>
-            {dish.isArchived ? (
-              <AnimatedPressable
-                onPress={() => restoreDish(dish.id)}
-                scale={0.98}
-                className="rounded-xl border border-gray-300 bg-white py-3"
-              >
-                <Text className="text-center font-medium text-gray-700">
-                  Restore dish
-                </Text>
-              </AnimatedPressable>
-            ) : (
-              <AnimatedPressable
-                onPress={() => archiveDish(dish.id)}
-                scale={0.98}
-                className="rounded-xl border border-amber-300 bg-amber-50 py-3"
-              >
-                <Text className="text-center font-medium text-amber-800">
-                  Archive dish
-                </Text>
-              </AnimatedPressable>
+            {dish.createdByUserId === currentUser.id && (
+              dish.isArchived ? (
+                <AnimatedPressable
+                  onPress={() => restoreDish(dish.id)}
+                  scale={0.98}
+                  className="rounded-xl border border-gray-300 bg-white py-3"
+                >
+                  <Text className="text-center font-medium text-gray-700">
+                    Restore dish
+                  </Text>
+                </AnimatedPressable>
+              ) : (
+                <AnimatedPressable
+                  onPress={() => archiveDish(dish.id)}
+                  scale={0.98}
+                  className="rounded-xl border border-amber-300 bg-amber-50 py-3"
+                >
+                  <Text className="text-center font-medium text-amber-800">
+                    Archive dish
+                  </Text>
+                </AnimatedPressable>
+              )
             )}
           </View>
         )}
