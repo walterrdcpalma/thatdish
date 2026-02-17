@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, Image } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -56,7 +56,17 @@ export function MyRestaurantsScreen() {
                 }
                 className="mb-3 overflow-hidden rounded-2xl bg-gray-100"
               >
-              <View className="h-32 bg-gray-300" />
+              <View className="relative h-32 w-full overflow-hidden bg-gray-300">
+                <Image
+                  source={{
+                    uri:
+                      restaurant.imageUrl ??
+                      "https://placehold.co/600x240/gray/white?text=Restaurant",
+                  }}
+                  className="h-full w-full"
+                  resizeMode="cover"
+                />
+              </View>
               <View className="flex-row items-center justify-between p-4">
                 <Text className="text-lg font-semibold text-black flex-1">
                   {restaurant.name}

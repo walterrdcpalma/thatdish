@@ -7,4 +7,5 @@ export interface Restaurant {
   signatureDishId: string | null;
   ownerUserId: string | null;
   claimStatus: ClaimStatus;
+  imageUrl?: string;
 }

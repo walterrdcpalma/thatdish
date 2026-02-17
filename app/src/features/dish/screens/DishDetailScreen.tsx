@@ -38,7 +38,11 @@ export function DishDetailScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <View className="relative h-72 w-full overflow-hidden bg-gray-200">
         <Image
-          source={{ uri: "https://placehold.co/400x288/gray/white?text=Dish" }}
+          source={{
+            uri:
+              dish.imagePlaceholder ??
+              "https://placehold.co/400x288/gray/white?text=Dish",
+          }}
           className="h-full w-full"
           resizeMode="cover"
         />

@@ -1,10 +1,14 @@
 import { create } from "zustand";
 import type { ClaimStatus, Restaurant } from "../types/restaurant.types";
 
+// Picsum: always returns a valid image. seed = consistent image per restaurant.
+const RESTAURANT_IMG = (seed: string) =>
+  `https://picsum.photos/seed/${encodeURIComponent(seed)}/600/320`;
+
 const INITIAL_RESTAURANTS: Restaurant[] = [
-  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed" },
-  { id: "2", name: "Flavor Corner", location: "Porto, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed" },
-  { id: "3", name: "Front Table", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed" },
+  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-1-joes") },
+  { id: "2", name: "Flavor Corner", location: "Porto, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-2-flavor") },
+  { id: "3", name: "Front Table", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-3-front") },
 ];
 
 interface RestaurantStore {
@@ -28,6 +32,7 @@ export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
           signatureDishId: restaurant.signatureDishId ?? null,
           ownerUserId: restaurant.ownerUserId ?? null,
           claimStatus: restaurant.claimStatus ?? "unclaimed",
+          imageUrl: restaurant.imageUrl,
         },
       ],
     })),

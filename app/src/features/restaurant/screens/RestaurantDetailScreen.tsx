@@ -98,13 +98,15 @@ export function RestaurantDetailScreen() {
                     className="overflow-hidden rounded-2xl bg-gray-200"
                   >
                     <View className="relative h-40 w-full">
-                      <Image
-                        source={{
-                          uri: "https://placehold.co/256x160/gray/white?text=Dish",
-                        }}
-                        className="h-full w-full"
-                        resizeMode="cover"
-                      />
+                    <Image
+                      source={{
+                        uri:
+                          dish.imagePlaceholder ??
+                          "https://placehold.co/256x160/gray/white?text=Dish",
+                      }}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
                       <View className="absolute inset-0 bg-black/30" />
                       {isSignature && (
                         <View className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1">

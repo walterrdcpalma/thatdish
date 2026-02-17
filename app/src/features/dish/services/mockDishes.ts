@@ -1,5 +1,9 @@
 import type { Dish } from "../types";
 
+// Picsum: always returns a valid image. seed = consistent image per dish.
+const DISH_IMG = (seed: string) =>
+  `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/500`;
+
 // u1 = current user (Walter). u2 = other user. My Contributions shows only dishes with createdByUserId === currentUser.id (u1).
 export const MOCK_DISHES: Dish[] = [
   {
@@ -9,6 +13,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-01-15T12:00:00Z",
     createdByUserId: "u1",
+    imagePlaceholder: DISH_IMG("dish-1-piri-piri"),
   },
   {
     id: "4",
@@ -17,6 +22,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-01-20T12:00:00Z",
     createdByUserId: "u2",
+    imagePlaceholder: DISH_IMG("dish-4-sardines"),
   },
   {
     id: "5",
@@ -25,6 +31,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-02-01T12:00:00Z",
     createdByUserId: "u1",
+    imagePlaceholder: DISH_IMG("dish-5-caldo"),
   },
   {
     id: "2",
@@ -33,6 +40,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-02-01T10:00:00Z",
     createdByUserId: "u2",
+    imagePlaceholder: DISH_IMG("dish-2-burger"),
   },
   {
     id: "6",
@@ -41,6 +49,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-02-10T10:00:00Z",
     createdByUserId: "u1",
+    imagePlaceholder: DISH_IMG("dish-6-tacos"),
   },
   {
     id: "7",
@@ -49,6 +58,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-02-15T10:00:00Z",
     createdByUserId: "u2",
+    imagePlaceholder: DISH_IMG("dish-7-salad"),
   },
   {
     id: "3",
@@ -57,6 +67,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-01-20T14:00:00Z",
     createdByUserId: "u1",
+    imagePlaceholder: DISH_IMG("dish-3-bacalhau"),
   },
   {
     id: "8",
@@ -65,6 +76,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-01-25T14:00:00Z",
     createdByUserId: "u2",
+    imagePlaceholder: DISH_IMG("dish-8-octopus"),
   },
   {
     id: "9",
@@ -73,6 +85,7 @@ export const MOCK_DISHES: Dish[] = [
     savedCount: 0,
     createdAt: "2024-02-05T14:00:00Z",
     createdByUserId: "u2",
+    imagePlaceholder: DISH_IMG("dish-9-nata"),
   },
 ];
 

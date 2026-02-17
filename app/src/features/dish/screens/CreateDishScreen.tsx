@@ -67,17 +67,20 @@ export function CreateDishScreen() {
           signatureDishId: null,
           ownerUserId: null,
           claimStatus: "unclaimed",
+          imageUrl: `https://picsum.photos/seed/rest-${restaurantId}/600/320`,
         });
       }
     }
 
+    const dishId = Date.now().toString();
     const dish: Dish = {
-      id: Date.now().toString(),
+      id: dishId,
       name: trimmedName,
       restaurantId,
       savedCount: 0,
       createdAt: new Date().toISOString(),
       createdByUserId: currentUser.id,
+      imagePlaceholder: `https://picsum.photos/seed/dish-${dishId}/800/500`,
     };
     addDish(dish);
     router.back();

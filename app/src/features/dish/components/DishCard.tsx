@@ -32,7 +32,11 @@ export function DishCard({ dish, onPress, isSignature }: DishCardProps) {
     >
       <View className="relative h-56 w-full overflow-hidden rounded-2xl bg-gray-200">
         <Image
-          source={{ uri: "https://placehold.co/400x224/gray/white?text=Dish" }}
+          source={{
+            uri:
+              dish.imagePlaceholder ??
+              "https://placehold.co/400x224/gray/white?text=Dish",
+          }}
           className="h-full w-full"
           resizeMode="cover"
         />
