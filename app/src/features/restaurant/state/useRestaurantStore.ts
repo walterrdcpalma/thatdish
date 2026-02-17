@@ -33,6 +33,8 @@ export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
           ownerUserId: restaurant.ownerUserId ?? null,
           claimStatus: restaurant.claimStatus ?? "unclaimed",
           imageUrl: restaurant.imageUrl,
+          latitude: restaurant.latitude,
+          longitude: restaurant.longitude,
         },
       ],
     })),

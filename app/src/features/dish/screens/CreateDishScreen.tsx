@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, TextInput, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Location from "expo-location";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
@@ -24,6 +25,10 @@ export function CreateDishScreen() {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(
     paramRestaurantId ?? null
   );
+  const [newRestaurantAddress, setNewRestaurantAddress] = useState("");
+  const [newRestaurantLat, setNewRestaurantLat] = useState<number | undefined>();
+  const [newRestaurantLng, setNewRestaurantLng] = useState<number | undefined>();
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const isFromRestaurant = Boolean(paramRestaurantId);
   const preselectedRestaurant = paramRestaurantId
@@ -41,6 +46,24 @@ export function CreateDishScreen() {
   const handleSelectRestaurant = (id: string, restaurantName: string) => {
     setSelectedRestaurantId(id);
     setRestaurantSearch(restaurantName);
+  };
+
+  const handleUseCurrentLocation = async () => {
+    setLocationError(null);
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      setLocationError("Location permission denied.");
+      return;
+    }
+    try {
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      setNewRestaurantLat(position.coords.latitude);
+      setNewRestaurantLng(position.coords.longitude);
+    } catch {
+      setLocationError("Could not get current location.");
+    }
   };
 
   const handleCreate = () => {
@@ -63,7 +86,10 @@ export function CreateDishScreen() {
         addRestaurant({
           id: restaurantId,
           name: trimmedSearch,
-          location: "",
+          location: newRestaurantAddress.trim(),
+          address: newRestaurantAddress.trim(),
+          latitude: newRestaurantLat,
+          longitude: newRestaurantLng,
           signatureDishId: null,
           ownerUserId: null,
           claimStatus: "unclaimed",
@@ -91,7 +117,13 @@ export function CreateDishScreen() {
     router.back();
   };
 
-  const canCreate = name.trim() && (isFromRestaurant || selectedRestaurantId || restaurantSearch.trim());
+  const isCreatingNewRestaurant =
+    !isFromRestaurant && !selectedRestaurantId && restaurantSearch.trim();
+  const canCreate =
+    name.trim() &&
+    (isFromRestaurant ||
+      selectedRestaurantId ||
+      (restaurantSearch.trim() && isCreatingNewRestaurant && newRestaurantAddress.trim()));
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -147,9 +179,9 @@ export function CreateDishScreen() {
                     className="border-b border-gray-100 px-4 py-3 last:border-b-0"
                   >
                     <Text className="text-base text-black">{r.name}</Text>
-                    {r.location ? (
+                    {(r.address ?? r.location) ? (
                       <Text className="mt-0.5 text-xs text-gray-500">
-                        {r.location}
+                        {r.address ?? r.location}
                       </Text>
                     ) : null}
                   </AnimatedPressable>
@@ -160,6 +192,40 @@ export function CreateDishScreen() {
               <Text className="mt-2 text-xs text-gray-500">
                 Selected: {restaurants.find((r) => r.id === selectedRestaurantId)?.name}. Type to change.
               </Text>
+            )}
+            {!selectedRestaurantId && (
+              <View className="mt-4">
+                <Text className="mb-1 text-sm text-gray-600">
+                  Restaurant Address
+                </Text>
+                <TextInput
+                  value={newRestaurantAddress}
+                  onChangeText={(text) => {
+                    setNewRestaurantAddress(text);
+                    setLocationError(null);
+                  }}
+                  placeholder="e.g. 123 Main St, City"
+                  className="mb-2 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
+                  placeholderTextColor="#9ca3af"
+                />
+                <AnimatedPressable
+                  onPress={handleUseCurrentLocation}
+                  scale={0.98}
+                  className="mb-2 rounded-xl border border-gray-300 bg-gray-50 py-3"
+                >
+                  <Text className="text-center text-sm font-medium text-gray-700">
+                    Use Current Location
+                  </Text>
+                </AnimatedPressable>
+                {newRestaurantLat != null && newRestaurantLng != null && (
+                  <Text className="mb-1 text-xs text-gray-500">
+                    GPS: {newRestaurantLat.toFixed(5)}, {newRestaurantLng.toFixed(5)}
+                  </Text>
+                )}
+                {locationError ? (
+                  <Text className="text-xs text-red-600">{locationError}</Text>
+                ) : null}
+              </View>
             )}
           </>
         )}
