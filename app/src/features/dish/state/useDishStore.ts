@@ -1,12 +1,16 @@
 import { create } from "zustand";
 import type { Dish } from "../types";
-import { MOCK_DISHES } from "../services/mockDishes";
 import { canEditDish } from "../services/canEditDish";
 import { useUserStore } from "@/src/features/user/state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
+import { fetchDishes } from "@/src/shared/api/dishesApi";
+import { config } from "@/src/config";
 
 interface DishStore {
   dishes: Dish[];
+  loading: boolean;
+  error: string | null;
+  loadDishes: () => Promise<void>;
   toggleSave: (dishId: string) => void;
   addDish: (dish: Dish) => void;
   archiveDish: (dishId: string) => void;
@@ -17,10 +21,21 @@ interface DishStore {
   ) => void;
 }
 
-const initialDishes: Dish[] = MOCK_DISHES.map((d) => ({ ...d }));
-
 export const useDishStore = create<DishStore>((set, get) => ({
-  dishes: initialDishes,
+  dishes: [],
+  loading: false,
+  error: null,
+
+  loadDishes: async () => {
+    set({ loading: true, error: null });
+    try {
+      const dishes = await fetchDishes(config.apiBaseUrl);
+      set({ dishes, loading: false, error: null });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load dishes.";
+      set({ error: message, loading: false });
+    }
+  },
 
   toggleSave: (dishId: string) => {
     const userStore = useUserStore.getState();

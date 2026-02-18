@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -19,6 +19,9 @@ type DiscoverTab = "All" | "Nearby";
 export function DishFeedScreen() {
   const router = useRouter();
   const allDishes = useDishStore((s) => s.dishes);
+  const loading = useDishStore((s) => s.loading);
+  const error = useDishStore((s) => s.error);
+  const loadDishes = useDishStore((s) => s.loadDishes);
   const restaurants = useRestaurantStore((s) => s.restaurants);
   const [tab, setTab] = useState<DiscoverTab>("All");
   const [userLocation, setUserLocation] = useState<{
@@ -26,6 +29,10 @@ export function DishFeedScreen() {
     lng: number;
   } | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
+
+  useEffect(() => {
+    loadDishes();
+  }, [loadDishes]);
 
   // Request location on mount so we can show "Nearby" badge in both All and Nearby tabs
   useEffect(() => {
@@ -103,6 +110,17 @@ export function DishFeedScreen() {
           </Text>
         </AnimatedPressable>
       </View>
+      {loading && (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#f97316" />
+        </View>
+      )}
+      {error && !loading && (
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center text-gray-600">Failed to load dishes.</Text>
+        </View>
+      )}
+      {!loading && !error && (
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 80 }}
@@ -146,6 +164,7 @@ export function DishFeedScreen() {
           );
         })}
       </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
