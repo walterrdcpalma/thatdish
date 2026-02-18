@@ -74,3 +74,26 @@ export async function createDish(
   const raw: unknown = await response.json();
   return mapDishDtoToDish(raw as DishDto);
 }
+
+/**
+ * Creates a dish via POST /api/dishes with multipart/form-data (name, restaurantName, image file).
+ * Do not set Content-Type header so fetch sets multipart/form-data with boundary.
+ */
+export async function createDishMultipart(
+  baseUrl: string,
+  formData: FormData
+): Promise<Dish> {
+  const url = `${baseUrl.replace(/\/$/, "")}/api/dishes`;
+  const response = await fetch(url, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    const message =
+      text && text.length < 200 ? text : `Create dish failed: ${response.status}`;
+    throw new Error(message);
+  }
+  const raw: unknown = await response.json();
+  return mapDishDtoToDish(raw as DishDto);
+}

@@ -96,6 +96,7 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseStaticFiles();
 app.MapHealthChecks("/health");
 app.MapControllers();
 
