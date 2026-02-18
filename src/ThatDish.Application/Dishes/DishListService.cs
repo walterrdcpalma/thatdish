@@ -9,6 +9,12 @@ public class DishListService
         _repo = repo;
     }
 
+    public async Task<List<DishDto>> GetDishesAsync(CancellationToken cancellationToken = default)
+    {
+        var dishes = await _repo.GetAllAsync(cancellationToken);
+        return dishes.Select(DishDtoMapping.ToDto).ToList();
+    }
+
     public async Task<List<DishListDto>> GetPagedAsync(ListDishesQuery query, CancellationToken cancellationToken = default)
     {
         var dishes = await _repo.GetPagedAsync(

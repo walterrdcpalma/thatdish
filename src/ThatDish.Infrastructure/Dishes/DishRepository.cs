@@ -15,6 +15,14 @@ public class DishRepository : IDishRepository
         _db = db;
     }
 
+    public async Task<List<Dish>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _db.Dishes
+            .AsNoTracking()
+            .OrderBy(d => d.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<List<Dish>> GetPagedAsync(FoodType? foodType, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         var query = _db.Dishes

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using ThatDish.Application.Dishes;
-using ThatDish.Domain.Enums;
 
 namespace ThatDish.Api.Controllers;
 
@@ -15,20 +14,12 @@ public class DishesController : ControllerBase
         _dishListService = dishListService;
     }
 
-    /// <summary>List dishes with optional filter by food type and pagination.</summary>
+    /// <summary>List all dishes. No filtering or pagination in this iteration.</summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<DishListDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<DishListDto>>> Get(
-        [FromQuery] FoodType? foodType,
-        [FromQuery] int? page,
-        [FromQuery] int? pageSize,
-        CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(IEnumerable<DishDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<DishDto>>> Get(CancellationToken cancellationToken)
     {
-        var query = new ListDishesQuery(
-            foodType,
-            page ?? 1,
-            Math.Clamp(pageSize ?? 20, 1, 100));
-        var dishes = await _dishListService.GetPagedAsync(query, cancellationToken);
+        var dishes = await _dishListService.GetDishesAsync(cancellationToken);
         return Ok(dishes);
     }
 }
