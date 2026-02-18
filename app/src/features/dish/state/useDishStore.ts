@@ -3,7 +3,7 @@ import type { Dish } from "../types";
 import { canEditDish } from "../services/canEditDish";
 import { useUserStore } from "@/src/features/user/state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
-import { fetchDishes } from "@/src/shared/api/dishesApi";
+import { createDish as createDishApi, fetchDishes } from "@/src/shared/api/dishesApi";
 import { config } from "@/src/config";
 
 interface DishStore {
@@ -11,6 +11,7 @@ interface DishStore {
   loading: boolean;
   error: string | null;
   loadDishes: () => Promise<void>;
+  createDish: (name: string, restaurantName: string, foodType?: string, image?: string) => Promise<Dish>;
   toggleSave: (dishId: string) => void;
   archiveDish: (dishId: string) => void;
   restoreDish: (dishId: string) => void;
@@ -34,6 +35,12 @@ export const useDishStore = create<DishStore>((set, get) => ({
       const message = e instanceof Error ? e.message : "Failed to load dishes.";
       set({ error: message, loading: false });
     }
+  },
+
+  createDish: async (name: string, restaurantName: string, foodType?: string, image?: string) => {
+    const dish = await createDishApi(config.apiBaseUrl, { name, restaurantName, foodType, image });
+    set((state) => ({ dishes: [dish, ...state.dishes] }));
+    return dish;
   },
 
   toggleSave: (dishId: string) => {

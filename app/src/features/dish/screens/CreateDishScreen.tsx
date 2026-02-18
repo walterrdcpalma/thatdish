@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { View, Text, TextInput } from "react-native";
+import { useState, useRef, useEffect } from "react";
+import { View, Text, TextInput, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AnimatedPressable } from "@/src/shared/components";
+import { useDishStore } from "../state";
 
 interface CreateDishScreenProps {
   showBackButton?: boolean;
@@ -11,11 +12,40 @@ interface CreateDishScreenProps {
 
 export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProps) {
   const router = useRouter();
+  const createDish = useDishStore((s) => s.createDish);
   const [dishName, setDishName] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
 
-  const handleSubmit = () => {
-    console.log("Create Dish:", { dishName: dishName.trim(), restaurantName: restaurantName.trim() });
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const handleSubmit = async () => {
+    const name = dishName.trim();
+    const restName = restaurantName.trim();
+    if (!name || !restName) {
+      setError("Dish name and restaurant name are required.");
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      await createDish(name, restName, "Other", "");
+      if (!isMountedRef.current) return;
+      setDishName("");
+      setRestaurantName("");
+      if (showBackButton) router.back();
+    } catch (e) {
+      if (isMountedRef.current) setError(e instanceof Error ? e.message : "Failed to create dish.");
+    } finally {
+      if (isMountedRef.current) setLoading(false);
+    }
   };
 
   return (
@@ -38,7 +68,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
         <Text className="mb-2 text-sm font-semibold text-gray-600">Dish name</Text>
         <TextInput
           value={dishName}
-          onChangeText={setDishName}
+          onChangeText={(t) => { setDishName(t); setError(null); }}
           placeholder="e.g. Piri-Piri Chicken"
           className="mb-5 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
           placeholderTextColor="#9ca3af"
@@ -46,17 +76,25 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
         <Text className="mb-2 text-sm font-semibold text-gray-600">Restaurant name</Text>
         <TextInput
           value={restaurantName}
-          onChangeText={setRestaurantName}
+          onChangeText={(t) => { setRestaurantName(t); setError(null); }}
           placeholder="e.g. Nando's"
-          className="mb-8 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
+          className="mb-4 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
           placeholderTextColor="#9ca3af"
         />
+        {error ? (
+          <Text className="mb-4 text-sm text-red-600">{error}</Text>
+        ) : null}
         <AnimatedPressable
           onPress={handleSubmit}
+          disabled={loading}
           scale={0.98}
-          className="rounded-xl bg-orange-500 py-3.5"
+          className="rounded-xl bg-orange-500 py-3.5 disabled:opacity-60"
         >
-          <Text className="text-center font-semibold text-white">Create Dish</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text className="text-center font-semibold text-white">Create Dish</Text>
+          )}
         </AnimatedPressable>
       </View>
     </SafeAreaView>

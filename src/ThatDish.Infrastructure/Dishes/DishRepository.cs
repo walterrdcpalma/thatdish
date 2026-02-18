@@ -47,4 +47,16 @@ public class DishRepository : IDishRepository
             .Include(d => d.Restaurant)
             .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
     }
+
+    public async Task<bool> ExistsAsync(Guid restaurantId, string name, CancellationToken cancellationToken = default)
+    {
+        var normalized = name.Trim().ToLowerInvariant();
+        return await _db.Dishes
+            .AnyAsync(d => d.RestaurantId == restaurantId && d.Name.ToLower() == normalized, cancellationToken);
+    }
+
+    public void Add(Dish dish)
+    {
+        _db.Dishes.Add(dish);
+    }
 }

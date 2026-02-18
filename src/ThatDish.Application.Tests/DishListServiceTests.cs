@@ -1,6 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using ThatDish.Application.Dishes;
+using ThatDish.Application.Restaurants;
 using ThatDish.Domain.Entities;
 using ThatDish.Domain.Enums;
+using ThatDish.Infrastructure.Dishes;
+using ThatDish.Infrastructure.Persistence;
 using NSubstitute;
 using Xunit;
 
@@ -9,12 +13,17 @@ namespace ThatDish.Application.Tests;
 public class DishListServiceTests
 {
     private readonly IDishRepository _repo;
-    private readonly DishListService _sut;
+    private readonly IDishService _sut;
 
     public DishListServiceTests()
     {
         _repo = Substitute.For<IDishRepository>();
-        _sut = new DishListService(_repo);
+        var restaurantRepo = Substitute.For<IRestaurantRepository>();
+        var options = new DbContextOptionsBuilder<ThatDishDbContext>()
+            .UseInMemoryDatabase(databaseName: "DishServiceTests")
+            .Options;
+        var context = new ThatDishDbContext(options);
+        _sut = new DishService(_repo, restaurantRepo, context);
     }
 
     [Fact]

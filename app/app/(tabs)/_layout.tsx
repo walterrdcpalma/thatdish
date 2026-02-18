@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { Tabs } from "expo-router";
+
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,

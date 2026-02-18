@@ -54,7 +54,7 @@ dotnet test
 ```
 
 - **ThatDish.Api.Tests**: integration tests (WebApplicationFactory, SQLite test DB, seeded data). Health and `GET /api/dishes` (OK, JSON list, filter by food type, pagination).
-- **ThatDish.Application.Tests**: unit tests for `DishListService` with mocked `IDishRepository` (NSubstitute).
+- **ThatDish.Application.Tests**: unit tests for `DishService` (list/get and paged) with mocked `IDishRepository` (NSubstitute).
 
 ## New migrations
 

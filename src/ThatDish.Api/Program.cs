@@ -28,7 +28,7 @@ builder.Services.AddDbContext<ThatDishDbContext>(options =>
 
 // Application services
 builder.Services.AddScoped<IDishRepository, DishRepository>();
-builder.Services.AddScoped<DishListService>();
+builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
 builder.Services.AddScoped<RestaurantListService>();
 

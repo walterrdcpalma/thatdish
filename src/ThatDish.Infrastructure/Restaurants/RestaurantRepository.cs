@@ -28,4 +28,17 @@ public class RestaurantRepository : IRestaurantRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
+
+    public async Task<Restaurant?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var normalized = name.Trim().ToLowerInvariant();
+        return await _db.Restaurants
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Name.ToLower() == normalized, cancellationToken);
+    }
+
+    public void Add(Restaurant restaurant)
+    {
+        _db.Restaurants.Add(restaurant);
+    }
 }

@@ -37,3 +37,40 @@ export async function fetchDishes(baseUrl: string): Promise<Dish[]> {
   }
   return raw.map((item) => mapDishDtoToDish(item as DishDto));
 }
+
+/** Request body for POST /api/dishes. */
+export interface CreateDishRequest {
+  name: string;
+  restaurantName: string;
+  foodType?: string;
+  image?: string;
+}
+
+/**
+ * Creates a dish via POST /api/dishes. Creates the restaurant if it does not exist.
+ * Backend expects: dishName, restaurantName, foodType, image.
+ */
+export async function createDish(
+  baseUrl: string,
+  body: CreateDishRequest
+): Promise<Dish> {
+  const url = `${baseUrl.replace(/\/$/, "")}/api/dishes`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      dishName: body.name.trim(),
+      restaurantName: body.restaurantName.trim(),
+      foodType: body.foodType?.trim() || "Other",
+      image: body.image?.trim() || "",
+    }),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    const message =
+      text && text.length < 200 ? text : `Create dish failed: ${response.status}`;
+    throw new Error(message);
+  }
+  const raw: unknown = await response.json();
+  return mapDishDtoToDish(raw as DishDto);
+}
