@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -14,7 +15,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { AnimatedPressable } from "@/src/shared/components";
 import { useDishStore } from "../state";
 import { createDishMultipart } from "@/src/shared/api/dishesApi";
+import { fetchRestaurantSearch } from "@/src/shared/api/restaurantsApi";
+import type { RestaurantSearchResultDto } from "@/src/shared/api/restaurantsApi";
 import { config } from "@/src/config";
+
+const SEARCH_DEBOUNCE_MS = 300;
+const SUGGESTION_LIMIT = 10;
 
 interface CreateDishScreenProps {
   showBackButton?: boolean;
@@ -25,17 +31,68 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   const loadDishes = useDishStore((s) => s.loadDishes);
   const [dishName, setDishName] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
+  const [restaurantSuggestions, setRestaurantSuggestions] = useState<RestaurantSearchResultDto[]>([]);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const isMountedRef = useRef(true);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeSuggestionsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      if (closeSuggestionsTimeoutRef.current) clearTimeout(closeSuggestionsTimeoutRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    const term = restaurantName.trim();
+    if (!term) {
+      setRestaurantSuggestions([]);
+      return;
+    }
+    searchDebounceRef.current = setTimeout(() => {
+      searchDebounceRef.current = null;
+      const searchTerm = term.toLowerCase();
+      fetchRestaurantSearch(config.apiBaseUrl, term)
+        .then((list) => {
+          if (!isMountedRef.current) return;
+          // Ensure only names that contain the search term are shown (safety filter)
+          const filtered = list.filter((r) =>
+            r.name.toLowerCase().includes(searchTerm)
+          );
+          setRestaurantSuggestions(filtered.slice(0, SUGGESTION_LIMIT));
+        })
+        .catch(() => {
+          if (isMountedRef.current) setRestaurantSuggestions([]);
+        });
+    }, SEARCH_DEBOUNCE_MS);
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, [restaurantName]);
+
+  const closeSuggestions = useCallback(() => {
+    if (closeSuggestionsTimeoutRef.current) {
+      clearTimeout(closeSuggestionsTimeoutRef.current);
+      closeSuggestionsTimeoutRef.current = null;
+    }
+    setRestaurantSuggestions([]);
+  }, []);
+
+  const selectRestaurantSuggestion = useCallback((name: string) => {
+    if (closeSuggestionsTimeoutRef.current) {
+      clearTimeout(closeSuggestionsTimeoutRef.current);
+      closeSuggestionsTimeoutRef.current = null;
+    }
+    setRestaurantName(name);
+    setRestaurantSuggestions([]);
+    setError(null);
   }, []);
 
   const pickImage = async () => {
@@ -85,6 +142,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       await loadDishes();
       setDishName("");
       setRestaurantName("");
+      setRestaurantSuggestions([]);
       setImageUri(null);
       setError(null);
       setSubmissionSuccess(true);
@@ -101,6 +159,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
     setSubmissionSuccess(false);
     setDishName("");
     setRestaurantName("");
+    setRestaurantSuggestions([]);
     setImageUri(null);
     setError(null);
     router.replace("/(tabs)");
@@ -149,13 +208,41 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
               placeholderTextColor="#9ca3af"
             />
             <Text className="mb-2 text-sm font-semibold text-gray-600">Restaurant name</Text>
-            <TextInput
-              value={restaurantName}
-              onChangeText={(t) => { setRestaurantName(t); setError(null); }}
-              placeholder="e.g. Nando's"
-              className="mb-5 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
-              placeholderTextColor="#9ca3af"
-            />
+            <View className="mb-1">
+              <TextInput
+                value={restaurantName}
+                onChangeText={(t) => { setRestaurantName(t); setError(null); }}
+                onBlur={() => {
+                  if (closeSuggestionsTimeoutRef.current) clearTimeout(closeSuggestionsTimeoutRef.current);
+                  closeSuggestionsTimeoutRef.current = setTimeout(closeSuggestions, 200);
+                }}
+                placeholder="e.g. Nando's"
+                className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
+                placeholderTextColor="#9ca3af"
+              />
+              {restaurantSuggestions.length > 0 && (
+                <View className="mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    nestedScrollEnabled
+                    style={{ maxHeight: 200 }}
+                  >
+                    {restaurantSuggestions.map((r) => (
+                      <AnimatedPressable
+                        key={r.id}
+                        onPress={() => selectRestaurantSuggestion(r.name)}
+                        scale={0.99}
+                        className="border-b border-gray-100 px-4 py-3 last:border-b-0"
+                      >
+                        <Text className="text-base text-gray-800" numberOfLines={1}>
+                          {r.name}
+                        </Text>
+                      </AnimatedPressable>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
             <Text className="mb-2 text-sm font-semibold text-gray-600">Image</Text>
             {imageUri ? (
               <View className="mb-5">

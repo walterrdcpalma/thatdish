@@ -37,6 +37,24 @@ public class RestaurantRepository : IRestaurantRepository
             .FirstOrDefaultAsync(r => r.Name.ToLower() == normalized, cancellationToken);
     }
 
+    public async Task<List<RestaurantSearchResult>> SearchByNameAsync(string term, int limit, CancellationToken cancellationToken = default)
+    {
+        var trimmed = (term ?? string.Empty).Trim();
+        if (string.IsNullOrEmpty(trimmed))
+            return new List<RestaurantSearchResult>();
+
+        // SQLite LIKE is case-insensitive for ASCII; pattern %term% = "contains"
+        var pattern = $"%{trimmed}%";
+
+        return await _db.Restaurants
+            .AsNoTracking()
+            .Where(r => EF.Functions.Like(r.Name, pattern))
+            .OrderBy(r => r.Name)
+            .Take(limit)
+            .Select(r => new RestaurantSearchResult(r.Id, r.Name))
+            .ToListAsync(cancellationToken);
+    }
+
     public void Add(Restaurant restaurant)
     {
         _db.Restaurants.Add(restaurant);

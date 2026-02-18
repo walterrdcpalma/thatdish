@@ -14,11 +14,18 @@ public class RestaurantsController : ControllerBase
         _restaurantListService = restaurantListService;
     }
 
-    /// <summary>List all restaurants from the database.</summary>
+    /// <summary>List all restaurants, or search by name when query param 'search' is provided (max 10 results).</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RestaurantDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<RestaurantDto>>> Get(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(IEnumerable<RestaurantSearchResult>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get([FromQuery] string? search, CancellationToken cancellationToken)
     {
+        var term = search?.Trim();
+        if (!string.IsNullOrEmpty(term))
+        {
+            var results = await _restaurantListService.SearchAsync(term, 10, cancellationToken);
+            return Ok(results);
+        }
         var restaurants = await _restaurantListService.GetRestaurantsAsync(cancellationToken);
         return Ok(restaurants);
     }
