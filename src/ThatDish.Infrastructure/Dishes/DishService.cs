@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ThatDish.Application.Dishes;
 using ThatDish.Application.Restaurants;
 using ThatDish.Domain.Entities;
@@ -26,6 +27,49 @@ public class DishService : IDishService
     {
         var dishes = await _dishRepository.GetAllAsync(cancellationToken);
         return dishes.Select(DishDtoMapping.ToDto).ToList();
+    }
+
+    public async Task<List<DishDto>> SearchDishesAsync(string query, int limit, CancellationToken cancellationToken = default)
+    {
+        var term = (query ?? string.Empty).Trim();
+        if (string.IsNullOrEmpty(term))
+            return new List<DishDto>();
+
+        var pattern = $"%{term}%";
+        var projected = await _context.Dishes
+            .AsNoTracking()
+            .Where(d => EF.Functions.Like(d.Name, pattern) || EF.Functions.Like(d.Restaurant.Name, pattern))
+            .OrderBy(d => d.Name)
+            .Take(limit)
+            .Select(d => new
+            {
+                d.Id,
+                d.Name,
+                d.RestaurantId,
+                RestaurantName = d.Restaurant.Name,
+                d.ImageUrl,
+                d.FoodType,
+                d.CreatedAtUtc,
+                d.UpdatedAtUtc
+            })
+            .ToListAsync(cancellationToken);
+
+        return projected
+            .Select(p => new DishDto(
+                p.Id,
+                p.Name,
+                p.RestaurantId,
+                p.RestaurantName,
+                p.ImageUrl,
+                p.FoodType.ToString(),
+                0,
+                Array.Empty<string>(),
+                p.CreatedAtUtc,
+                p.UpdatedAtUtc,
+                string.Empty,
+                null,
+                false))
+            .ToList();
     }
 
     public async Task<List<DishListDto>> GetPagedAsync(ListDishesQuery query, CancellationToken cancellationToken = default)

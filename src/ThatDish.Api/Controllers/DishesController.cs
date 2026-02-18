@@ -25,6 +25,15 @@ public class DishesController : ControllerBase
         return Ok(dishes);
     }
 
+    /// <summary>Search dishes by name or restaurant name. Returns up to 50 results. Excludes archived.</summary>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(IEnumerable<DishDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<DishDto>>> Search([FromQuery] string? query, CancellationToken cancellationToken)
+    {
+        var results = await _dishService.SearchDishesAsync(query ?? string.Empty, 50, cancellationToken);
+        return Ok(results);
+    }
+
     /// <summary>Create a new dish with image upload (multipart/form-data). Creates the restaurant if it does not exist.</summary>
     [HttpPost]
     [DisableRequestSizeLimit]

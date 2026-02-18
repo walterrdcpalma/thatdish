@@ -22,6 +22,23 @@ export interface DishDto {
 }
 
 /**
+ * Search dishes by name or restaurant name via GET /api/dishes/search?query=term.
+ * Returns parsed Dish[] or throws on non-OK. Empty query returns [].
+ */
+export async function searchDishes(baseUrl: string, query: string): Promise<Dish[]> {
+  const trimmed = (query ?? "").trim();
+  if (!trimmed) return [];
+  const url = `${baseUrl.replace(/\/$/, "")}/api/dishes/search?query=${encodeURIComponent(trimmed)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Dish search failed: ${response.status}`);
+  }
+  const raw: unknown = await response.json();
+  if (!Array.isArray(raw)) return [];
+  return raw.map((item) => mapDishDtoToDish(item as DishDto));
+}
+
+/**
  * Fetches dishes from GET /api/dishes. Base URL must be passed (from config).
  * Returns parsed Dish[] or throws on non-OK or parse error.
  */
