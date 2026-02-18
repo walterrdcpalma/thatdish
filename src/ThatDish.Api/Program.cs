@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ThatDish.Api.Exceptions;
 using ThatDish.Application.Dishes;
+using ThatDish.Application.Restaurants;
 using ThatDish.Infrastructure.Dishes;
 using ThatDish.Infrastructure.Persistence;
+using ThatDish.Infrastructure.Restaurants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,8 @@ builder.Services.AddDbContext<ThatDishDbContext>(options =>
 // Application services
 builder.Services.AddScoped<IDishRepository, DishRepository>();
 builder.Services.AddScoped<DishListService>();
+builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
+builder.Services.AddScoped<RestaurantListService>();
 
 builder.Services.AddControllers();
 

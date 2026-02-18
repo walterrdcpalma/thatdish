@@ -23,6 +23,8 @@ export function DishFeedScreen() {
   const error = useDishStore((s) => s.error);
   const loadDishes = useDishStore((s) => s.loadDishes);
   const restaurants = useRestaurantStore((s) => s.restaurants);
+  const restaurantsLoading = useRestaurantStore((s) => s.loading);
+  const restaurantsError = useRestaurantStore((s) => s.error);
   const [tab, setTab] = useState<DiscoverTab>("All");
   const [userLocation, setUserLocation] = useState<{
     lat: number;
@@ -110,17 +112,22 @@ export function DishFeedScreen() {
           </Text>
         </AnimatedPressable>
       </View>
-      {loading && (
+      {(loading || restaurantsLoading) && (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#f97316" />
         </View>
       )}
-      {error && !loading && (
+      {restaurantsError && !restaurantsLoading && (
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center text-gray-600">Failed to load restaurants.</Text>
+        </View>
+      )}
+      {error && !loading && !restaurantsError && (
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-center text-gray-600">Failed to load dishes.</Text>
         </View>
       )}
-      {!loading && !error && (
+      {!loading && !error && !restaurantsLoading && !restaurantsError && (
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 80 }}

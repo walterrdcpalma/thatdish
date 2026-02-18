@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Image } from "react-native";
+import { View, Text, ScrollView, Image, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +15,8 @@ export function RestaurantDetailScreen() {
   const router = useRouter();
   const fromMyRestaurants = from === "my-restaurants";
   const restaurants = useRestaurantStore((s) => s.restaurants);
+  const restaurantsLoading = useRestaurantStore((s) => s.loading);
+  const restaurantsError = useRestaurantStore((s) => s.error);
   const setSignatureDish = useRestaurantStore((s) => s.setSignatureDish);
   const restaurant = id ? restaurants.find((r) => r.id === id) : undefined;
   const dishes = useDishStore((s) => s.dishes);
@@ -38,6 +40,20 @@ export function RestaurantDetailScreen() {
     .filter((d) => d.id !== mainDish?.id)
     .slice(0, 2);
 
+  if (restaurantsLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white p-4">
+        <ActivityIndicator size="large" color="#f97316" />
+      </View>
+    );
+  }
+  if (restaurantsError) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white p-4">
+        <Text className="text-center text-gray-600">Failed to load restaurants.</Text>
+      </View>
+    );
+  }
   if (!restaurant) {
     return (
       <View className="flex-1 items-center justify-center bg-white p-4">

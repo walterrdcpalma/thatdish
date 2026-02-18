@@ -1,18 +1,13 @@
 import { create } from "zustand";
 import type { ClaimStatus, Restaurant } from "../types/restaurant.types";
-
-// Picsum: always returns a valid image. seed = consistent image per restaurant.
-const RESTAURANT_IMG = (seed: string) =>
-  `https://picsum.photos/seed/${encodeURIComponent(seed)}/600/320`;
-
-const INITIAL_RESTAURANTS: Restaurant[] = [
-  { id: "1", name: "Joe's Tavern", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-1-joes"), cuisine: "Portuguese" },
-  { id: "2", name: "Flavor Corner", location: "Porto, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-2-flavor"), cuisine: "Portuguese" },
-  { id: "3", name: "Front Table", location: "Lisbon, Portugal", signatureDishId: null, ownerUserId: null, claimStatus: "unclaimed", imageUrl: RESTAURANT_IMG("rest-3-front"), cuisine: "International" },
-];
+import { fetchRestaurants } from "@/src/shared/api/restaurantsApi";
+import { config } from "@/src/config";
 
 interface RestaurantStore {
   restaurants: Restaurant[];
+  loading: boolean;
+  error: string | null;
+  loadRestaurants: () => Promise<void>;
   addRestaurant: (restaurant: Restaurant) => void;
   getRestaurantById: (id: string) => Restaurant | undefined;
   claimRestaurant: (restaurantId: string, userId: string) => void;
@@ -21,7 +16,21 @@ interface RestaurantStore {
 }
 
 export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
-  restaurants: [...INITIAL_RESTAURANTS],
+  restaurants: [],
+  loading: false,
+  error: null,
+
+  loadRestaurants: async () => {
+    set({ loading: true, error: null });
+    try {
+      const restaurants = await fetchRestaurants(config.apiBaseUrl);
+      set({ restaurants, loading: false, error: null });
+    } catch (e) {
+      const message =
+        e instanceof Error ? e.message : "Failed to load restaurants.";
+      set({ error: message, loading: false });
+    }
+  },
 
   addRestaurant: (restaurant: Restaurant) =>
     set((state) => ({
