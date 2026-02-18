@@ -4,7 +4,6 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
-import { Ionicons } from "@expo/vector-icons";
 import { DishCard } from "../components";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
@@ -147,13 +146,6 @@ export function DishFeedScreen() {
           );
         })}
       </ScrollView>
-      <AnimatedPressable
-        onPress={() => router.push("/dish/create")}
-        scale={0.92}
-        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-orange-500 shadow-lg"
-      >
-        <Ionicons name="add" size={28} color="white" />
-      </AnimatedPressable>
     </SafeAreaView>
   );
 }
