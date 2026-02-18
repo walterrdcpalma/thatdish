@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { View, Text, Pressable } from "react-native";
-import { Tabs, useRouter } from "expo-router";
+import { View, Text } from "react-native";
+import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,
@@ -9,27 +9,6 @@ import Animated, {
 } from "react-native-reanimated";
 
 const TAB_ORANGE = "#f97316";
-
-function AddTabBarButton(
-  props: React.ComponentProps<React.ElementType> & { children?: React.ReactNode }
-) {
-  const router = useRouter();
-  const { style, onPress: _onPress, ...rest } = props;
-  return (
-    <View
-      style={[style, { alignItems: "center", justifyContent: "flex-end" }]}
-      {...rest}
-    >
-      <Pressable
-        onPress={() => router.push("/dish/create")}
-        className="mb-1 h-12 w-12 items-center justify-center rounded-full bg-orange-500 shadow-md"
-        style={{ shadowOpacity: 0.25, shadowRadius: 4, elevation: 4 }}
-      >
-        <Ionicons name="add" size={28} color="white" />
-      </Pressable>
-    </View>
-  );
-}
 const FOCUSED_SCALE = 1.1;
 
 function ScaleOnFocus({
@@ -119,15 +98,6 @@ export default function TabsLayout() {
               <Ionicons name={focused ? "search" : "search-outline"} size={24} color={color} />
             </ScaleOnFocus>
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="add"
-        options={{
-          title: "Add",
-          tabBarLabel: () => null,
-          tabBarIcon: () => null,
-          tabBarButton: (props) => <AddTabBarButton {...props} />,
         }}
       />
       <Tabs.Screen

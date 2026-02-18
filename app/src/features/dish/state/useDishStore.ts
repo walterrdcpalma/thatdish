@@ -12,7 +12,6 @@ interface DishStore {
   error: string | null;
   loadDishes: () => Promise<void>;
   toggleSave: (dishId: string) => void;
-  addDish: (dish: Dish) => void;
   archiveDish: (dishId: string) => void;
   restoreDish: (dishId: string) => void;
   updateDish: (
@@ -57,20 +56,6 @@ export const useDishStore = create<DishStore>((set, get) => ({
       return { dishes: nextDishes };
     });
   },
-
-  addDish: (dish: Dish) =>
-    set((state) => ({
-      dishes: [
-        ...state.dishes,
-        {
-          ...dish,
-          isArchived: dish.isArchived ?? false,
-          savedByUserIds: dish.savedByUserIds ?? [],
-          updatedAt: dish.updatedAt ?? dish.createdAt,
-          lastEditedByUserId: dish.lastEditedByUserId ?? null,
-        },
-      ],
-    })),
 
   archiveDish: (dishId: string) => {
     const { currentUser } = useUserStore.getState();

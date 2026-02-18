@@ -252,24 +252,6 @@ export function RestaurantDetailScreen() {
                 )}
               </View>
             ))}
-            {restaurantDishes.length < MAX_RESTAURANT_PHOTOS && (
-              <AnimatedPressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/dish/create",
-                    params: { restaurantId: restaurant.id },
-                  })
-                }
-                scale={0.98}
-                className="flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50"
-                style={{ aspectRatio: 1 }}
-              >
-                <Ionicons name="add" size={36} color="#9ca3af" />
-                <Text className="mt-1.5 text-xs font-medium text-gray-500">
-                  Add dish
-                </Text>
-              </AnimatedPressable>
-            )}
           </View>
         </View>
 
