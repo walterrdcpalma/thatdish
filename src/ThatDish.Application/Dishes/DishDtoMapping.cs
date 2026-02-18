@@ -13,6 +13,7 @@ public static class DishDtoMapping
             Id: dish.Id,
             Name: dish.Name,
             RestaurantId: dish.RestaurantId,
+            RestaurantName: dish.Restaurant?.Name ?? string.Empty,
             Image: string.IsNullOrEmpty(dish.ImageUrl) ? string.Empty : dish.ImageUrl,
             FoodType: dish.FoodType.ToString(),
             SavedCount: 0,

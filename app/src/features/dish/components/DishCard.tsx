@@ -19,9 +19,11 @@ export function DishCard({ dish, onPress, isSignature, badges, isNearby }: DishC
   const toggleSave = useDishStore((s) => s.toggleSave);
   const currentUser = useUserStore((s) => s.currentUser);
   const isSaved = currentUser.savedDishIds.includes(dish.id);
+  const restaurantNameFromStore = useRestaurantStore((s) =>
+    s.restaurants.find((r) => r.id === dish.restaurantId)?.name
+  );
   const restaurantName =
-    useRestaurantStore((s) => s.restaurants.find((r) => r.id === dish.restaurantId)?.name) ??
-    "Unknown";
+    dish.restaurantName ?? restaurantNameFromStore ?? "Unknown";
 
   const handleSavePress = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();

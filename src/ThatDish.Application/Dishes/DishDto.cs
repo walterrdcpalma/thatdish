@@ -7,6 +7,7 @@ public record DishDto(
     Guid Id,
     string Name,
     Guid RestaurantId,
+    string RestaurantName,
     string Image,
     string FoodType,
     int SavedCount,

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ThatDish.Domain.Entities;
 using ThatDish.Domain.Enums;
+using ThatDish.Domain.Seeding;
 
 namespace ThatDish.Infrastructure.Persistence;
 
@@ -12,18 +13,17 @@ public static class SeedData
             return;
 
         var now = DateTime.UtcNow;
-
-        var restaurant1Id = Guid.Parse("11111111-1111-1111-1111-111111111101");
-        var restaurant2Id = Guid.Parse("22222222-2222-2222-2222-222222222202");
-        var restaurant3Id = Guid.Parse("33333333-3333-3333-3333-333333333303");
-        var restaurant4Id = Guid.Parse("44444444-4444-4444-4444-444444444404");
+        var r1 = SeedRestaurants.Restaurant1;
+        var r2 = SeedRestaurants.Restaurant2;
+        var r3 = SeedRestaurants.Restaurant3;
+        var r4 = SeedRestaurants.Restaurant4;
 
         var restaurants = new[]
         {
             new Restaurant
             {
-                Id = restaurant1Id,
-                Name = "Tasca do Zé",
+                Id = r1.Id,
+                Name = r1.Name,
                 Address = "Rua das Flores 12, Lisboa",
                 Latitude = 38.7112,
                 Longitude = -9.1393,
@@ -32,8 +32,8 @@ public static class SeedData
             },
             new Restaurant
             {
-                Id = restaurant2Id,
-                Name = "Marisqueira do Porto",
+                Id = r2.Id,
+                Name = r2.Name,
                 Address = "Rua de Santa Catarina 45, Porto",
                 Latitude = 41.1579,
                 Longitude = -8.6291,
@@ -41,8 +41,8 @@ public static class SeedData
             },
             new Restaurant
             {
-                Id = restaurant3Id,
-                Name = "Bifanas da Praça",
+                Id = r3.Id,
+                Name = r3.Name,
                 Address = "Praça da República 3",
                 Latitude = 40.2033,
                 Longitude = -8.4103,
@@ -51,8 +51,8 @@ public static class SeedData
             },
             new Restaurant
             {
-                Id = restaurant4Id,
-                Name = "Casa do Arroz",
+                Id = r4.Id,
+                Name = r4.Name,
                 Address = "Avenida da Liberdade 100, Lisboa",
                 Latitude = 38.7223,
                 Longitude = -9.1454,
@@ -84,7 +84,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("a0000001-0001-0001-0001-000000000001"),
-                RestaurantId = restaurant1Id,
+                RestaurantId = r1.Id,
                 Name = "Bacalhau à Brás",
                 Description = "Bacalhau desfiado com batata palha, ovo e azeitonas. Clássico português.",
                 ImageUrl = dishImageUrls[0],
@@ -97,7 +97,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("a0000001-0001-0001-0001-000000000002"),
-                RestaurantId = restaurant1Id,
+                RestaurantId = r1.Id,
                 Name = "Caldo Verde",
                 Description = "Sopa de couve-galega com chouriço e batata.",
                 ImageUrl = dishImageUrls[1],
@@ -110,7 +110,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("a0000001-0001-0001-0001-000000000003"),
-                RestaurantId = restaurant1Id,
+                RestaurantId = r1.Id,
                 Name = "Pastel de Nata",
                 Description = "Doce de nata com massa folhada, canela por cima.",
                 ImageUrl = dishImageUrls[2],
@@ -123,7 +123,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("b0000002-0002-0002-0002-000000000001"),
-                RestaurantId = restaurant2Id,
+                RestaurantId = r2.Id,
                 Name = "Arroz de Marisco",
                 Description = "Arroz cremoso com mistura de marisco e cor de açafrão.",
                 ImageUrl = dishImageUrls[3],
@@ -136,7 +136,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("b0000002-0002-0002-0002-000000000002"),
-                RestaurantId = restaurant2Id,
+                RestaurantId = r2.Id,
                 Name = "Cataplana de Amêijoas",
                 Description = "Amêijoas à bulhão pato na cataplana.",
                 ImageUrl = dishImageUrls[4],
@@ -149,7 +149,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("c0000003-0003-0003-0003-000000000001"),
-                RestaurantId = restaurant3Id,
+                RestaurantId = r3.Id,
                 Name = "Bifana no Pão",
                 Description = "Carne de porco marinada, grelhada, no pão com mostarda.",
                 ImageUrl = dishImageUrls[5],
@@ -162,7 +162,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("c0000003-0003-0003-0003-000000000002"),
-                RestaurantId = restaurant3Id,
+                RestaurantId = r3.Id,
                 Name = "Prego no Pão",
                 Description = "Bife de vaca grelhado no pão com manteiga de alho.",
                 ImageUrl = dishImageUrls[6],
@@ -175,7 +175,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("d0000004-0004-0004-0004-000000000001"),
-                RestaurantId = restaurant4Id,
+                RestaurantId = r4.Id,
                 Name = "Arroz de Pato",
                 Description = "Arroz de pato confitado com chouriço e grelos.",
                 ImageUrl = dishImageUrls[7],
@@ -188,7 +188,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("d0000004-0004-0004-0004-000000000002"),
-                RestaurantId = restaurant4Id,
+                RestaurantId = r4.Id,
                 Name = "Francesinha",
                 Description = "Sanduíche com carnes, queijo, ovo e molho de cerveja.",
                 ImageUrl = dishImageUrls[8],
@@ -201,7 +201,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("e0000005-0005-0005-0005-000000000001"),
-                RestaurantId = restaurant1Id,
+                RestaurantId = r1.Id,
                 Name = "Bowl de Quinoa e Legumes",
                 Description = "Quinoa, grão, abacate, tomate e tahini. 100% vegetariano.",
                 ImageUrl = dishImageUrls[9],
@@ -214,7 +214,7 @@ public static class SeedData
             new Dish
             {
                 Id = Guid.Parse("e0000005-0005-0005-0005-000000000002"),
-                RestaurantId = restaurant4Id,
+                RestaurantId = r4.Id,
                 Name = "Creme de Legumes Vegan",
                 Description = "Creme de courgette e batata, sem lacticínios.",
                 ImageUrl = dishImageUrls[9],

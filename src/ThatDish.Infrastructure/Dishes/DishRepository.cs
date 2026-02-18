@@ -19,6 +19,7 @@ public class DishRepository : IDishRepository
     {
         return await _db.Dishes
             .AsNoTracking()
+            .Include(d => d.Restaurant)
             .OrderBy(d => d.CreatedAtUtc)
             .ToListAsync(cancellationToken);
     }

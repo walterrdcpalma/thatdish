@@ -47,6 +47,7 @@ public class DishesControllerTests : IClassFixture<ThatDishApiFactory>
         Assert.True(first.TryGetProperty("id", out _), "Expected camelCase 'id'");
         Assert.True(first.TryGetProperty("name", out _), "Expected camelCase 'name'");
         Assert.True(first.TryGetProperty("restaurantId", out _), "Expected camelCase 'restaurantId'");
+        Assert.True(first.TryGetProperty("restaurantName", out _), "Expected camelCase 'restaurantName'");
         Assert.True(first.TryGetProperty("savedCount", out _), "Expected camelCase 'savedCount'");
         Assert.True(first.TryGetProperty("savedByUserIds", out _), "Expected camelCase 'savedByUserIds'");
         Assert.True(first.TryGetProperty("createdAt", out _), "Expected camelCase 'createdAt'");

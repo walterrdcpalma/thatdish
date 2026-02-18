@@ -28,7 +28,7 @@ export function DishDetailScreen() {
   const restaurant = dish
     ? restaurants.find((r) => r.id === dish.restaurantId)
     : undefined;
-  const restaurantName = restaurant?.name ?? "Unknown";
+  const restaurantName = dish?.restaurantName ?? restaurant?.name ?? "Unknown";
   const signature = dish
     ? getRestaurantSignature(dishes, dish.restaurantId)
     : undefined;

@@ -84,12 +84,15 @@ public class DishListServiceTests
     [Fact]
     public async Task GetDishesAsync_ReturnsDtosMappedFromDomain()
     {
+        var restaurant = new Restaurant { Id = Guid.NewGuid(), Name = "The Sea Grill" };
         var dish = new Dish
         {
             Id = Guid.NewGuid(),
             Name = "Fish and Chips",
-            RestaurantId = Guid.NewGuid(),
+            RestaurantId = restaurant.Id,
+            Restaurant = restaurant,
             ImageUrl = "https://example.com/fish.jpg",
+            FoodType = FoodType.Other,
             CreatedAtUtc = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
             UpdatedAtUtc = null
         };
@@ -101,6 +104,7 @@ public class DishListServiceTests
         Assert.Equal(dish.Id, result[0].Id);
         Assert.Equal("Fish and Chips", result[0].Name);
         Assert.Equal(dish.RestaurantId, result[0].RestaurantId);
+        Assert.Equal("The Sea Grill", result[0].RestaurantName);
         Assert.Equal("https://example.com/fish.jpg", result[0].Image);
         Assert.Equal(0, result[0].SavedCount);
         Assert.Empty(result[0].SavedByUserIds);

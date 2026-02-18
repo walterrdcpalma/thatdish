@@ -8,6 +8,7 @@ export interface DishDto {
   id: string;
   name: string;
   restaurantId: string;
+  restaurantName?: string;
   image: string;
   foodType: string;
   savedCount: number;
@@ -26,10 +27,12 @@ export interface DishDto {
 export function mapDishDtoToDish(dto: DishDto): Dish {
   const raw = dto as unknown as Record<string, unknown>;
   const foodType = (raw.foodType ?? raw.FoodType ?? "") as string;
+  const restaurantName = (raw.restaurantName ?? raw.RestaurantName ?? "") as string;
   return {
     id: dto.id,
     name: dto.name,
     restaurantId: dto.restaurantId,
+    restaurantName: typeof restaurantName === "string" && restaurantName ? restaurantName : undefined,
     image: (raw.image ?? raw.Image ?? "") as string,
     foodType: typeof foodType === "string" ? foodType : "",
     savedCount: dto.savedCount,
