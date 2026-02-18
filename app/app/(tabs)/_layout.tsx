@@ -101,6 +101,17 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="add"
+        options={{
+          title: "Add",
+          tabBarIcon: ({ color, focused }) => (
+            <ScaleOnFocus focused={focused}>
+              <Ionicons name={focused ? "add-circle" : "add-circle-outline"} size={24} color={color} />
+            </ScaleOnFocus>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="saved"
         options={{
           title: "Saved",
