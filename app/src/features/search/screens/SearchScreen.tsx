@@ -138,6 +138,10 @@ export function SearchScreen() {
   const { width } = useWindowDimensions();
   const dishes = useDishStore((s) => s.dishes);
   const restaurants = useRestaurantStore((s) => s.restaurants);
+  const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
+  useEffect(() => {
+    loadRestaurants();
+  }, [loadRestaurants]);
 
   const [query, setQuery] = useState("");
   const [filterNearby, setFilterNearby] = useState(false);

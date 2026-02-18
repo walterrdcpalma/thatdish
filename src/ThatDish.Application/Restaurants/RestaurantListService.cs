@@ -14,4 +14,10 @@ public class RestaurantListService
         var list = await _repo.GetAllAsync(cancellationToken);
         return list.Select(RestaurantDtoMapping.ToDto).ToList();
     }
+
+    public async Task<RestaurantDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var restaurant = await _repo.GetByIdAsync(id, cancellationToken);
+        return restaurant == null ? null : RestaurantDtoMapping.ToDto(restaurant);
+    }
 }

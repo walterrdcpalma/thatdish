@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { View, Text, ScrollView, Image } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -10,8 +11,12 @@ import { AnimatedPressable } from "@/src/shared/components";
 export function MyRestaurantsScreen() {
   const router = useRouter();
   const restaurants = useRestaurantStore((s) => s.restaurants);
+  const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
   const setClaimStatus = useRestaurantStore((s) => s.setClaimStatus);
   const currentUser = useUserStore((s) => s.currentUser);
+  useEffect(() => {
+    loadRestaurants();
+  }, [loadRestaurants]);
 
   const myRestaurants = restaurants.filter(
     (r) => r.ownerUserId === currentUser.id

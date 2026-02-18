@@ -1,20 +1,44 @@
-import { View, Text, ScrollView } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
 import { AnimatedPressable } from "@/src/shared/components";
+import { fetchRestaurantById } from "@/src/shared/api/restaurantsApi";
+import { config } from "@/src/config";
+import type { Restaurant } from "@/src/features/restaurant/types";
 
 export function ClaimFlowScreen() {
   const { restaurantId } = useLocalSearchParams<{ restaurantId: string }>();
   const router = useRouter();
-  const restaurants = useRestaurantStore((s) => s.restaurants);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const claimRestaurant = useRestaurantStore((s) => s.claimRestaurant);
-  const restaurant = restaurantId
-    ? restaurants.find((r) => r.id === restaurantId)
-    : undefined;
   const currentUser = useUserStore((s) => s.currentUser);
+
+  useEffect(() => {
+    if (!restaurantId) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    fetchRestaurantById(config.apiBaseUrl, restaurantId)
+      .then((r) => {
+        if (!cancelled) setRestaurant(r);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load restaurant.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [restaurantId]);
 
   const handleSubmit = () => {
     if (!restaurant || !restaurantId) return;
@@ -22,11 +46,20 @@ export function ClaimFlowScreen() {
     router.replace("/(tabs)/profile");
   };
 
-  if (!restaurant) {
+  if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
         <View className="flex-1 items-center justify-center p-4">
-          <Text className="text-gray-500">Restaurant not found.</Text>
+          <ActivityIndicator size="large" color="#f97316" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+  if (error || !restaurant) {
+    return (
+      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+        <View className="flex-1 items-center justify-center p-4">
+          <Text className="text-center text-gray-600">{error ?? "Restaurant not found."}</Text>
         </View>
       </SafeAreaView>
     );

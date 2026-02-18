@@ -17,9 +17,13 @@ export function EditDishScreen() {
   const currentUser = useUserStore((s) => s.currentUser);
   const dish = id ? dishes.find((d) => d.id === id) : undefined;
   const restaurants = useRestaurantStore((s) => s.restaurants);
+  const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
   const restaurant = dish
     ? restaurants.find((r) => r.id === dish.restaurantId)
     : undefined;
+  useEffect(() => {
+    if (dish) loadRestaurants();
+  }, [dish?.restaurantId, loadRestaurants]);
 
   const [name, setName] = useState("");
 

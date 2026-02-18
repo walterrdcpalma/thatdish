@@ -32,3 +32,23 @@ export async function fetchRestaurants(baseUrl: string): Promise<Restaurant[]> {
   }
   return raw.map((item) => mapRestaurantDtoToRestaurant(item as RestaurantDto));
 }
+
+/**
+ * Fetches a single restaurant by id from GET /api/restaurants/{id}.
+ * Returns parsed Restaurant or throws on non-OK or parse error.
+ */
+export async function fetchRestaurantById(
+  baseUrl: string,
+  id: string
+): Promise<Restaurant> {
+  const url = `${baseUrl.replace(/\/$/, "")}/api/restaurants/${encodeURIComponent(id)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error("Restaurant not found");
+    }
+    throw new Error(`Restaurants request failed: ${response.status}`);
+  }
+  const raw: unknown = await response.json();
+  return mapRestaurantDtoToRestaurant(raw as RestaurantDto);
+}

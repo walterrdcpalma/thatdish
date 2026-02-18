@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TextInput, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -19,8 +19,12 @@ export function CreateDishScreen() {
   }>();
   const addDish = useDishStore((s) => s.addDish);
   const restaurants = useRestaurantStore((s) => s.restaurants);
+  const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
   const addRestaurant = useRestaurantStore((s) => s.addRestaurant);
   const currentUser = useUserStore((s) => s.currentUser);
+  useEffect(() => {
+    loadRestaurants();
+  }, [loadRestaurants]);
   const [name, setName] = useState("");
   const [restaurantSearch, setRestaurantSearch] = useState("");
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(

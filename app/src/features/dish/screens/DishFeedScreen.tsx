@@ -36,6 +36,12 @@ export function DishFeedScreen() {
     loadDishes();
   }, [loadDishes]);
 
+  // Load restaurants only when user switches to Nearby tab (on-demand)
+  const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
+  useEffect(() => {
+    if (tab === "Nearby") loadRestaurants();
+  }, [tab, loadRestaurants]);
+
   // Request location on mount so we can show "Nearby" badge in both All and Nearby tabs
   useEffect(() => {
     let cancelled = false;
@@ -112,22 +118,29 @@ export function DishFeedScreen() {
           </Text>
         </AnimatedPressable>
       </View>
-      {(loading || restaurantsLoading) && (
+      {loading && (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#f97316" />
         </View>
       )}
-      {restaurantsError && !restaurantsLoading && (
+      {tab === "Nearby" && restaurantsLoading && !loading && (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#f97316" />
+        </View>
+      )}
+      {tab === "Nearby" && restaurantsError && !restaurantsLoading && (
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-center text-gray-600">Failed to load restaurants.</Text>
         </View>
       )}
-      {error && !loading && !restaurantsError && (
+      {error && !loading && (
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-center text-gray-600">Failed to load dishes.</Text>
         </View>
       )}
-      {!loading && !error && !restaurantsLoading && !restaurantsError && (
+      {!loading &&
+        !error &&
+        (tab === "All" || (!restaurantsLoading && !restaurantsError)) && (
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 80 }}

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { View, Text, ScrollView, Image, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -7,23 +8,58 @@ import { useDishStore } from "@/src/features/dish/state";
 import { useUserStore } from "@/src/features/user/state";
 import { getSignatureDish } from "../services";
 import { AnimatedPressable } from "@/src/shared/components";
+import { fetchRestaurantById } from "@/src/shared/api/restaurantsApi";
+import { config } from "@/src/config";
+import type { Restaurant } from "../types";
 
 const MAX_RESTAURANT_PHOTOS = 3;
 
 export function RestaurantDetailScreen() {
-  const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
+  const params = useLocalSearchParams<{ id: string; from?: string }>();
+  const id = typeof params.id === "string" ? params.id : Array.isArray(params.id) ? params.id[0] : undefined;
+  const from = params.from;
   const router = useRouter();
   const fromMyRestaurants = from === "my-restaurants";
-  const restaurants = useRestaurantStore((s) => s.restaurants);
-  const restaurantsLoading = useRestaurantStore((s) => s.loading);
-  const restaurantsError = useRestaurantStore((s) => s.error);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const setSignatureDish = useRestaurantStore((s) => s.setSignatureDish);
-  const restaurant = id ? restaurants.find((r) => r.id === id) : undefined;
   const dishes = useDishStore((s) => s.dishes);
   const restoreDish = useDishStore((s) => s.restoreDish);
   const currentUser = useUserStore((s) => s.currentUser);
+
+  // When this screen opens (e.g. after "View Restaurant" on dish detail), fetch restaurant by id via GET /api/restaurants/{id}
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchRestaurantById(config.apiBaseUrl, id)
+      .then((r) => {
+        if (!cancelled) {
+          setRestaurant(r);
+          setError(null);
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Failed to load restaurant.");
+          setRestaurant(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
   const signature = restaurant
-    ? getSignatureDish(restaurant.id, restaurants, dishes)
+    ? getSignatureDish(restaurant.id, [restaurant], dishes)
     : undefined;
   const restaurantDishes = restaurant
     ? dishes
@@ -40,17 +76,17 @@ export function RestaurantDetailScreen() {
     .filter((d) => d.id !== mainDish?.id)
     .slice(0, 2);
 
-  if (restaurantsLoading) {
+  if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white p-4">
         <ActivityIndicator size="large" color="#f97316" />
       </View>
     );
   }
-  if (restaurantsError) {
+  if (error) {
     return (
       <View className="flex-1 items-center justify-center bg-white p-4">
-        <Text className="text-center text-gray-600">Failed to load restaurants.</Text>
+        <Text className="text-center text-gray-600">{error}</Text>
       </View>
     );
   }

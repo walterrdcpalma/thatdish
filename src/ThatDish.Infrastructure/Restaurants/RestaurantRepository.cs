@@ -21,4 +21,11 @@ public class RestaurantRepository : IRestaurantRepository
             .OrderBy(r => r.Name)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Restaurant?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _db.Restaurants
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
 }

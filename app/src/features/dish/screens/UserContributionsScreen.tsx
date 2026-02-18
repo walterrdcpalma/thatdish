@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { View, Text, ScrollView, Image } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +17,10 @@ export function UserContributionsScreen() {
   const dishes = useDishStore((s) => s.dishes);
   const restoreDish = useDishStore((s) => s.restoreDish);
   const restaurants = useRestaurantStore((s) => s.restaurants);
+  const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
+  useEffect(() => {
+    loadRestaurants();
+  }, [loadRestaurants]);
 
   const myDishes = dishes.filter(
     (dish) =>

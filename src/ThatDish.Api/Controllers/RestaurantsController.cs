@@ -22,4 +22,16 @@ public class RestaurantsController : ControllerBase
         var restaurants = await _restaurantListService.GetRestaurantsAsync(cancellationToken);
         return Ok(restaurants);
     }
+
+    /// <summary>Get a single restaurant by id.</summary>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(RestaurantDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<RestaurantDto>> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var restaurant = await _restaurantListService.GetByIdAsync(id, cancellationToken);
+        if (restaurant == null)
+            return NotFound();
+        return Ok(restaurant);
+    }
 }
