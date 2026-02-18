@@ -45,10 +45,13 @@ public class DishesController : ControllerBase
         [FromForm] string name,
         [FromForm] string restaurantName,
         [FromForm] IFormFile? image,
+        [FromForm] string? foodType,
+        [FromForm] string? cuisineType,
         CancellationToken cancellationToken)
     {
         var dishName = name?.Trim() ?? string.Empty;
         var restName = restaurantName?.Trim() ?? string.Empty;
+        var foodTypeValue = string.IsNullOrWhiteSpace(foodType) ? "Other" : foodType.Trim();
 
         if (string.IsNullOrEmpty(dishName))
             return BadRequest("name is required.");
@@ -76,7 +79,7 @@ public class DishesController : ControllerBase
 
         try
         {
-            var dto = await _dishService.CreateDishAsync(dishName, restName, "Other", imageUrl, cancellationToken);
+            var dto = await _dishService.CreateDishAsync(dishName, restName, foodTypeValue, imageUrl, cuisineType, cancellationToken);
             return Created($"/api/dishes/{dto.Id}", dto);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))
@@ -84,6 +87,12 @@ public class DishesController : ControllerBase
             if (System.IO.File.Exists(filePath))
                 System.IO.File.Delete(filePath);
             return Conflict(ex.Message);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("cuisineType"))
+        {
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
+            return BadRequest(ex.Message);
         }
     }
 }

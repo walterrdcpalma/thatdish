@@ -165,16 +165,16 @@ export function SearchScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8 }}
+          contentContainerStyle={{ gap: 6 }}
         >
           {CUISINE_OPTIONS.map((opt) => (
             <Pressable
               key={opt}
               onPress={() => setFilterCuisine(opt)}
-              className={`rounded-full px-3 py-2 ${filterCuisine === opt ? "bg-orange-500" : "bg-gray-100"}`}
+              className={`rounded-full px-2.5 py-1.5 ${filterCuisine === opt ? "bg-orange-500" : "bg-gray-100"}`}
             >
               <Text
-                className={`text-xs font-medium ${filterCuisine === opt ? "text-white" : "text-gray-600"}`}
+                className={`text-[11px] font-medium ${filterCuisine === opt ? "text-white" : "text-gray-600"}`}
               >
                 {opt}
               </Text>

@@ -97,6 +97,7 @@ public class DishService : IDishService
         string restaurantName,
         string foodType,
         string image,
+        string? cuisineType,
         CancellationToken cancellationToken = default)
     {
         var name = dishName.Trim();
@@ -106,10 +107,13 @@ public class DishService : IDishService
         var restaurant = await _restaurantRepository.GetByNameAsync(restName, cancellationToken);
         if (restaurant == null)
         {
+            if (string.IsNullOrWhiteSpace(cuisineType))
+                throw new InvalidOperationException("cuisineType is required when creating a new restaurant.");
             restaurant = new Restaurant
             {
                 Id = Guid.NewGuid(),
                 Name = restName,
+                Cuisine = cuisineType.Trim(),
                 CreatedAtUtc = DateTime.UtcNow,
                 UpdatedAtUtc = DateTime.UtcNow
             };

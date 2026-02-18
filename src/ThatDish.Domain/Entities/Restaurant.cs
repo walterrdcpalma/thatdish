@@ -4,6 +4,7 @@ public class Restaurant
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? Cuisine { get; set; }
     public string? Address { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }

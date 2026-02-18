@@ -22,6 +22,7 @@ public class ThatDishDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Cuisine).HasMaxLength(100);
             e.Property(x => x.Address).HasMaxLength(500);
         });
 

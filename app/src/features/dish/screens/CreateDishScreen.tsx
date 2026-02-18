@@ -7,6 +7,7 @@ import {
   Image,
   Alert,
   ScrollView,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -22,6 +23,29 @@ import { config } from "@/src/config";
 const SEARCH_DEBOUNCE_MS = 300;
 const SUGGESTION_LIMIT = 10;
 
+/** Dish food type: label shown in UI, value sent to backend (FoodType enum). */
+const FOOD_TYPE_OPTIONS: { label: string; value: string }[] = [
+  { label: "Traditional", value: "Traditional" },
+  { label: "Seafood", value: "Seafood" },
+  { label: "Street food", value: "StreetFood" },
+  { label: "Pasta", value: "Pasta" },
+  { label: "Pizza", value: "Pizza" },
+  { label: "Soup", value: "Soup" },
+  { label: "Dessert", value: "Dessert" },
+  { label: "Vegetarian", value: "Vegetarian" },
+  { label: "Vegan", value: "Vegan" },
+  { label: "Rice", value: "Rice" },
+  { label: "Sandwich", value: "Sandwich" },
+  { label: "Grill", value: "Grill" },
+  { label: "Breakfast", value: "Breakfast" },
+  { label: "Fine dining", value: "FineDining" },
+  { label: "Other", value: "Other" },
+];
+
+/** Restaurant cuisine: options for new restaurant only; value sent as cuisineType. */
+const CUISINE_TYPE_OPTIONS = ["Portuguese", "International", "Italian", "Fast food", "Other"] as const;
+type CuisineTypeOption = (typeof CUISINE_TYPE_OPTIONS)[number];
+
 interface CreateDishScreenProps {
   showBackButton?: boolean;
 }
@@ -31,6 +55,9 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   const loadDishes = useDishStore((s) => s.loadDishes);
   const [dishName, setDishName] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(null);
+  const [selectedFoodType, setSelectedFoodType] = useState<string | null>(null);
+  const [selectedRestaurantCuisine, setSelectedRestaurantCuisine] = useState<CuisineTypeOption | null>(null);
   const [restaurantSuggestions, setRestaurantSuggestions] = useState<RestaurantSearchResultDto[]>([]);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,11 +112,12 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
     setRestaurantSuggestions([]);
   }, []);
 
-  const selectRestaurantSuggestion = useCallback((name: string) => {
+  const selectRestaurantSuggestion = useCallback((id: string, name: string) => {
     if (closeSuggestionsTimeoutRef.current) {
       clearTimeout(closeSuggestionsTimeoutRef.current);
       closeSuggestionsTimeoutRef.current = null;
     }
+    setSelectedRestaurantId(id);
     setRestaurantName(name);
     setRestaurantSuggestions([]);
     setError(null);
@@ -124,12 +152,25 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       setError("Please select an image.");
       return;
     }
+    if (!selectedFoodType) {
+      setError("Please select a food type for the dish.");
+      return;
+    }
+    const isNewRestaurant = selectedRestaurantId === null;
+    if (isNewRestaurant && !selectedRestaurantCuisine) {
+      setError("Please select a cuisine for the new restaurant.");
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("restaurantName", restName);
+      formData.append("foodType", selectedFoodType);
+      if (isNewRestaurant && selectedRestaurantCuisine) {
+        formData.append("cuisineType", selectedRestaurantCuisine);
+      }
       const filename = imageUri.split("/").pop() ?? "image.jpg";
       const mime = "image/jpeg";
       formData.append("image", {
@@ -142,6 +183,9 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       await loadDishes();
       setDishName("");
       setRestaurantName("");
+      setSelectedRestaurantId(null);
+      setSelectedFoodType(null);
+      setSelectedRestaurantCuisine(null);
       setRestaurantSuggestions([]);
       setImageUri(null);
       setError(null);
@@ -159,6 +203,9 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
     setSubmissionSuccess(false);
     setDishName("");
     setRestaurantName("");
+    setSelectedRestaurantId(null);
+    setSelectedFoodType(null);
+    setSelectedRestaurantCuisine(null);
     setRestaurantSuggestions([]);
     setImageUri(null);
     setError(null);
@@ -211,7 +258,11 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
             <View className="mb-1">
               <TextInput
                 value={restaurantName}
-                onChangeText={(t) => { setRestaurantName(t); setError(null); }}
+                onChangeText={(t) => {
+                  setRestaurantName(t);
+                  setSelectedRestaurantId(null);
+                  setError(null);
+                }}
                 onBlur={() => {
                   if (closeSuggestionsTimeoutRef.current) clearTimeout(closeSuggestionsTimeoutRef.current);
                   closeSuggestionsTimeoutRef.current = setTimeout(closeSuggestions, 200);
@@ -230,7 +281,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                     {restaurantSuggestions.map((r) => (
                       <AnimatedPressable
                         key={r.id}
-                        onPress={() => selectRestaurantSuggestion(r.name)}
+                        onPress={() => selectRestaurantSuggestion(r.id, r.name)}
                         scale={0.99}
                         className="border-b border-gray-100 px-4 py-3 last:border-b-0"
                       >
@@ -243,6 +294,56 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                 </View>
               )}
             </View>
+            <Text className="mb-1.5 text-sm font-semibold text-gray-600">Food Type (dish)</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 6 }}
+            >
+              {FOOD_TYPE_OPTIONS.map((opt) => (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => {
+                    setSelectedFoodType(opt.value);
+                    setError(null);
+                  }}
+                  className={`rounded-full px-2.5 py-1.5 ${selectedFoodType === opt.value ? "bg-orange-500" : "bg-gray-100"}`}
+                >
+                  <Text
+                    className={`text-[11px] font-medium ${selectedFoodType === opt.value ? "text-white" : "text-gray-600"}`}
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+            {selectedRestaurantId === null && (
+              <>
+                <Text className="mb-1.5 mt-3 text-sm font-semibold text-gray-600">Restaurant cuisine</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 6 }}
+                >
+                  {CUISINE_TYPE_OPTIONS.map((opt) => (
+                    <Pressable
+                      key={opt}
+                      onPress={() => {
+                        setSelectedRestaurantCuisine(opt);
+                        setError(null);
+                      }}
+                      className={`rounded-full px-2.5 py-1.5 ${selectedRestaurantCuisine === opt ? "bg-orange-500" : "bg-gray-100"}`}
+                    >
+                      <Text
+                        className={`text-[11px] font-medium ${selectedRestaurantCuisine === opt ? "text-white" : "text-gray-600"}`}
+                      >
+                        {opt}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </>
+            )}
             <Text className="mb-2 text-sm font-semibold text-gray-600">Image</Text>
             {imageUri ? (
               <View className="mb-5">

@@ -10,5 +10,6 @@ public interface IDishService
         string restaurantName,
         string foodType,
         string image,
+        string? cuisineType,
         CancellationToken cancellationToken = default);
 }
