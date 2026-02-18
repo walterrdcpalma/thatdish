@@ -1,8 +1,9 @@
 import type { Dish } from "@/src/features/dish/types";
+import { mapDishDtoToDish } from "@/src/features/dish/mappers/dish.mapper";
 
 /**
  * Raw shape of a dish from GET /api/dishes (camelCase JSON).
- * Kept in API layer; mapping to domain Dish happens here.
+ * Kept in API layer; mapping to domain Dish happens in feature mapper.
  */
 export interface DishDto {
   id: string;
@@ -18,31 +19,6 @@ export interface DishDto {
   createdByUserId: string;
   lastEditedByUserId: string | null;
   isArchived: boolean;
-}
-
-/**
- * Maps backend DTO to frontend Dish. Uses backend values as-is (image, foodType).
- * Supports both camelCase (foodType) and PascalCase (FoodType) from API.
- */
-export function mapDishDtoToDish(dto: DishDto): Dish {
-  const raw = dto as unknown as Record<string, unknown>;
-  const foodType = (raw.foodType ?? raw.FoodType ?? "") as string;
-  const restaurantName = (raw.restaurantName ?? raw.RestaurantName ?? "") as string;
-  return {
-    id: dto.id,
-    name: dto.name,
-    restaurantId: dto.restaurantId,
-    restaurantName: typeof restaurantName === "string" && restaurantName ? restaurantName : undefined,
-    image: (raw.image ?? raw.Image ?? "") as string,
-    foodType: typeof foodType === "string" ? foodType : "",
-    savedCount: dto.savedCount,
-    savedByUserIds: Array.isArray(dto.savedByUserIds) ? dto.savedByUserIds : [],
-    createdAt: dto.createdAt,
-    updatedAt: dto.updatedAt ?? dto.createdAt,
-    createdByUserId: dto.createdByUserId,
-    lastEditedByUserId: dto.lastEditedByUserId ?? null,
-    isArchived: dto.isArchived,
-  };
 }
 
 /**
