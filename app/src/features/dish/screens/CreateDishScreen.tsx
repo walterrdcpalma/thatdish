@@ -48,6 +48,10 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   };
 
   const handleBackToDiscover = () => {
+    setSubmissionSuccess(false);
+    setDishName("");
+    setRestaurantName("");
+    setError(null);
     router.replace("/(tabs)");
   };
 
