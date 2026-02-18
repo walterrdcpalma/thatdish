@@ -7,6 +7,6 @@ export const config: {
   devHostForImages?: string;
 } = {
   env: "development",
-  apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:5050",
+  apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.1.22:5000",
   devHostForImages: process.env.EXPO_PUBLIC_DEV_HOST ?? undefined,
 };

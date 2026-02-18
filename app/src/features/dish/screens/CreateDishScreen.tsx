@@ -83,6 +83,10 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       await createDishMultipart(config.apiBaseUrl, formData);
       if (!isMountedRef.current) return;
       await loadDishes();
+      setDishName("");
+      setRestaurantName("");
+      setImageUri(null);
+      setError(null);
       setSubmissionSuccess(true);
     } catch (e) {
       if (isMountedRef.current) {
@@ -97,6 +101,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
     setSubmissionSuccess(false);
     setDishName("");
     setRestaurantName("");
+    setImageUri(null);
     setError(null);
     router.replace("/(tabs)");
   };
