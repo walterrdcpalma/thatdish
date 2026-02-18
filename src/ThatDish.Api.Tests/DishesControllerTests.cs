@@ -53,5 +53,8 @@ public class DishesControllerTests : IClassFixture<ThatDishApiFactory>
         Assert.True(first.TryGetProperty("updatedAt", out _), "Expected camelCase 'updatedAt'");
         Assert.True(first.TryGetProperty("createdByUserId", out _), "Expected camelCase 'createdByUserId'");
         Assert.True(first.TryGetProperty("isArchived", out _), "Expected camelCase 'isArchived'");
+        Assert.True(first.TryGetProperty("foodType", out _), "Expected camelCase 'foodType'");
+        Assert.True(first.TryGetProperty("image", out _), "Expected camelCase 'image'");
+        Assert.False(first.TryGetProperty("imagePlaceholder", out _), "Must not have imagePlaceholder");
     }
 }

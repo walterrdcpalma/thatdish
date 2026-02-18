@@ -118,8 +118,7 @@ export function UserContributionsScreen() {
                   <Image
                     source={{
                       uri:
-                        dish.imagePlaceholder ??
-                        "https://placehold.co/96/96/gray/white?text=Dish",
+                        dish.image
                     }}
                     className="h-16 w-16 rounded-lg bg-gray-200"
                     resizeMode="cover"

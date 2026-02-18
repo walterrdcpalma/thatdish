@@ -8,18 +8,25 @@ namespace ThatDish.Api.Controllers;
 public class DishesController : ControllerBase
 {
     private readonly DishListService _dishListService;
+    private readonly IWebHostEnvironment _env;
 
-    public DishesController(DishListService dishListService)
+    public DishesController(DishListService dishListService, IWebHostEnvironment env)
     {
         _dishListService = dishListService;
+        _env = env;
     }
 
-    /// <summary>List all dishes. No filtering or pagination in this iteration.</summary>
+    /// <summary>List all dishes. In Development returns static seed (no DB). Otherwise uses repository.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<DishDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<DishDto>>> Get(CancellationToken cancellationToken)
     {
-        var dishes = await _dishListService.GetDishesAsync(cancellationToken);
-        return Ok(dishes);
+        if (_env.IsDevelopment())
+        {
+            var dishes = StaticDishSeed.GetDishes();
+            return Ok(dishes);
+        }
+        var dishesFromDb = await _dishListService.GetDishesAsync(cancellationToken);
+        return Ok(dishesFromDb);
     }
 }

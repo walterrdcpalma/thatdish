@@ -8,7 +8,8 @@ export interface DishDto {
   id: string;
   name: string;
   restaurantId: string;
-  imagePlaceholder?: string | null;
+  image: string;
+  foodType: string;
   savedCount: number;
   savedByUserIds: string[];
   createdAt: string;
@@ -19,14 +20,18 @@ export interface DishDto {
 }
 
 /**
- * Maps backend DTO to frontend Dish. Ensures updatedAt is always string (backend may send null).
+ * Maps backend DTO to frontend Dish. Uses backend values as-is (image, foodType).
+ * Supports both camelCase (foodType) and PascalCase (FoodType) from API.
  */
 export function mapDishDtoToDish(dto: DishDto): Dish {
+  const raw = dto as unknown as Record<string, unknown>;
+  const foodType = (raw.foodType ?? raw.FoodType ?? "") as string;
   return {
     id: dto.id,
     name: dto.name,
     restaurantId: dto.restaurantId,
-    imagePlaceholder: dto.imagePlaceholder ?? undefined,
+    image: (raw.image ?? raw.Image ?? "") as string,
+    foodType: typeof foodType === "string" ? foodType : "",
     savedCount: dto.savedCount,
     savedByUserIds: Array.isArray(dto.savedByUserIds) ? dto.savedByUserIds : [],
     createdAt: dto.createdAt,

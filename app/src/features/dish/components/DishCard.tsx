@@ -37,8 +37,7 @@ export function DishCard({ dish, onPress, isSignature, badges, isNearby }: DishC
         <Image
           source={{
             uri:
-              dish.imagePlaceholder ??
-              "https://placehold.co/400x224/gray/white?text=Dish",
+              dish.image
           }}
           className="h-full w-full"
           resizeMode="cover"

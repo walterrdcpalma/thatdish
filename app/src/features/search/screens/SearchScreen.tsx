@@ -109,8 +109,7 @@ function SearchGridItem({ dish, badges, isNearby, itemSize }: SearchGridItemProp
       <Image
         source={{
           uri:
-            dish.imagePlaceholder ??
-            "https://placehold.co/400x400/gray/white?text=Dish",
+            dish.image
         }}
         className="h-full w-full"
         resizeMode="cover"

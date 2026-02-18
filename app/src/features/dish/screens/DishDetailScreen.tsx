@@ -61,8 +61,7 @@ export function DishDetailScreen() {
         <Image
           source={{
             uri:
-              dish.imagePlaceholder ??
-              "https://placehold.co/400x288/gray/white?text=Dish",
+              dish.image
           }}
           className="h-full w-full"
           resizeMode="cover"
@@ -83,6 +82,9 @@ export function DishDetailScreen() {
         )}
         <Text className="text-2xl font-bold text-black">{dish.name}</Text>
         <Text className="mt-1 text-base text-gray-600">{restaurantName}</Text>
+        {dish.foodType ? (
+          <Text className="mt-1 text-sm text-gray-500">{dish.foodType}</Text>
+        ) : null}
         <View className="mt-3 flex-row items-center justify-between">
           <Text className="text-sm text-gray-500">{dish.savedCount} saved</Text>
           {!dish.isArchived && (

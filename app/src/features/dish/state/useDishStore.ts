@@ -17,7 +17,7 @@ interface DishStore {
   restoreDish: (dishId: string) => void;
   updateDish: (
     dishId: string,
-    updates: Partial<Pick<Dish, "name" | "imagePlaceholder">>
+    updates: Partial<Pick<Dish, "name" | "image">>
   ) => void;
 }
 
@@ -96,7 +96,7 @@ export const useDishStore = create<DishStore>((set, get) => ({
 
   updateDish: (
     dishId: string,
-    updates: Partial<Pick<Dish, "name" | "imagePlaceholder">>
+    updates: Partial<Pick<Dish, "name" | "image">>
   ) => {
     const { currentUser } = useUserStore.getState();
     const restaurants = useRestaurantStore.getState().restaurants;

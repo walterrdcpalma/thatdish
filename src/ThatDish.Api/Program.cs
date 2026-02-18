@@ -72,21 +72,16 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-// In Development: SQLite = create from model; PostgreSQL = run migrations. Then seed mock data.
-if (app.Environment.IsDevelopment())
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
-        var conn = scope.ServiceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
-        var useSqlite = conn?.TrimStart().StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase) == true;
-        if (useSqlite)
-            await db.Database.EnsureCreatedAsync();
-        else
-            await db.Database.MigrateAsync();
-        await SeedData.SeedAsync(db);
-    }
-}
+// In Development we do not create DB nor seed for GET /api/dishes (controller uses StaticDishSeed).
+// Uncomment below if you need the DB in Development for other features:
+// if (app.Environment.IsDevelopment())
+// {
+//     using var scope = app.Services.CreateScope();
+//     var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
+//     var conn = scope.ServiceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
+//     var useSqlite = conn?.TrimStart().StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase) == true;
+//     if (useSqlite) await db.Database.EnsureCreatedAsync(); else await db.Database.MigrateAsync();
+// }
 
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();

@@ -111,7 +111,8 @@ export function CreateDishScreen() {
       updatedAt: now,
       createdByUserId: currentUser.id,
       lastEditedByUserId: null,
-      imagePlaceholder: `https://picsum.photos/seed/dish-${dishId}/800/500`,
+      image: `https://picsum.photos/seed/dish-${dishId}/800/500`,
+      foodType: "other",
       isArchived: false,
     };
     addDish(dish);

@@ -121,8 +121,7 @@ export function RestaurantDetailScreen() {
                   <Image
                     source={{
                       uri:
-                        mainDish.imagePlaceholder ??
-                        "https://placehold.co/600x450/gray/white?text=Dish",
+                        mainDish.image
                     }}
                     className="h-full w-full"
                     resizeMode="cover"
@@ -175,8 +174,7 @@ export function RestaurantDetailScreen() {
                     <Image
                       source={{
                         uri:
-                          dish.imagePlaceholder ??
-                          "https://placehold.co/400x400/gray/white?text=Dish",
+                          dish.image
                       }}
                       className="h-full w-full"
                       resizeMode="cover"
@@ -256,8 +254,7 @@ export function RestaurantDetailScreen() {
                       <Image
                         source={{
                           uri:
-                            dish.imagePlaceholder ??
-                            "https://placehold.co/96/96/gray/white?text=Dish",
+                            dish.image
                         }}
                         className="h-14 w-14 rounded-lg bg-gray-200"
                         resizeMode="cover"

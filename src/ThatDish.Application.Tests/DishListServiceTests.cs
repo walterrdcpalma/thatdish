@@ -101,11 +101,12 @@ public class DishListServiceTests
         Assert.Equal(dish.Id, result[0].Id);
         Assert.Equal("Fish and Chips", result[0].Name);
         Assert.Equal(dish.RestaurantId, result[0].RestaurantId);
-        Assert.Equal("https://example.com/fish.jpg", result[0].ImagePlaceholder);
+        Assert.Equal("https://example.com/fish.jpg", result[0].Image);
         Assert.Equal(0, result[0].SavedCount);
         Assert.Empty(result[0].SavedByUserIds);
         Assert.Equal(dish.CreatedAtUtc, result[0].CreatedAt);
         Assert.Null(result[0].UpdatedAt);
         Assert.False(result[0].IsArchived);
+        Assert.Equal("Other", result[0].FoodType);
     }
 }
