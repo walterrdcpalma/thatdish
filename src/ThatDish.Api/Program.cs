@@ -11,8 +11,9 @@ using ThatDish.Infrastructure.Restaurants;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Listen on all interfaces so mobile devices on the same network can reach the API
-builder.WebHost.UseUrls("http://0.0.0.0:6000");
+// Bind to Railway/Fly/etc injected PORT in production, fallback to 6000 locally.
+var port = Environment.GetEnvironmentVariable("PORT") ?? "6000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
