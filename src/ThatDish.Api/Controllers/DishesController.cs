@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ThatDish.Api.Services;
 using ThatDish.Application.Dishes;
 using ThatDish.Infrastructure.Persistence;
 using ThatDish.Infrastructure.Services;
@@ -10,13 +11,13 @@ namespace ThatDish.Api.Controllers;
 public class DishesController : ControllerBase
 {
     private readonly IDishService _dishService;
-    private readonly IWebHostEnvironment _env;
+    private readonly ISupabaseStorageService _storageService;
     private readonly ThatDishDbContext _db;
 
-    public DishesController(IDishService dishService, IWebHostEnvironment env, ThatDishDbContext db)
+    public DishesController(IDishService dishService, ISupabaseStorageService storageService, ThatDishDbContext db)
     {
         _dishService = dishService;
-        _env = env;
+        _storageService = storageService;
         _db = db;
     }
 
@@ -48,7 +49,7 @@ public class DishesController : ControllerBase
         return Ok(results);
     }
 
-    /// <summary>Create a new dish with image upload (multipart/form-data). Creates the restaurant if it does not exist.</summary>
+    /// <summary>Create a new dish with multipart/form-data and upload image to Supabase Storage.</summary>
     [HttpPost]
     [DisableRequestSizeLimit]
     [RequestFormLimits(MultipartBodyLengthLimit = 10 * 1024 * 1024)]
@@ -74,22 +75,7 @@ public class DishesController : ControllerBase
         if (image == null || image.Length == 0)
             return BadRequest("image is required.");
 
-        var uploadsPath = Path.Combine(_env.ContentRootPath, "wwwroot", "uploads");
-        if (!Directory.Exists(uploadsPath))
-            Directory.CreateDirectory(uploadsPath);
-
-        var extension = Path.GetExtension(image.FileName).TrimStart('.');
-        if (string.IsNullOrEmpty(extension))
-            extension = "jpg";
-        var fileName = $"{Guid.NewGuid():N}.{extension}";
-        var filePath = Path.Combine(uploadsPath, fileName);
-
-        await using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
-        {
-            await image.CopyToAsync(stream, cancellationToken);
-        }
-
-        var imageUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+        var imageUrl = await _storageService.UploadDishImageAsync(image, cancellationToken);
 
         var createdByUserId = await DevCurrentUserResolver.GetOrCreateSeedUserIdAsync(_db, cancellationToken);
 
@@ -100,14 +86,10 @@ public class DishesController : ControllerBase
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))
         {
-            if (System.IO.File.Exists(filePath))
-                System.IO.File.Delete(filePath);
             return Conflict(ex.Message);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("cuisineType"))
         {
-            if (System.IO.File.Exists(filePath))
-                System.IO.File.Delete(filePath);
             return BadRequest(ex.Message);
         }
     }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ThatDish.Api.Exceptions;
+using ThatDish.Api.Services;
 using ThatDish.Application.Dishes;
 using ThatDish.Application.Restaurants;
 using ThatDish.Infrastructure.Dishes;
@@ -49,6 +50,8 @@ builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
 builder.Services.AddScoped<RestaurantListService>();
 builder.Services.AddScoped<IRestaurantClaimService, RestaurantClaimService>();
+builder.Services.AddHttpClient(nameof(SupabaseStorageService));
+builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
