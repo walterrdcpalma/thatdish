@@ -15,6 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "6000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
+var runSeed = builder.Configuration.GetValue<bool>("RUN_SEED");
+Console.WriteLine($"[Startup] RUN_SEED resolved: {runSeed}");
+
 // Startup diagnostics for Railway env binding.
 var connFromEnvDoubleUnderscore = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 var connFromEnvColon = Environment.GetEnvironmentVariable("ConnectionStrings:DefaultConnection");
@@ -91,8 +94,7 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-var runSeed = builder.Configuration.GetValue<bool>("RUN_SEED");
-Console.WriteLine($"[Startup] RUN_SEED resolved: {runSeed}");
+
 if (app.Environment.IsDevelopment() || runSeed)
 {
     using var scope = app.Services.CreateScope();
