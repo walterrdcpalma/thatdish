@@ -1,37 +1,51 @@
-import { useEffect } from "react";
-import { View, Text, ScrollView, Image } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, ScrollView, Image, ActivityIndicator } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { DishCard } from "../components";
 import { useDishStore } from "../state";
-import { useUserStore } from "@/src/features/user/state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { getSignatureDish } from "@/src/features/restaurant/services";
 import { AnimatedPressable } from "@/src/shared/components";
+import { fetchMyContributions } from "@/src/shared/api/dishesApi";
+import { config } from "@/src/config";
+import type { Dish } from "../types";
 
 export function UserContributionsScreen() {
   const router = useRouter();
-  const currentUser = useUserStore((s) => s.currentUser);
-  const dishes = useDishStore((s) => s.dishes);
-  const restoreDish = useDishStore((s) => s.restoreDish);
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const restaurants = useRestaurantStore((s) => s.restaurants);
   const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
+  const restoreDish = useDishStore((s) => s.restoreDish);
+
+  const loadMyContributions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await fetchMyContributions(config.apiBaseUrl);
+      setDishes(list);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load my contributions.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMyContributions();
+  }, [loadMyContributions]);
+
   useEffect(() => {
     loadRestaurants();
   }, [loadRestaurants]);
 
-  const myDishes = dishes.filter(
-    (dish) =>
-      dish.createdByUserId === currentUser.id && !dish.isArchived
-  );
-  const myArchivedDishes = dishes.filter(
-    (dish) =>
-      dish.createdByUserId === currentUser.id && dish.isArchived
-  );
-
-  const isEmpty = myDishes.length === 0 && myArchivedDishes.length === 0;
+  const myDishes = dishes.filter((d) => !d.isArchived);
+  const myArchivedDishes = dishes.filter((d) => d.isArchived);
+  const isEmpty = dishes.length === 0;
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -47,7 +61,22 @@ export function UserContributionsScreen() {
         </AnimatedPressable>
         <Text className="text-xl font-bold text-black">My Contributions</Text>
       </View>
-      {isEmpty ? (
+      {loading ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <ActivityIndicator size="large" color="#000" />
+          <Text className="mt-3 text-gray-500">Loading…</Text>
+        </View>
+      ) : error ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <Text className="text-center text-red-600">{error}</Text>
+          <AnimatedPressable
+            onPress={loadMyContributions}
+            className="mt-3 rounded-lg bg-gray-200 px-4 py-2"
+          >
+            <Text className="text-sm font-medium text-gray-800">Retry</Text>
+          </AnimatedPressable>
+        </View>
+      ) : isEmpty ? (
         <View className="flex-1 items-center justify-center px-8">
           <Text className="text-center text-gray-500">
             You haven&apos;t added any dishes yet.

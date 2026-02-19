@@ -98,6 +98,7 @@ public class DishService : IDishService
         string foodType,
         string image,
         string? cuisineType,
+        Guid? createdByUserId,
         CancellationToken cancellationToken = default)
     {
         var name = dishName.Trim();
@@ -141,7 +142,8 @@ public class DishService : IDishService
             IsMainDish = false,
             SortOrder = 0,
             CreatedAtUtc = now,
-            UpdatedAtUtc = now
+            UpdatedAtUtc = now,
+            CreatedByUserId = createdByUserId,
         };
         _dishRepository.Add(dish);
 
@@ -151,5 +153,42 @@ public class DishService : IDishService
         if (loaded == null)
             throw new InvalidOperationException("Dish was not found after save.");
         return loaded.ToDto();
+    }
+
+    public async Task<List<DishDto>> GetMyContributionsAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var projected = await _context.Dishes
+            .AsNoTracking()
+            .Where(d => d.CreatedByUserId == userId)
+            .OrderByDescending(d => d.CreatedAtUtc)
+            .Select(d => new
+            {
+                d.Id,
+                d.Name,
+                d.RestaurantId,
+                RestaurantName = d.Restaurant.Name,
+                d.ImageUrl,
+                d.FoodType,
+                d.CreatedAtUtc,
+                d.UpdatedAtUtc,
+                d.CreatedByUserId,
+            })
+            .ToListAsync(cancellationToken);
+        return projected
+            .Select(p => new DishDto(
+                p.Id,
+                p.Name,
+                p.RestaurantId,
+                p.RestaurantName,
+                p.ImageUrl,
+                p.FoodType.ToString(),
+                0,
+                Array.Empty<string>(),
+                p.CreatedAtUtc,
+                p.UpdatedAtUtc,
+                p.CreatedByUserId?.ToString() ?? string.Empty,
+                null,
+                false))
+            .ToList();
     }
 }

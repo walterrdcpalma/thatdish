@@ -14,6 +14,8 @@ public class Dish
     public int SortOrder { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
+    /// <summary>User who created the dish. Null for legacy data.</summary>
+    public Guid? CreatedByUserId { get; set; }
 
     public Restaurant Restaurant { get; set; } = null!;
     public ICollection<Like> Likes { get; set; } = new List<Like>();

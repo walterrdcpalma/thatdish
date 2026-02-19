@@ -11,5 +11,8 @@ public interface IDishService
         string foodType,
         string image,
         string? cuisineType,
+        Guid? createdByUserId,
         CancellationToken cancellationToken = default);
+    /// <summary>Dishes created by the given user (for My Contributions). Order by CreatedAtUtc desc.</summary>
+    Task<List<DishDto>> GetMyContributionsAsync(Guid userId, CancellationToken cancellationToken = default);
 }

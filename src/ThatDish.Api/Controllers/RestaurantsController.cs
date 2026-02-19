@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ThatDish.Api.Models;
 using ThatDish.Application.Restaurants;
 using ThatDish.Infrastructure.Persistence;
+using ThatDish.Infrastructure.Services;
 
 namespace ThatDish.Api.Controllers;
 
@@ -40,16 +40,13 @@ public class RestaurantsController : ControllerBase
         return Ok(restaurants);
     }
 
-    /// <summary>My Restaurants: list where current user is claimer (Pending, Verified, or Rejected). Uses seed user.</summary>
+    /// <summary>My Restaurants: list where current user is claimer (Pending, Verified, or Rejected). Uses shared dev user resolver.</summary>
     [HttpGet("mine")]
     [ProducesResponseType(typeof(IEnumerable<RestaurantDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<IEnumerable<RestaurantDto>>> GetMine(CancellationToken cancellationToken)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.ExternalId == "seed-claimer", cancellationToken);
-        if (user == null)
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Seed user not found. Run seed first.");
-        var list = await _restaurantListService.GetMyRestaurantsAsync(user.Id, cancellationToken);
+        var userId = await DevCurrentUserResolver.GetOrCreateSeedUserIdAsync(_db, cancellationToken);
+        var list = await _restaurantListService.GetMyRestaurantsAsync(userId, cancellationToken);
         return Ok(list);
     }
 
@@ -65,20 +62,17 @@ public class RestaurantsController : ControllerBase
         return Ok(restaurant);
     }
 
-    /// <summary>Submit a claim for the restaurant. Allowed when claim status is None or Rejected. Uses seed user (no auth check).</summary>
+    /// <summary>Submit a claim for the restaurant. Allowed when claim status is None or Rejected. Uses shared dev user resolver.</summary>
     [HttpPost("{id:guid}/claims")]
     [ProducesResponseType(typeof(RestaurantDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     public async Task<ActionResult<RestaurantDto>> SubmitClaim(Guid id, CancellationToken cancellationToken)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.ExternalId == "seed-claimer", cancellationToken);
-        if (user == null)
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Seed user not found. Run seed first.");
+        var userId = await DevCurrentUserResolver.GetOrCreateSeedUserIdAsync(_db, cancellationToken);
         try
         {
-            var dto = await _claimService.SubmitClaimAsync(id, user.Id, cancellationToken);
+            var dto = await _claimService.SubmitClaimAsync(id, userId, cancellationToken);
             return Ok(dto);
         }
         catch (KeyNotFoundException)

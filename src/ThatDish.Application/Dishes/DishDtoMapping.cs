@@ -20,7 +20,7 @@ public static class DishDtoMapping
             SavedByUserIds: Array.Empty<string>(),
             CreatedAt: dish.CreatedAtUtc,
             UpdatedAt: dish.UpdatedAtUtc,
-            CreatedByUserId: string.Empty,
+            CreatedByUserId: dish.CreatedByUserId?.ToString() ?? string.Empty,
             LastEditedByUserId: null,
             IsArchived: false
         );

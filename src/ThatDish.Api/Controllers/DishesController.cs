@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ThatDish.Application.Dishes;
+using ThatDish.Infrastructure.Persistence;
+using ThatDish.Infrastructure.Services;
 
 namespace ThatDish.Api.Controllers;
 
@@ -9,11 +11,23 @@ public class DishesController : ControllerBase
 {
     private readonly IDishService _dishService;
     private readonly IWebHostEnvironment _env;
+    private readonly ThatDishDbContext _db;
 
-    public DishesController(IDishService dishService, IWebHostEnvironment env)
+    public DishesController(IDishService dishService, IWebHostEnvironment env, ThatDishDbContext db)
     {
         _dishService = dishService;
         _env = env;
+        _db = db;
+    }
+
+    /// <summary>My Contributions: dishes created by current user. Uses shared dev user resolver. Order by createdAt desc.</summary>
+    [HttpGet("my-contributions")]
+    [ProducesResponseType(typeof(IEnumerable<DishDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<DishDto>>> GetMyContributions(CancellationToken cancellationToken)
+    {
+        var userId = await DevCurrentUserResolver.GetOrCreateSeedUserIdAsync(_db, cancellationToken);
+        var list = await _dishService.GetMyContributionsAsync(userId, cancellationToken);
+        return Ok(list);
     }
 
     /// <summary>List all dishes from the database.</summary>
@@ -77,9 +91,11 @@ public class DishesController : ControllerBase
 
         var imageUrl = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
 
+        var createdByUserId = await DevCurrentUserResolver.GetOrCreateSeedUserIdAsync(_db, cancellationToken);
+
         try
         {
-            var dto = await _dishService.CreateDishAsync(dishName, restName, foodTypeValue, imageUrl, cuisineType, cancellationToken);
+            var dto = await _dishService.CreateDishAsync(dishName, restName, foodTypeValue, imageUrl, cuisineType, createdByUserId, cancellationToken);
             return Created($"/api/dishes/{dto.Id}", dto);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))

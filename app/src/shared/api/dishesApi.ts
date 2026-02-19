@@ -55,6 +55,26 @@ export async function fetchDishes(baseUrl: string): Promise<Dish[]> {
   return raw.map((item) => mapDishDtoToDish(item as DishDto));
 }
 
+/**
+ * Fetches My Contributions from GET /api/dishes/my-contributions (dishes created by current user).
+ */
+export async function fetchMyContributions(baseUrl: string): Promise<Dish[]> {
+  const url = `${baseUrl.replace(/\/$/, "")}/api/dishes/my-contributions`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    if (response.status === 503) {
+      const text = await response.text();
+      throw new Error(text || "Seed user not found.");
+    }
+    throw new Error(`My contributions request failed: ${response.status}`);
+  }
+  const raw: unknown = await response.json();
+  if (!Array.isArray(raw)) {
+    throw new Error("My contributions response is not an array");
+  }
+  return raw.map((item) => mapDishDtoToDish(item as DishDto));
+}
+
 /** Request body for POST /api/dishes. */
 export interface CreateDishRequest {
   name: string;
