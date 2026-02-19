@@ -1,0 +1,12 @@
+.git
+.github
+.cursor
+.vscode
+**/.idea
+**/bin
+**/obj
+app/node_modules
+app/.expo
+app/dist
+docs
+*.log
