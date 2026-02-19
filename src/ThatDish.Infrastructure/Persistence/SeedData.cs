@@ -108,16 +108,16 @@ public static class SeedData
         // Reuse exact image URLs from former frontend mock (Picsum, consistent per seed).
         var dishImageUrls = new[]
         {
-            "https://picsum.photos/seed/dish-1-piri-piri/800/500",
-            "https://picsum.photos/seed/dish-2-burger/800/500",
-            "https://picsum.photos/seed/dish-3-bacalhau/800/500",
-            "https://picsum.photos/seed/dish-4-sardines/800/500",
-            "https://picsum.photos/seed/dish-5-caldo/800/500",
-            "https://picsum.photos/seed/dish-6-tacos/800/500",
-            "https://picsum.photos/seed/dish-7-salad/800/500",
-            "https://picsum.photos/seed/dish-8-octopus/800/500",
-            "https://picsum.photos/seed/dish-9-nata/800/500",
-            "https://picsum.photos/seed/dish-10-arroz/800/500",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1467003909585-2f8a72700288.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1482049016688-2d3e1b311543.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1484723091739-30a097e8f929.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1512621776951-a57141f2eefd.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1546069901-ba9599a7e63c.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1555939594-58d7cb561ad1.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1565299624946-b28f40a0ae38.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1565958011703-44f9829ba187.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/photo-1567620905732-2d1ec7ab7445.avif",
+            "https://cobqkcfbdolzjqawxcej.supabase.co/storage/v1/object/public/dish-images/premium_photo-1675252369719-dd52bc69c3df.avif",
         };
 
         static DateTime DaysAgo(DateTime from, int days) => from.AddDays(-days);
