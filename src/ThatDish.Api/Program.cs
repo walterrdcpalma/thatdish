@@ -99,7 +99,7 @@ builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 
-if (app.Environment.IsDevelopment() || runSeed)
+if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
@@ -109,6 +109,12 @@ if (app.Environment.IsDevelopment() || runSeed)
         await db.Database.EnsureCreatedAsync();
     else
         await db.Database.MigrateAsync();
+    await SeedData.SeedAsync(db);
+}
+else if (runSeed)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
     await SeedData.SeedAsync(db);
 }
 
