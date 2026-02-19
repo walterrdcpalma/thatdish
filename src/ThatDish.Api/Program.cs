@@ -65,7 +65,7 @@ var supabaseJwtSecret = builder.Configuration["Supabase:JwtSecret"];
 var isSupabaseConfigured = !string.IsNullOrWhiteSpace(supabaseIssuer)
     && !string.IsNullOrWhiteSpace(supabaseJwtSecret)
     && !supabaseJwtSecret.Contains("YOUR_JWT_SECRET", StringComparison.OrdinalIgnoreCase)
-    && !supabaseIssuer.Contains("YOUR_PROJECT_REF", StringComparison.OrdinalIgnoreCase);
+    && !supabaseIssuer.Contains("17E7lYenwhcE8eXt", StringComparison.OrdinalIgnoreCase);
 
 if (isSupabaseConfigured)
 {
