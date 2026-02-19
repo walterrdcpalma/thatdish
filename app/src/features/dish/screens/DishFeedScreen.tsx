@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
+import { Ionicons } from "@expo/vector-icons";
 import { DishCard } from "../components";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
@@ -129,13 +130,27 @@ export function DishFeedScreen() {
         </View>
       )}
       {tab === "Nearby" && restaurantsError && !restaurantsLoading && (
-        <View className="flex-1 items-center justify-center px-6">
+        <View className="flex-1 items-center justify-center gap-3 px-6">
           <Text className="text-center text-gray-600">Failed to load restaurants.</Text>
+          <Pressable
+            onPress={() => loadRestaurants()}
+            className="flex-row items-center gap-2 rounded-full bg-orange-500 px-4 py-2.5"
+          >
+            <Ionicons name="refresh" size={18} color="#fff" />
+            <Text className="font-medium text-white">Retry</Text>
+          </Pressable>
         </View>
       )}
       {error && !loading && (
-        <View className="flex-1 items-center justify-center px-6">
+        <View className="flex-1 items-center justify-center gap-3 px-6">
           <Text className="text-center text-gray-600">Failed to load dishes.</Text>
+          <Pressable
+            onPress={() => loadDishes()}
+            className="flex-row items-center gap-2 rounded-full bg-orange-500 px-4 py-2.5"
+          >
+            <Ionicons name="refresh" size={18} color="#fff" />
+            <Text className="font-medium text-white">Retry</Text>
+          </Pressable>
         </View>
       )}
       {!loading &&
