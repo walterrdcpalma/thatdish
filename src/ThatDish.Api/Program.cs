@@ -15,6 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "6000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
+// Startup diagnostics for Railway env binding.
+var connFromEnvDoubleUnderscore = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+var connFromEnvColon = Environment.GetEnvironmentVariable("ConnectionStrings:DefaultConnection");
+Console.WriteLine($"[Startup] Env ConnectionStrings__DefaultConnection set: {!string.IsNullOrWhiteSpace(connFromEnvDoubleUnderscore)}");
+Console.WriteLine($"[Startup] Env ConnectionStrings:DefaultConnection set: {!string.IsNullOrWhiteSpace(connFromEnvColon)}");
+
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -23,6 +29,7 @@ builder.Services.AddDbContext<ThatDishDbContext>(options =>
 {
     var conn = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("ConnectionString 'DefaultConnection' not configured.");
+    Console.WriteLine($"[Startup] Resolved DefaultConnection contains localhost: {conn.Contains(\"localhost\", StringComparison.OrdinalIgnoreCase)}");
     // SQLite when connection string looks like "Data Source=..."
     if (conn.TrimStart().StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
         options.UseSqlite(conn);
