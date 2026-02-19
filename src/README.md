@@ -25,8 +25,8 @@ From `src/`:
 dotnet run --project ThatDish.Api
 ```
 
-- **Health:** `GET http://localhost:5000/health`
-- **List dishes:** `GET http://localhost:5000/api/dishes?page=1&pageSize=20`  
+- **Health:** `GET http://localhost:6000/health`
+- **List dishes:** `GET http://localhost:6000/api/dishes?page=1&pageSize=20`  
   Optional query: `foodType` (enum value, e.g. `Pasta`, `Grill`).
 
 ## Projects

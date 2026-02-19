@@ -8,7 +8,7 @@ Mobile-first app to discover restaurants by their most worth-it dishes.
 ```bash
 cd src && dotnet run --project ThatDish.Api
 ```
-API: http://localhost:5000 (health: /health, dishes: /api/dishes)
+API: http://localhost:6000 (health: /health, dishes: /api/dishes)
 
 **Frontend (Expo – web or mobile)**  
 ```bash
