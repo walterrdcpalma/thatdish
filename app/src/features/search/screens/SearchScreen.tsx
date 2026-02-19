@@ -9,6 +9,8 @@ import {
   useWindowDimensions,
   ActivityIndicator,
   ScrollView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -154,62 +156,67 @@ export function SearchScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="border-b border-gray-100 px-4 pb-3 pt-2">
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search dishes or restaurants..."
-          placeholderTextColor="#9ca3af"
-          className="mb-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-black"
-        />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 6 }}
-        >
-          {CUISINE_OPTIONS.map((opt) => (
-            <Pressable
-              key={opt}
-              onPress={() => setFilterCuisine(opt)}
-              className={`rounded-full px-2.5 py-1.5 ${filterCuisine === opt ? "bg-orange-500" : "bg-gray-100"}`}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="flex-1">
+          <View className="border-b border-gray-100 px-4 pb-3 pt-2">
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search dishes or restaurants..."
+              placeholderTextColor="#9ca3af"
+              className="mb-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-black"
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 6 }}
             >
-              <Text
-                className={`text-[11px] font-medium ${filterCuisine === opt ? "text-white" : "text-gray-600"}`}
-              >
-                {opt}
+              {CUISINE_OPTIONS.map((opt) => (
+                <Pressable
+                  key={opt}
+                  onPress={() => setFilterCuisine(opt)}
+                  className={`rounded-full px-2.5 py-1.5 ${filterCuisine === opt ? "bg-orange-500" : "bg-gray-100"}`}
+                >
+                  <Text
+                    className={`text-[11px] font-medium ${filterCuisine === opt ? "text-white" : "text-gray-600"}`}
+                  >
+                    {opt}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+          {loading ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color="#f97316" />
+            </View>
+          ) : filteredByCuisine.length === 0 ? (
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-gray-500">
+                {query.trim() ? "No results found." : "Type to search dishes or restaurants."}
               </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-      {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#f97316" />
+            </View>
+          ) : (
+            <FlatList
+              data={filteredByCuisine}
+              keyExtractor={(item) => item.id}
+              numColumns={3}
+              contentContainerStyle={{
+                paddingHorizontal: GRID_PADDING_H,
+                paddingTop: GRID_GAP,
+                paddingBottom: 80,
+              }}
+              columnWrapperStyle={{
+                flexDirection: "row",
+                marginBottom: GRID_GAP,
+                gap: GRID_GAP,
+              }}
+              renderItem={renderItem}
+              keyboardShouldPersistTaps="handled"
+            />
+          )}
         </View>
-      ) : filteredByCuisine.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-500">
-            {query.trim() ? "No results found." : "Type to search dishes or restaurants."}
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredByCuisine}
-          keyExtractor={(item) => item.id}
-          numColumns={3}
-          contentContainerStyle={{
-            paddingHorizontal: GRID_PADDING_H,
-            paddingTop: GRID_GAP,
-            paddingBottom: 80,
-          }}
-          columnWrapperStyle={{
-            flexDirection: "row",
-            marginBottom: GRID_GAP,
-            gap: GRID_GAP,
-          }}
-          renderItem={renderItem}
-        />
-      )}
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
