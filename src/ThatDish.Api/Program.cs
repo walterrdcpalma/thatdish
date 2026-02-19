@@ -85,7 +85,8 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+var runSeed = builder.Configuration.GetValue<bool>("RUN_SEED");
+if (app.Environment.IsDevelopment() || runSeed)
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
