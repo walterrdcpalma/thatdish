@@ -92,6 +92,7 @@ builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 var runSeed = builder.Configuration.GetValue<bool>("RUN_SEED");
+Console.WriteLine($"[Startup] RUN_SEED resolved: {runSeed}");
 if (app.Environment.IsDevelopment() || runSeed)
 {
     using var scope = app.Services.CreateScope();
