@@ -8,7 +8,8 @@ export const config: {
 } = {
   env: "development",
   //apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.1.22:6000",
-  apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.1.20:6000",
+  //apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://192.168.1.20:6000",
+  apiBaseUrl: process.env.EXPO_PUBLIC_API_URL ?? "http://172.20.10.2:6000",
 
   devHostForImages: process.env.EXPO_PUBLIC_DEV_HOST ?? undefined,
 };
