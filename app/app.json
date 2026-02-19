@@ -1,16 +1,20 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "ThatDish",
+    "slug": "thatdish",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "app",
+    "scheme": "thatdish",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.walter.thatdish",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -44,6 +48,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f915a153-fdd5-49c5-9798-23367daf9209"
+      }
+    },
+    "owner": "walterrdcpalmas-organization"
   }
 }
