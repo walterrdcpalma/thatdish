@@ -29,7 +29,6 @@ builder.Services.AddDbContext<ThatDishDbContext>(options =>
 {
     var conn = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("ConnectionString 'DefaultConnection' not configured.");
-    Console.WriteLine($"[Startup] Resolved DefaultConnection contains localhost: {conn.Contains(\"localhost\", StringComparison.OrdinalIgnoreCase)}");
     // SQLite when connection string looks like "Data Source=..."
     if (conn.TrimStart().StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
         options.UseSqlite(conn);
