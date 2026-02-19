@@ -32,6 +32,10 @@ builder.Services.AddDbContext<ThatDishDbContext>(options =>
 {
     var conn = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("ConnectionString 'DefaultConnection' not configured.");
+    var connParts = conn.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var connHost = connParts.FirstOrDefault(p => p.StartsWith("Host=", StringComparison.OrdinalIgnoreCase)) ?? "Host=<missing>";
+    var connUser = connParts.FirstOrDefault(p => p.StartsWith("Username=", StringComparison.OrdinalIgnoreCase)) ?? "Username=<missing>";
+    Console.WriteLine($"[Startup] Resolved DefaultConnection -> {connHost}; {connUser}");
     // SQLite when connection string looks like "Data Source=..."
     if (conn.TrimStart().StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
         options.UseSqlite(conn);
