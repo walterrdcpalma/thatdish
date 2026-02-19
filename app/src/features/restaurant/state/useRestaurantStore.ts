@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ClaimStatus, Restaurant } from "../types/restaurant.types";
+import type { Restaurant } from "../types/restaurant.types";
 import { fetchRestaurants } from "@/src/shared/api/restaurantsApi";
 import { config } from "@/src/config";
 
@@ -9,10 +9,9 @@ interface RestaurantStore {
   error: string | null;
   loadRestaurants: () => Promise<void>;
   addRestaurant: (restaurant: Restaurant) => void;
+  updateRestaurant: (restaurant: Restaurant) => void;
   getRestaurantById: (id: string) => Restaurant | undefined;
-  claimRestaurant: (restaurantId: string, userId: string) => void;
   setSignatureDish: (restaurantId: string, dishId: string) => void;
-  setClaimStatus: (restaurantId: string, claimStatus: ClaimStatus) => void;
 }
 
 export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
@@ -40,38 +39,27 @@ export const useRestaurantStore = create<RestaurantStore>((set, get) => ({
           ...restaurant,
           signatureDishId: restaurant.signatureDishId ?? null,
           ownerUserId: restaurant.ownerUserId ?? null,
-          claimStatus: restaurant.claimStatus ?? "unclaimed",
-          imageUrl: restaurant.imageUrl,
-          latitude: restaurant.latitude,
-          longitude: restaurant.longitude,
-          cuisine: restaurant.cuisine,
+          claimedByUserId: restaurant.claimedByUserId ?? null,
+          ownershipType: restaurant.ownershipType ?? "Community",
+          claimStatus: restaurant.claimStatus ?? "None",
         },
       ],
+    })),
+
+  updateRestaurant: (restaurant: Restaurant) =>
+    set((state) => ({
+      restaurants: state.restaurants.map((r) =>
+        r.id === restaurant.id ? { ...r, ...restaurant } : r
+      ),
     })),
 
   getRestaurantById: (id: string) =>
     get().restaurants.find((r) => r.id === id),
 
-  claimRestaurant: (restaurantId: string, userId: string) =>
-    set((state) => ({
-      restaurants: state.restaurants.map((r) =>
-        r.id === restaurantId
-          ? { ...r, ownerUserId: userId, claimStatus: "pending" as const }
-          : r
-      ),
-    })),
-
   setSignatureDish: (restaurantId: string, dishId: string) =>
     set((state) => ({
       restaurants: state.restaurants.map((r) =>
         r.id === restaurantId ? { ...r, signatureDishId: dishId } : r
-      ),
-    })),
-
-  setClaimStatus: (restaurantId: string, claimStatus: ClaimStatus) =>
-    set((state) => ({
-      restaurants: state.restaurants.map((r) =>
-        r.id === restaurantId ? { ...r, claimStatus } : r
       ),
     })),
 }));

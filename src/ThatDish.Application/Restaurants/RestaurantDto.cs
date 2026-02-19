@@ -1,3 +1,5 @@
+using ThatDish.Domain.Enums;
+
 namespace ThatDish.Application.Restaurants;
 
 /// <summary>
@@ -11,5 +13,10 @@ public record RestaurantDto(
     double? Longitude,
     string? ContactInfo,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc
+    DateTime? UpdatedAtUtc,
+    OwnershipType OwnershipType,
+    ClaimStatus ClaimStatus,
+    Guid? ClaimedByUserId,
+    DateTime? ClaimRequestedAtUtc,
+    DateTime? ClaimReviewedAtUtc
 );

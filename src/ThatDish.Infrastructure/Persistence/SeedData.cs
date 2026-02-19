@@ -7,6 +7,9 @@ namespace ThatDish.Infrastructure.Persistence;
 
 public static class SeedData
 {
+    /// <summary>Seed user used as claimer in claim scenarios (Pending, Verified, Rejected).</summary>
+    private static readonly Guid SeedClaimerUserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
     public static async Task SeedAsync(ThatDishDbContext db, CancellationToken cancellationToken = default)
     {
         if (await db.Restaurants.AnyAsync(cancellationToken))
@@ -18,8 +21,25 @@ public static class SeedData
         var r3 = SeedRestaurants.Restaurant3;
         var r4 = SeedRestaurants.Restaurant4;
 
+        // Seed user for claim scenarios (so claimedByUserId references an existing user)
+        if (!await db.Users.AnyAsync(cancellationToken))
+        {
+            db.Users.Add(new User
+            {
+                Id = SeedClaimerUserId,
+                ExternalId = "seed-claimer",
+                DisplayName = "Seed Claimer",
+                Email = "seed@thatdish.local",
+                CreatedAtUtc = now,
+            });
+        }
+
+        var requestedAt = now.AddDays(-5);
+        var reviewedAt = now.AddDays(-3);
+
         var restaurants = new[]
         {
+            // Community, None – nunca reclamado
             new Restaurant
             {
                 Id = r1.Id,
@@ -29,7 +49,13 @@ public static class SeedData
                 Longitude = -9.1393,
                 ContactInfo = "+351 21 123 4567",
                 CreatedAtUtc = now,
+                OwnershipType = OwnershipType.Community,
+                ClaimStatus = ClaimStatus.None,
+                ClaimedByUserId = null,
+                ClaimRequestedAtUtc = null,
+                ClaimReviewedAtUtc = null,
             },
+            // Community, Pending – reclamação pendente
             new Restaurant
             {
                 Id = r2.Id,
@@ -38,7 +64,13 @@ public static class SeedData
                 Latitude = 41.1579,
                 Longitude = -8.6291,
                 CreatedAtUtc = now,
+                OwnershipType = OwnershipType.Community,
+                ClaimStatus = ClaimStatus.Pending,
+                ClaimedByUserId = SeedClaimerUserId,
+                ClaimRequestedAtUtc = requestedAt,
+                ClaimReviewedAtUtc = null,
             },
+            // OwnerManaged, Verified – reclamação aprovada
             new Restaurant
             {
                 Id = r3.Id,
@@ -48,7 +80,13 @@ public static class SeedData
                 Longitude = -8.4103,
                 ContactInfo = "bifanas@email.pt",
                 CreatedAtUtc = now,
+                OwnershipType = OwnershipType.OwnerManaged,
+                ClaimStatus = ClaimStatus.Verified,
+                ClaimedByUserId = SeedClaimerUserId,
+                ClaimRequestedAtUtc = requestedAt,
+                ClaimReviewedAtUtc = reviewedAt,
             },
+            // Community, Rejected – reclamação rejeitada
             new Restaurant
             {
                 Id = r4.Id,
@@ -57,6 +95,11 @@ public static class SeedData
                 Latitude = 38.7223,
                 Longitude = -9.1454,
                 CreatedAtUtc = now,
+                OwnershipType = OwnershipType.Community,
+                ClaimStatus = ClaimStatus.Rejected,
+                ClaimedByUserId = SeedClaimerUserId,
+                ClaimRequestedAtUtc = requestedAt,
+                ClaimReviewedAtUtc = reviewedAt,
             },
         };
 

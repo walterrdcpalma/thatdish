@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
 import { AnimatedPressable } from "@/src/shared/components";
-import { fetchRestaurantById } from "@/src/shared/api/restaurantsApi";
+import { fetchRestaurantById, submitClaim } from "@/src/shared/api/restaurantsApi";
 import { config } from "@/src/config";
 import type { Restaurant } from "@/src/features/restaurant/types";
 
@@ -15,9 +15,19 @@ export function ClaimFlowScreen() {
   const router = useRouter();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const claimRestaurant = useRestaurantStore((s) => s.claimRestaurant);
+  const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
+  const updateRestaurant = useRestaurantStore((s) => s.updateRestaurant);
   const currentUser = useUserStore((s) => s.currentUser);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!restaurantId) {
@@ -30,7 +40,8 @@ export function ClaimFlowScreen() {
         if (!cancelled) setRestaurant(r);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load restaurant.");
+        if (!cancelled)
+          setError(e instanceof Error ? e.message : "Failed to load restaurant.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -40,10 +51,23 @@ export function ClaimFlowScreen() {
     };
   }, [restaurantId]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!restaurant || !restaurantId) return;
-    claimRestaurant(restaurantId, currentUser.id);
-    router.replace("/(tabs)/profile");
+    setError(null);
+    setSubmitting(true);
+    try {
+      const updated = await submitClaim(config.apiBaseUrl, restaurantId);
+      if (!isMounted.current) return;
+      updateRestaurant(updated);
+      await loadRestaurants();
+      if (!isMounted.current) return;
+      router.replace("/(tabs)/profile");
+    } catch (e) {
+      if (isMounted.current)
+        setError(e instanceof Error ? e.message : "Claim failed. Please try again.");
+    } finally {
+      if (isMounted.current) setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -59,7 +83,9 @@ export function ClaimFlowScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
         <View className="flex-1 items-center justify-center p-4">
-          <Text className="text-center text-gray-600">{error ?? "Restaurant not found."}</Text>
+          <Text className="text-center text-gray-600">
+            {error ?? "Restaurant not found."}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -89,7 +115,7 @@ export function ClaimFlowScreen() {
 
         <View className="mt-8">
           <Text className="text-sm font-semibold text-gray-700">
-            Step 1: Confirm ownership
+            Confirm ownership
           </Text>
           <Text className="mt-2 text-sm text-gray-600">
             I confirm that I represent this restaurant and have the right to
@@ -97,24 +123,19 @@ export function ClaimFlowScreen() {
           </Text>
         </View>
 
-        <View className="mt-6">
-          <Text className="text-sm font-semibold text-gray-700">
-            Step 2: Simulate verification
-          </Text>
-          <Text className="mt-2 text-sm text-gray-600">
-            Verification is simulated. No backend or real verification is
-            performed.
-          </Text>
-        </View>
-
         <AnimatedPressable
           onPress={handleSubmit}
+          disabled={submitting}
           scale={0.98}
-          className="mt-10 flex-row items-center justify-center rounded-xl bg-orange-500 py-3"
+          className="mt-10 flex-row items-center justify-center rounded-xl bg-orange-500 py-3 disabled:opacity-60"
         >
-          <Text className="text-base font-semibold text-white">
-            Submit Claim
-          </Text>
+          {submitting ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text className="text-base font-semibold text-white">
+              Submit Claim
+            </Text>
+          )}
         </AnimatedPressable>
       </ScrollView>
     </SafeAreaView>

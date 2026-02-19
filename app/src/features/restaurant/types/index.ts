@@ -1,1 +1,1 @@
-export type { Restaurant } from "./restaurant.types";
+export type { Restaurant, ClaimStatus, OwnershipType } from "./restaurant.types";

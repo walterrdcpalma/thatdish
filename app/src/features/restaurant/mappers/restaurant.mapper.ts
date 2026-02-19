@@ -1,9 +1,23 @@
 import type { RestaurantDto } from "@/src/shared/api/restaurantsApi";
 import type { Restaurant } from "../types";
+import type { OwnershipType, ClaimStatus } from "../types";
+
+const OWNERSHIP_VALUES: OwnershipType[] = ["Community", "OwnerManaged"];
+const CLAIM_STATUS_VALUES: ClaimStatus[] = ["None", "Pending", "Verified", "Rejected"];
+
+function parseOwnershipType(v: unknown): OwnershipType {
+  const s = typeof v === "string" ? v.trim() : "";
+  return OWNERSHIP_VALUES.includes(s as OwnershipType) ? (s as OwnershipType) : "Community";
+}
+
+function parseClaimStatus(v: unknown): ClaimStatus {
+  const s = typeof v === "string" ? v.trim() : "";
+  return CLAIM_STATUS_VALUES.includes(s as ClaimStatus) ? (s as ClaimStatus) : "None";
+}
 
 /**
  * Maps backend DTO to frontend Restaurant.
- * Backend does not have signatureDishId, ownerUserId, claimStatus, imageUrl, cuisine — set to defaults.
+ * Maps ownershipType, claimStatus, claimedByUserId, ownerUserId from backend when present.
  */
 export function mapRestaurantDtoToRestaurant(dto: RestaurantDto): Restaurant {
   const raw = dto as unknown as Record<string, unknown>;
@@ -14,6 +28,20 @@ export function mapRestaurantDtoToRestaurant(dto: RestaurantDto): Restaurant {
     typeof address === "string" ? address : address == null ? "" : String(address);
   const lat = raw.latitude ?? raw.Latitude;
   const lon = raw.longitude ?? raw.Longitude;
+  const ownershipType = parseOwnershipType(raw.ownershipType ?? raw.OwnershipType);
+  const claimStatus = parseClaimStatus(raw.claimStatus ?? raw.ClaimStatus);
+  const claimedByUserId = raw.claimedByUserId ?? raw.ClaimedByUserId;
+  const claimedBy =
+    claimedByUserId != null && claimedByUserId !== ""
+      ? String(claimedByUserId)
+      : null;
+  const ownerUserId = raw.ownerUserId ?? raw.OwnerUserId;
+  const owner =
+    ownerUserId != null && ownerUserId !== ""
+      ? String(ownerUserId)
+      : claimStatus === "Verified" && claimedBy
+        ? claimedBy
+        : null;
   return {
     id,
     name,
@@ -22,7 +50,9 @@ export function mapRestaurantDtoToRestaurant(dto: RestaurantDto): Restaurant {
     latitude: typeof lat === "number" ? lat : undefined,
     longitude: typeof lon === "number" ? lon : undefined,
     signatureDishId: null,
-    ownerUserId: null,
-    claimStatus: "unclaimed",
+    ownerUserId: owner,
+    claimedByUserId: claimedBy,
+    claimStatus,
+    ownershipType,
   };
 }

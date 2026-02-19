@@ -125,17 +125,12 @@ export function RestaurantDetailScreen() {
               : "Location not verified"}
           </Text>
           <View className="mt-4 flex-row flex-wrap items-center gap-2">
-            {restaurant.claimStatus === "verified" && (
-              <View className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                <Text className="text-sm text-gray-600">✓ Verified</Text>
-              </View>
-            )}
-            {restaurant.claimStatus === "pending" && (
-              <View className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-                <Text className="text-sm text-amber-700">Pending</Text>
-              </View>
-            )}
-            {restaurant.claimStatus === "unclaimed" && (
+            <View className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+              <Text className="text-sm text-gray-600">
+                {restaurant.ownershipType === "OwnerManaged" ? "Owner" : "Community"}
+              </Text>
+            </View>
+            {(restaurant.claimStatus === "None" || restaurant.claimStatus === "Rejected") && (
               <AnimatedPressable
                 onPress={() =>
                   router.push({
@@ -255,8 +250,8 @@ export function RestaurantDetailScreen() {
           </View>
         </View>
 
-        {restaurant.claimStatus === "verified" &&
-          restaurant.ownerUserId === currentUser.id && (
+        {restaurant.claimStatus === "Verified" &&
+          (restaurant.ownerUserId === currentUser.id || restaurant.claimedByUserId === currentUser.id) && (
             <View className="mt-6 px-4">
               <Text className="mb-3 text-sm font-semibold text-gray-500">
                 Archived Dishes
@@ -287,8 +282,7 @@ export function RestaurantDetailScreen() {
                     >
                       <Image
                         source={{
-                          uri:
-                            dish.image
+                          uri: getDisplayImageUrl(dish.image, config.apiBaseUrl),
                         }}
                         className="h-14 w-14 rounded-lg bg-gray-200"
                         resizeMode="cover"

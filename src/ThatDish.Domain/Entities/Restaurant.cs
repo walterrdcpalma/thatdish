@@ -1,3 +1,5 @@
+using ThatDish.Domain.Enums;
+
 namespace ThatDish.Domain.Entities;
 
 public class Restaurant
@@ -11,6 +13,12 @@ public class Restaurant
     public string? ContactInfo { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
+
+    public OwnershipType OwnershipType { get; set; } = OwnershipType.Community;
+    public ClaimStatus ClaimStatus { get; set; } = ClaimStatus.None;
+    public Guid? ClaimedByUserId { get; set; }
+    public DateTime? ClaimRequestedAtUtc { get; set; }
+    public DateTime? ClaimReviewedAtUtc { get; set; }
 
     public ICollection<Dish> Dishes { get; set; } = new List<Dish>();
 }

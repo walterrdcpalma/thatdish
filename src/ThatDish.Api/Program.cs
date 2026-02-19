@@ -34,8 +34,13 @@ builder.Services.AddScoped<IDishRepository, DishRepository>();
 builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
 builder.Services.AddScoped<RestaurantListService>();
+builder.Services.AddScoped<IRestaurantClaimService, RestaurantClaimService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // Only enable JWT auth when Supabase is properly configured (not placeholders)
 var supabaseIssuer = builder.Configuration["Supabase:Issuer"];

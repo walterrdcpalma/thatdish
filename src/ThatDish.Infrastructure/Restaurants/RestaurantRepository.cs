@@ -29,12 +29,27 @@ public class RestaurantRepository : IRestaurantRepository
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
+    public async Task<Restaurant?> GetByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _db.Restaurants
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
     public async Task<Restaurant?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         var normalized = name.Trim().ToLowerInvariant();
         return await _db.Restaurants
             .AsNoTracking()
             .FirstOrDefaultAsync(r => r.Name.ToLower() == normalized, cancellationToken);
+    }
+
+    public async Task<List<Restaurant>> GetByClaimedByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _db.Restaurants
+            .AsNoTracking()
+            .Where(r => r.ClaimedByUserId == userId)
+            .OrderBy(r => r.Name)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<List<RestaurantSearchResult>> SearchByNameAsync(string term, int limit, CancellationToken cancellationToken = default)

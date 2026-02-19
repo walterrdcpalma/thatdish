@@ -15,8 +15,9 @@ export function canEditDish(
 ): boolean {
   if (dish.createdByUserId === currentUser.id) return true;
   if (
-    restaurant?.claimStatus === "verified" &&
-    restaurant?.ownerUserId === currentUser.id
+    restaurant?.claimStatus === "Verified" &&
+    (restaurant?.ownerUserId === currentUser.id ||
+      restaurant?.claimedByUserId === currentUser.id)
   )
     return true;
   return false;

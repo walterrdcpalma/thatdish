@@ -115,7 +115,12 @@ public class DishService : IDishService
                 Name = restName,
                 Cuisine = cuisineType.Trim(),
                 CreatedAtUtc = DateTime.UtcNow,
-                UpdatedAtUtc = DateTime.UtcNow
+                UpdatedAtUtc = DateTime.UtcNow,
+                OwnershipType = OwnershipType.Community,
+                ClaimStatus = ClaimStatus.None,
+                ClaimedByUserId = null,
+                ClaimRequestedAtUtc = null,
+                ClaimReviewedAtUtc = null,
             };
             _restaurantRepository.Add(restaurant);
         }

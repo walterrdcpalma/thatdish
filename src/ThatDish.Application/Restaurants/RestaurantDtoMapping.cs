@@ -14,7 +14,12 @@ public static class RestaurantDtoMapping
             Longitude: r.Longitude,
             ContactInfo: r.ContactInfo,
             CreatedAtUtc: r.CreatedAtUtc,
-            UpdatedAtUtc: r.UpdatedAtUtc
+            UpdatedAtUtc: r.UpdatedAtUtc,
+            OwnershipType: r.OwnershipType,
+            ClaimStatus: r.ClaimStatus,
+            ClaimedByUserId: r.ClaimedByUserId,
+            ClaimRequestedAtUtc: r.ClaimRequestedAtUtc,
+            ClaimReviewedAtUtc: r.ClaimReviewedAtUtc
         );
     }
 }
