@@ -8,6 +8,8 @@ import {
   Alert,
   ScrollView,
   Pressable,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -245,7 +247,8 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
             </AnimatedPressable>
           </>
         ) : (
-          <>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View className="flex-1">
             <Text className="mb-2 text-sm font-semibold text-gray-600">Dish name</Text>
             <TextInput
               value={dishName}
@@ -385,7 +388,8 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                 <Text className="text-center font-semibold text-white">Create Dish</Text>
               )}
             </AnimatedPressable>
-          </>
+            </View>
+          </TouchableWithoutFeedback>
         )}
       </View>
     </SafeAreaView>
