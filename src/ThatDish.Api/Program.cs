@@ -12,14 +12,14 @@ using ThatDish.Infrastructure.Restaurants;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Bind to Railway/Fly/etc injected PORT in production, fallback to 6000 locally.
+// Listen on all interfaces so LAN devices (e.g. Expo on phone) can reach the API. PORT env for production.
 var port = Environment.GetEnvironmentVariable("PORT") ?? "6000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var runSeed = builder.Configuration.GetValue<bool>("RUN_SEED");
 Console.WriteLine($"[Startup] RUN_SEED resolved: {runSeed}");
 
-// Startup diagnostics for Railway env binding.
+// Startup diagnostics for connection string (env: ConnectionStrings__DefaultConnection).
 var connFromEnvDoubleUnderscore = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 var connFromEnvColon = Environment.GetEnvironmentVariable("ConnectionStrings:DefaultConnection");
 Console.WriteLine($"[Startup] Env ConnectionStrings__DefaultConnection set: {!string.IsNullOrWhiteSpace(connFromEnvDoubleUnderscore)}");
@@ -101,8 +101,7 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-
-if (app.Environment.IsDevelopment())
+/* if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
@@ -113,13 +112,7 @@ if (app.Environment.IsDevelopment())
     else
         await db.Database.MigrateAsync();
     await SeedData.SeedAsync(db);
-}
-else if (runSeed)
-{
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
-    await SeedData.SeedAsync(db);
-}
+} */
 
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
