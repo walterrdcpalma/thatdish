@@ -113,6 +113,9 @@ thatdish.db
 *.db
 App_Data/
 
+# Local/dev appsettings (secrets, machine-specific)
+**/appsettings.Development.json
+
 # Test results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
