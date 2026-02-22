@@ -13,6 +13,8 @@ interface DishStore {
   loadDishes: () => Promise<void>;
   createDish: (name: string, restaurantName: string, foodType?: string, image?: string) => Promise<Dish>;
   toggleSave: (dishId: string) => void;
+  /** Client-side only; no API. */
+  toggleLike: (dishId: string) => void;
   archiveDish: (dishId: string) => void;
   restoreDish: (dishId: string) => void;
   updateDish: (
@@ -29,7 +31,12 @@ export const useDishStore = create<DishStore>((set, get) => ({
   loadDishes: async () => {
     set({ loading: true, error: null });
     try {
-      const dishes = await fetchDishes(config.apiBaseUrl);
+      const raw = await fetchDishes(config.apiBaseUrl);
+      const dishes = raw.map((d) => ({
+        ...d,
+        likeCount: d.likeCount ?? 0,
+        likedByUserIds: d.likedByUserIds ?? [],
+      }));
       set({ dishes, loading: false, error: null });
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to load dishes.";
@@ -38,7 +45,12 @@ export const useDishStore = create<DishStore>((set, get) => ({
   },
 
   createDish: async (name: string, restaurantName: string, foodType?: string, image?: string) => {
-    const dish = await createDishApi(config.apiBaseUrl, { name, restaurantName, foodType, image });
+    const raw = await createDishApi(config.apiBaseUrl, { name, restaurantName, foodType, image });
+    const dish: Dish = {
+      ...raw,
+      likeCount: raw.likeCount ?? 0,
+      likedByUserIds: raw.likedByUserIds ?? [],
+    };
     set((state) => ({ dishes: [dish, ...state.dishes] }));
     return dish;
   },
@@ -62,6 +74,25 @@ export const useDishStore = create<DishStore>((set, get) => ({
       });
       return { dishes: nextDishes };
     });
+  },
+
+  toggleLike: (dishId: string) => {
+    const { currentUser } = useUserStore.getState();
+    set((state) => ({
+      dishes: state.dishes.map((d) => {
+        if (d.id !== dishId) return d;
+        const ids = d.likedByUserIds ?? [];
+        const isLiked = ids.includes(currentUser.id);
+        const likedByUserIds = isLiked
+          ? ids.filter((id) => id !== currentUser.id)
+          : [...ids, currentUser.id];
+        return {
+          ...d,
+          likedByUserIds,
+          likeCount: likedByUserIds.length,
+        };
+      }),
+    }));
   },
 
   archiveDish: (dishId: string) => {

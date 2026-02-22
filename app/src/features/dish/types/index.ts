@@ -10,9 +10,19 @@ export interface Dish {
   foodType: string;
   savedCount: number;
   savedByUserIds: string[];
+  /** Client-side only until API supports it. */
+  likeCount?: number;
+  /** Client-side only until API supports it. */
+  likedByUserIds?: string[];
   createdAt: string;
   updatedAt: string;
   createdByUserId: string;
   lastEditedByUserId: string | null;
   isArchived: boolean;
 }
+
+/** Minimal shape for feed card: image, author, dish name, like/save counts and state. */
+export type FeedDishItem = Pick<
+  Dish,
+  "id" | "name" | "image" | "restaurantName" | "savedCount" | "savedByUserIds" | "likeCount" | "likedByUserIds"
+> & { restaurantId: Dish["restaurantId"] };

@@ -1,29 +1,69 @@
-import { useState, useEffect } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
-import { DishCard } from "../components";
+import { FeedCard } from "../components";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
-import { getRestaurantSignature } from "../services";
 import { getRankedDishes } from "../utils/getRankedDishes";
 import { getNearbyRankedDishes } from "../utils/getNearbyRankedDishes";
-import { getDishBadges } from "../utils/getDishBadges";
-import { getDistanceInKm } from "../utils/getDistanceInKm";
 import { AnimatedPressable } from "@/src/shared/components";
+import type { Dish } from "../types";
 
 type DiscoverTab = "All" | "Nearby";
 
+/** Recompute feed order only when data load or tab/location changes — NOT on like/save toggle. */
+function useStableFeedOrder(
+  loading: boolean,
+  error: string | null,
+  tab: DiscoverTab,
+  userLocation: { lat: number; lng: number } | null,
+  restaurantsLoading: boolean
+): string[] {
+  const [orderedIds, setOrderedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (loading || error) return;
+    if (tab === "Nearby" && !userLocation) {
+      setOrderedIds([]);
+      return;
+    }
+    if (tab === "Nearby" && restaurantsLoading) return;
+
+    const dishes = useDishStore.getState().dishes;
+    const restaurants = useRestaurantStore.getState().restaurants;
+
+    const list =
+      tab === "All"
+        ? getRankedDishes(dishes)
+        : getNearbyRankedDishes(
+            dishes,
+            restaurants,
+            userLocation!.lat,
+            userLocation!.lng
+          );
+    setOrderedIds(list.map((d) => d.id));
+  }, [loading, error, tab, userLocation, restaurantsLoading]);
+
+  return orderedIds;
+}
+
 export function DishFeedScreen() {
   const router = useRouter();
-  const allDishes = useDishStore((s) => s.dishes);
+  const { width: windowWidth } = useWindowDimensions();
+  const dishes = useDishStore((s) => s.dishes);
   const loading = useDishStore((s) => s.loading);
   const error = useDishStore((s) => s.error);
   const loadDishes = useDishStore((s) => s.loadDishes);
-  const restaurants = useRestaurantStore((s) => s.restaurants);
   const restaurantsLoading = useRestaurantStore((s) => s.loading);
   const restaurantsError = useRestaurantStore((s) => s.error);
   const [tab, setTab] = useState<DiscoverTab>("All");
@@ -33,17 +73,31 @@ export function DishFeedScreen() {
   } | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
 
+  const orderedIds = useStableFeedOrder(
+    loading,
+    error,
+    tab,
+    userLocation,
+    restaurantsLoading
+  );
+
+  const feedItems = useMemo(
+    () =>
+      orderedIds
+        .map((id) => dishes.find((d) => d.id === id))
+        .filter((d): d is Dish => d != null),
+    [orderedIds, dishes]
+  );
+
   useEffect(() => {
     loadDishes();
   }, [loadDishes]);
 
-  // Load restaurants only when user switches to Nearby tab (on-demand)
   const loadRestaurants = useRestaurantStore((s) => s.loadRestaurants);
   useEffect(() => {
     if (tab === "Nearby") loadRestaurants();
   }, [tab, loadRestaurants]);
 
-  // Request location on mount so we can show "Nearby" badge in both All and Nearby tabs
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -73,19 +127,39 @@ export function DishFeedScreen() {
     };
   }, []);
 
-  const rankedByAll = getRankedDishes(allDishes);
-  const nearbyDishes =
-    tab === "Nearby" && userLocation
-      ? getNearbyRankedDishes(
-          allDishes,
-          restaurants,
-          userLocation.lat,
-          userLocation.lng
-        )
-      : null;
-  const dishes = tab === "All" ? rankedByAll : nearbyDishes ?? [];
   const showNearbyDeniedMessage =
     tab === "Nearby" && locationDenied && !userLocation;
+
+  const renderItem = useCallback(
+    ({ item }: { item: Dish }) => (
+      <FeedCard
+        item={item}
+        width={windowWidth}
+        onPress={() =>
+          router.push({ pathname: "/dish/[id]", params: { id: item.id } })
+        }
+      />
+    ),
+    [windowWidth, router]
+  );
+
+  const keyExtractor = useCallback((item: Dish) => item.id, []);
+
+  const ListHeaderComponent =
+    showNearbyDeniedMessage ? (
+      <View style={headerBannerStyle}>
+        <Text className="text-sm text-amber-800">
+          Location permission required to view nearby dishes.
+        </Text>
+      </View>
+    ) : null;
+
+  const ListEmptyComponent =
+    !loading && !error && feedItems.length === 0 ? (
+      <View className="flex-1 items-center justify-center py-12">
+        <Text className="text-center text-gray-500">No dishes yet.</Text>
+      </View>
+    ) : null;
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -131,7 +205,9 @@ export function DishFeedScreen() {
       )}
       {tab === "Nearby" && restaurantsError && !restaurantsLoading && (
         <View className="flex-1 items-center justify-center gap-3 px-6">
-          <Text className="text-center text-gray-600">Failed to load restaurants.</Text>
+          <Text className="text-center text-gray-600">
+            Failed to load restaurants.
+          </Text>
           <Pressable
             onPress={() => loadRestaurants()}
             className="flex-row items-center gap-2 rounded-full bg-orange-500 px-4 py-2.5"
@@ -143,7 +219,9 @@ export function DishFeedScreen() {
       )}
       {error && !loading && (
         <View className="flex-1 items-center justify-center gap-3 px-6">
-          <Text className="text-center text-gray-600">Failed to load dishes.</Text>
+          <Text className="text-center text-gray-600">
+            Failed to load dishes.
+          </Text>
           <Pressable
             onPress={() => loadDishes()}
             className="flex-row items-center gap-2 rounded-full bg-orange-500 px-4 py-2.5"
@@ -156,50 +234,30 @@ export function DishFeedScreen() {
       {!loading &&
         !error &&
         (tab === "All" || (!restaurantsLoading && !restaurantsError)) && (
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 80 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {showNearbyDeniedMessage && (
-          <View className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <Text className="text-sm text-amber-800">
-              Location permission required to view nearby dishes.
-            </Text>
-          </View>
+          <FlatList
+            data={feedItems}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            ListHeaderComponent={ListHeaderComponent}
+            ListEmptyComponent={ListEmptyComponent}
+            contentContainerStyle={{
+              paddingBottom: 80,
+            }}
+            showsVerticalScrollIndicator={false}
+          />
         )}
-        {dishes.map((dish, index) => {
-          const signature = getRestaurantSignature(allDishes, dish.restaurantId);
-          const isSignature = signature?.id === dish.id;
-          const badges = getDishBadges(dish, allDishes);
-          const restaurant = restaurants.find((r) => r.id === dish.restaurantId);
-          const isNearby =
-            userLocation != null &&
-            restaurant?.latitude != null &&
-            restaurant?.longitude != null &&
-            getDistanceInKm(
-              userLocation.lat,
-              userLocation.lng,
-              restaurant.latitude,
-              restaurant.longitude
-            ) <= 5;
-          return (
-            <Animated.View
-              key={dish.id}
-              entering={FadeInDown.delay(index * 60).springify().damping(15)}
-            >
-              <DishCard
-                dish={dish}
-                onPress={() => router.push({ pathname: "/dish/[id]", params: { id: dish.id } })}
-                isSignature={isSignature}
-                badges={badges}
-                isNearby={isNearby}
-              />
-            </Animated.View>
-          );
-        })}
-      </ScrollView>
-      )}
     </SafeAreaView>
   );
 }
+
+const headerBannerStyle = {
+  marginHorizontal: 12,
+  marginTop: 12,
+  marginBottom: 4,
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: "#fcd34d",
+  backgroundColor: "#fffbeb",
+};
