@@ -143,9 +143,15 @@ export function DishFeedScreen() {
 
   const currentUser = useUserStore((s) => s.currentUser);
 
-  const handlePressDish = useCallback(
-    (id: string) => {
-      router.push({ pathname: "/dish/[id]", params: { id } });
+  const handlePressRestaurant = useCallback(
+    (restaurantId: string) => {
+      if (!restaurantId?.trim()) {
+        if (__DEV__) {
+          console.warn("[Discover] Missing restaurantId, skipping navigation.");
+        }
+        return;
+      }
+      router.push({ pathname: "/restaurant/[id]", params: { id: restaurantId } });
     },
     [router]
   );
@@ -156,12 +162,12 @@ export function DishFeedScreen() {
         item={item}
         width={windowWidth}
         primaryBadge={badgeByDishId[item.id] ?? null}
-        onPress={handlePressDish}
+        onPress={handlePressRestaurant}
         isSaved={currentUser.savedDishIds.includes(item.id)}
         isLiked={(item.likedByUserIds ?? []).includes(currentUser.id)}
       />
     ),
-    [windowWidth, badgeByDishId, handlePressDish, currentUser]
+    [windowWidth, badgeByDishId, handlePressRestaurant, currentUser]
   );
 
   const keyExtractor = useCallback((item: Dish) => item.id, []);

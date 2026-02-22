@@ -20,8 +20,8 @@ const IMAGE_ASPECT_RATIO = 5 / 4; // height / width → 4:5
 
 export interface FeedCardProps {
   item: FeedDishItem;
-  /** Stable callback; card calls onPress(item.id). */
-  onPress: (id: string) => void;
+  /** Stable callback; card calls onPress(item.restaurantId) to open restaurant. */
+  onPress: (restaurantId: string) => void;
   width: number;
   primaryBadge?: PrimaryBadge | null;
   isSaved: boolean;
@@ -83,7 +83,7 @@ function FeedCardInner({
   const imageHeight = width * IMAGE_ASPECT_RATIO;
 
   return (
-    <Pressable onPress={() => onPress(item.id)} style={styles.post}>
+    <Pressable onPress={() => onPress(item.restaurantId)} style={styles.post}>
       {/* Image full-width, overlay top-left: restaurant name (static, no animation) */}
       <View style={[styles.imageWrap, { width, height: imageHeight }]}>
         <Image
