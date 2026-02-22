@@ -5,7 +5,6 @@ import type { FeedDishItem } from "../types";
 import type { PrimaryBadge } from "../utils/getDishBadges";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
-import { useUserStore } from "@/src/features/user/state";
 import { AnimatedPressable } from "@/src/shared/components";
 import { config } from "@/src/config";
 
@@ -21,34 +20,54 @@ const IMAGE_ASPECT_RATIO = 5 / 4; // height / width → 4:5
 
 export interface FeedCardProps {
   item: FeedDishItem;
-  onPress: () => void;
-  /** Full width of screen (image edge-to-edge). */
+  /** Stable callback; card calls onPress(item.id). */
+  onPress: (id: string) => void;
   width: number;
-  /** At most one badge per post; priority TOP > TRENDING > NEW. */
   primaryBadge?: PrimaryBadge | null;
+  isSaved: boolean;
+  isLiked: boolean;
 }
 
-const BADGE_STYLES: Record<
-  PrimaryBadge,
-  { bg: string; label: string }
-> = {
-  top: { bg: "#d97706", label: "TOP" },
-  trending: { bg: "#ea580c", label: "TRENDING" },
-  new: { bg: "#0d9488", label: "NEW" },
+const BADGE_LABELS: Record<PrimaryBadge, string> = {
+  top: "TOP",
+  trending: "TRENDING",
+  new: "NEW",
 };
 
-function FeedCardInner({ item, onPress, width, primaryBadge = null }: FeedCardProps) {
+function feedCardPropsAreEqual(prev: FeedCardProps, next: FeedCardProps): boolean {
+  const a = prev.item;
+  const b = next.item;
+  return (
+    prev.width === next.width &&
+    prev.primaryBadge === next.primaryBadge &&
+    prev.isSaved === next.isSaved &&
+    prev.isLiked === next.isLiked &&
+    a.id === b.id &&
+    a.name === b.name &&
+    a.image === b.image &&
+    (a.restaurantName ?? "") === (b.restaurantName ?? "") &&
+    a.restaurantId === b.restaurantId &&
+    (a.likeCount ?? 0) === (b.likeCount ?? 0) &&
+    a.savedCount === b.savedCount
+  );
+}
+
+function FeedCardInner({
+  item,
+  onPress,
+  width,
+  primaryBadge = null,
+  isSaved,
+  isLiked,
+}: FeedCardProps) {
   const toggleSave = useDishStore((s) => s.toggleSave);
   const toggleLike = useDishStore((s) => s.toggleLike);
-  const currentUser = useUserStore((s) => s.currentUser);
-  const isSaved = currentUser.savedDishIds.includes(item.id);
-  const isLiked = (item.likedByUserIds ?? []).includes(currentUser.id);
-  const likeCount = item.likeCount ?? 0;
   const restaurantNameFromStore = useRestaurantStore((s) =>
     s.restaurants.find((r) => r.id === item.restaurantId)?.name
   );
   const restaurantName =
     item.restaurantName ?? restaurantNameFromStore ?? "Unknown";
+  const likeCount = item.likeCount ?? 0;
 
   const handleSave = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();
@@ -64,7 +83,7 @@ function FeedCardInner({ item, onPress, width, primaryBadge = null }: FeedCardPr
   const imageHeight = width * IMAGE_ASPECT_RATIO;
 
   return (
-    <Pressable onPress={onPress} style={styles.post}>
+    <Pressable onPress={() => onPress(item.id)} style={styles.post}>
       {/* Image full-width, overlay top-left: restaurant name (static, no animation) */}
       <View style={[styles.imageWrap, { width, height: imageHeight }]}>
         <Image
@@ -80,14 +99,15 @@ function FeedCardInner({ item, onPress, width, primaryBadge = null }: FeedCardPr
         </View>
         {primaryBadge != null && (
           <View
-            style={[
-              styles.badgePill,
-              { backgroundColor: BADGE_STYLES[primaryBadge].bg },
-            ]}
+            style={
+              primaryBadge === "top"
+                ? styles.badgePillTop
+                : primaryBadge === "trending"
+                  ? styles.badgePillTrending
+                  : styles.badgePillNew
+            }
           >
-            <Text style={styles.badgeText}>
-              {BADGE_STYLES[primaryBadge].label}
-            </Text>
+            <Text style={styles.badgeText}>{BADGE_LABELS[primaryBadge]}</Text>
           </View>
         )}
       </View>
@@ -133,7 +153,7 @@ function FeedCardInner({ item, onPress, width, primaryBadge = null }: FeedCardPr
   );
 }
 
-export const FeedCard = memo(FeedCardInner);
+export const FeedCard = memo(FeedCardInner, feedCardPropsAreEqual);
 
 const styles = StyleSheet.create({
   post: {
@@ -173,6 +193,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+  },
+  badgePillTop: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: "#d97706",
+  },
+  badgePillTrending: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: "#ea580c",
+  },
+  badgePillNew: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: "#0d9488",
   },
   badgeText: {
     fontSize: 10,

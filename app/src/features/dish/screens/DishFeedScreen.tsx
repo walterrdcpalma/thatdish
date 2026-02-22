@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { FeedCard } from "../components";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
+import { useUserStore } from "@/src/features/user/state";
 import { getRankedDishes } from "../utils/getRankedDishes";
 import { getNearbyRankedDishes } from "../utils/getNearbyRankedDishes";
 import { getPrimaryBadge } from "../utils/getDishBadges";
@@ -140,18 +141,27 @@ export function DishFeedScreen() {
   const showNearbyDeniedMessage =
     tab === "Nearby" && locationDenied && !userLocation;
 
+  const currentUser = useUserStore((s) => s.currentUser);
+
+  const handlePressDish = useCallback(
+    (id: string) => {
+      router.push({ pathname: "/dish/[id]", params: { id } });
+    },
+    [router]
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: Dish }) => (
       <FeedCard
         item={item}
         width={windowWidth}
         primaryBadge={badgeByDishId[item.id] ?? null}
-        onPress={() =>
-          router.push({ pathname: "/dish/[id]", params: { id: item.id } })
-        }
+        onPress={handlePressDish}
+        isSaved={currentUser.savedDishIds.includes(item.id)}
+        isLiked={(item.likedByUserIds ?? []).includes(currentUser.id)}
       />
     ),
-    [windowWidth, router, badgeByDishId]
+    [windowWidth, badgeByDishId, handlePressDish, currentUser]
   );
 
   const keyExtractor = useCallback((item: Dish) => item.id, []);
@@ -251,10 +261,12 @@ export function DishFeedScreen() {
             renderItem={renderItem}
             ListHeaderComponent={ListHeaderComponent}
             ListEmptyComponent={ListEmptyComponent}
-            contentContainerStyle={{
-              paddingBottom: 80,
-            }}
+            contentContainerStyle={contentContainerStyle}
             showsVerticalScrollIndicator={false}
+            initialNumToRender={8}
+            maxToRenderPerBatch={10}
+            windowSize={11}
+            removeClippedSubviews={true}
           />
         )}
     </SafeAreaView>
@@ -272,3 +284,5 @@ const headerBannerStyle = {
   borderColor: "#fcd34d",
   backgroundColor: "#fffbeb",
 };
+
+const contentContainerStyle = { paddingBottom: 80 };
