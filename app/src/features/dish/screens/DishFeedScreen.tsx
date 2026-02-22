@@ -16,25 +16,29 @@ import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { getRankedDishes } from "../utils/getRankedDishes";
 import { getNearbyRankedDishes } from "../utils/getNearbyRankedDishes";
+import { getPrimaryBadge } from "../utils/getDishBadges";
+import type { PrimaryBadge } from "../utils/getDishBadges";
 import { AnimatedPressable } from "@/src/shared/components";
 import type { Dish } from "../types";
 
 type DiscoverTab = "All" | "Nearby";
 
-/** Recompute feed order only when data load or tab/location changes — NOT on like/save toggle. */
+/** Recompute feed order and badges only when data load or tab/location changes — NOT on like/save toggle. */
 function useStableFeedOrder(
   loading: boolean,
   error: string | null,
   tab: DiscoverTab,
   userLocation: { lat: number; lng: number } | null,
   restaurantsLoading: boolean
-): string[] {
+): { orderedIds: string[]; badgeByDishId: Record<string, PrimaryBadge> } {
   const [orderedIds, setOrderedIds] = useState<string[]>([]);
+  const [badgeByDishId, setBadgeByDishId] = useState<Record<string, PrimaryBadge>>({});
 
   useEffect(() => {
     if (loading || error) return;
     if (tab === "Nearby" && !userLocation) {
       setOrderedIds([]);
+      setBadgeByDishId({});
       return;
     }
     if (tab === "Nearby" && restaurantsLoading) return;
@@ -52,9 +56,15 @@ function useStableFeedOrder(
             userLocation!.lng
           );
     setOrderedIds(list.map((d) => d.id));
+    const badges: Record<string, PrimaryBadge> = {};
+    list.forEach((d) => {
+      const badge = getPrimaryBadge(d, dishes);
+      if (badge) badges[d.id] = badge;
+    });
+    setBadgeByDishId(badges);
   }, [loading, error, tab, userLocation, restaurantsLoading]);
 
-  return orderedIds;
+  return { orderedIds, badgeByDishId };
 }
 
 export function DishFeedScreen() {
@@ -73,7 +83,7 @@ export function DishFeedScreen() {
   } | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
 
-  const orderedIds = useStableFeedOrder(
+  const { orderedIds, badgeByDishId } = useStableFeedOrder(
     loading,
     error,
     tab,
@@ -135,12 +145,13 @@ export function DishFeedScreen() {
       <FeedCard
         item={item}
         width={windowWidth}
+        primaryBadge={badgeByDishId[item.id] ?? null}
         onPress={() =>
           router.push({ pathname: "/dish/[id]", params: { id: item.id } })
         }
       />
     ),
-    [windowWidth, router]
+    [windowWidth, router, badgeByDishId]
   );
 
   const keyExtractor = useCallback((item: Dish) => item.id, []);

@@ -2,6 +2,7 @@ import { memo } from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { FeedDishItem } from "../types";
+import type { PrimaryBadge } from "../utils/getDishBadges";
 import { useDishStore } from "../state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
 import { useUserStore } from "@/src/features/user/state";
@@ -23,9 +24,20 @@ export interface FeedCardProps {
   onPress: () => void;
   /** Full width of screen (image edge-to-edge). */
   width: number;
+  /** At most one badge per post; priority TOP > TRENDING > NEW. */
+  primaryBadge?: PrimaryBadge | null;
 }
 
-function FeedCardInner({ item, onPress, width }: FeedCardProps) {
+const BADGE_STYLES: Record<
+  PrimaryBadge,
+  { bg: string; label: string }
+> = {
+  top: { bg: "#d97706", label: "TOP" },
+  trending: { bg: "#ea580c", label: "TRENDING" },
+  new: { bg: "#0d9488", label: "NEW" },
+};
+
+function FeedCardInner({ item, onPress, width, primaryBadge = null }: FeedCardProps) {
   const toggleSave = useDishStore((s) => s.toggleSave);
   const toggleLike = useDishStore((s) => s.toggleLike);
   const currentUser = useUserStore((s) => s.currentUser);
@@ -66,6 +78,18 @@ function FeedCardInner({ item, onPress, width }: FeedCardProps) {
             {restaurantName}
           </Text>
         </View>
+        {primaryBadge != null && (
+          <View
+            style={[
+              styles.badgePill,
+              { backgroundColor: BADGE_STYLES[primaryBadge].bg },
+            ]}
+          >
+            <Text style={styles.badgeText}>
+              {BADGE_STYLES[primaryBadge].label}
+            </Text>
+          </View>
+        )}
       </View>
       {/* Actions + caption (white area, no card look) */}
       <View style={styles.footer}>
@@ -141,6 +165,23 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  badgePill: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#fff",
+    letterSpacing: 0.5,
+    textShadowColor: "rgba(0,0,0,0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   footer: {
     paddingHorizontal: 12,

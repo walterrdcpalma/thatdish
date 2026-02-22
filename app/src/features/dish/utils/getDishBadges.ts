@@ -62,3 +62,14 @@ export function getDishBadges(dish: Dish, allDishes: Dish[]): DishBadges {
 
   return { isTrending, isTop, isNew };
 }
+
+/** At most one badge per item. Priority: TOP > TRENDING > NEW. */
+export type PrimaryBadge = "top" | "trending" | "new";
+
+export function getPrimaryBadge(dish: Dish, allDishes: Dish[]): PrimaryBadge | null {
+  const badges = getDishBadges(dish, allDishes);
+  if (badges.isTop) return "top";
+  if (badges.isTrending) return "trending";
+  if (badges.isNew) return "new";
+  return null;
+}
