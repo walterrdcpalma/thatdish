@@ -12,18 +12,14 @@ using ThatDish.Infrastructure.Restaurants;
 
 var builder = WebApplication.CreateBuilder(args);
 
+ var conn2 = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("ConnectionString 'DefaultConnection' not configured.");
+    Console.WriteLine($"[Startup] Na conn: {conn2}");
+
+
 // Listen on all interfaces so LAN devices (e.g. Expo on phone) can reach the API. PORT env for production.
 var port = Environment.GetEnvironmentVariable("PORT") ?? "6000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-
-var runSeed = builder.Configuration.GetValue<bool>("RUN_SEED");
-Console.WriteLine($"[Startup] RUN_SEED resolved: {runSeed}");
-
-// Startup diagnostics for connection string (env: ConnectionStrings__DefaultConnection).
-var connFromEnvDoubleUnderscore = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
-var connFromEnvColon = Environment.GetEnvironmentVariable("ConnectionStrings:DefaultConnection");
-Console.WriteLine($"[Startup] Env ConnectionStrings__DefaultConnection set: {!string.IsNullOrWhiteSpace(connFromEnvDoubleUnderscore)}");
-Console.WriteLine($"[Startup] Env ConnectionStrings:DefaultConnection set: {connFromEnvColon}");
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -65,9 +61,7 @@ builder.Services.AddControllers()
 var supabaseIssuer = builder.Configuration["Supabase:Issuer"];
 var supabaseJwtSecret = builder.Configuration["Supabase:JwtSecret"];
 var isSupabaseConfigured = !string.IsNullOrWhiteSpace(supabaseIssuer)
-    && !string.IsNullOrWhiteSpace(supabaseJwtSecret)
-    && !supabaseJwtSecret.Contains("YOUR_JWT_SECRET", StringComparison.OrdinalIgnoreCase)
-    && !supabaseIssuer.Contains("17E7lYenwhcE8eXt", StringComparison.OrdinalIgnoreCase);
+    && !string.IsNullOrWhiteSpace(supabaseJwtSecret);
 
 if (isSupabaseConfigured)
 {
@@ -98,23 +92,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Health checks (add .AddNpgSql(...) when AspNetCore.HealthChecks.NpgSql is installed for DB check)
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
-
-/* if (app.Environment.IsDevelopment())
-{
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
-    var conn = scope.ServiceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
-    var useSqlite = conn?.TrimStart().StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase) == true;
-    if (useSqlite)
-        await db.Database.EnsureCreatedAsync();
-    else
-        await db.Database.MigrateAsync();
-    await SeedData.SeedAsync(db);
-} */
 
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
