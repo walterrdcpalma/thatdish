@@ -20,8 +20,8 @@ const IMAGE_ASPECT_RATIO = 5 / 4; // height / width → 4:5
 
 export interface FeedCardProps {
   item: FeedDishItem;
-  /** Stable callback; card calls onPress(item.restaurantId) to open restaurant. */
-  onPress: (restaurantId: string) => void;
+  /** Called when user taps the restaurant name; opens restaurant detail. */
+  onPressRestaurant: (restaurantId: string) => void;
   width: number;
   primaryBadge?: PrimaryBadge | null;
   isSaved: boolean;
@@ -54,7 +54,7 @@ function feedCardPropsAreEqual(prev: FeedCardProps, next: FeedCardProps): boolea
 
 function FeedCardInner({
   item,
-  onPress,
+  onPressRestaurant,
   width,
   primaryBadge = null,
   isSaved,
@@ -79,12 +79,22 @@ function FeedCardInner({
     toggleLike(item.id);
   };
 
+  const handlePressRestaurantName = () => {
+    if (!item.restaurantId?.trim()) {
+      if (__DEV__) {
+        console.warn("[Discover] Missing restaurantId, skipping navigation.");
+      }
+      return;
+    }
+    onPressRestaurant(item.restaurantId);
+  };
+
   const imageUri = getImageUri(item.image);
   const imageHeight = width * IMAGE_ASPECT_RATIO;
 
   return (
-    <Pressable onPress={() => onPress(item.restaurantId)} style={styles.post}>
-      {/* Image full-width, overlay top-left: restaurant name (static, no animation) */}
+    <View style={styles.post}>
+      {/* Image full-width, overlay top-left: restaurant name (tappable, navigates to restaurant) */}
       <View style={[styles.imageWrap, { width, height: imageHeight }]}>
         <Image
           source={{ uri: imageUri }}
@@ -93,9 +103,16 @@ function FeedCardInner({
         />
         <View style={styles.imageOverlay} />
         <View style={styles.restaurantOverlay}>
-          <Text style={styles.restaurantName} numberOfLines={1}>
-            {restaurantName}
-          </Text>
+          <Pressable
+            onPress={handlePressRestaurantName}
+            accessibilityRole="button"
+            accessibilityLabel={`Open restaurant ${restaurantName}`}
+            style={styles.restaurantNameTouchable}
+          >
+            <Text style={styles.restaurantName} numberOfLines={1}>
+              {restaurantName}
+            </Text>
+          </Pressable>
         </View>
         {primaryBadge != null && (
           <View
@@ -149,7 +166,7 @@ function FeedCardInner({
           {item.name}
         </Text>
       </View>
-    </Pressable>
+    </View>
   );
 }
 
@@ -177,6 +194,9 @@ const styles = StyleSheet.create({
     top: 12,
     left: 12,
     right: 48,
+  },
+  restaurantNameTouchable: {
+    alignSelf: "flex-start",
   },
   restaurantName: {
     fontSize: 14,
