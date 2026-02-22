@@ -23,7 +23,7 @@ Console.WriteLine($"[Startup] RUN_SEED resolved: {runSeed}");
 var connFromEnvDoubleUnderscore = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 var connFromEnvColon = Environment.GetEnvironmentVariable("ConnectionStrings:DefaultConnection");
 Console.WriteLine($"[Startup] Env ConnectionStrings__DefaultConnection set: {!string.IsNullOrWhiteSpace(connFromEnvDoubleUnderscore)}");
-Console.WriteLine($"[Startup] Env ConnectionStrings:DefaultConnection set: {!string.IsNullOrWhiteSpace(connFromEnvColon)}");
+Console.WriteLine($"[Startup] Env ConnectionStrings:DefaultConnection set: {connFromEnvColon}");
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
