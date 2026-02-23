@@ -3,14 +3,17 @@ import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/src/lib/supabase";
 import * as WebBrowser from "expo-web-browser";
 import { signInWithGoogle as signInWithGoogleService } from "../services/signInWithGoogle";
+import { signInWithApple as signInWithAppleService } from "../services/signInWithApple";
 
 export interface AuthState {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
   signInWithGoogle: () => Promise<{ error?: string }>;
+  signInWithApple: () => Promise<{ error?: string }>;
   signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
-  signUpWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
+  signUpWithEmail: (email: string, password: string, fullName?: string) => Promise<{ error?: string }>;
+  resetPasswordForEmail: (email: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -55,6 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return signInWithGoogleService();
   }, []);
 
+  const signInWithApple = useCallback(async () => {
+    return signInWithAppleService();
+  }, []);
+
   const signInWithEmail = useCallback(async (email: string, password: string) => {
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !password) {
@@ -69,15 +76,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return {};
   }, []);
 
-  const signUpWithEmail = useCallback(async (email: string, password: string) => {
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail || !password) {
-      return { error: "Email and password are required." };
-    }
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string, fullName?: string) => {
+      const trimmedEmail = email.trim();
+      if (!trimmedEmail || !password) {
+        return { error: "Email and password are required." };
+      }
 
-    const { error } = await supabase.auth.signUp({
-      email: trimmedEmail,
-      password,
+      const { error } = await supabase.auth.signUp({
+        email: trimmedEmail,
+        password,
+        options: fullName ? { data: { full_name: fullName } } : undefined,
+      });
+      if (error) return { error: error.message };
+      return {};
+    },
+    []
+  );
+
+  const resetPasswordForEmail = useCallback(async (email: string) => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      return { error: "Email is required." };
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+      redirectTo: undefined, // Supabase uses Site URL from dashboard by default; can override if needed
     });
     if (error) return { error: error.message };
     return {};
@@ -92,8 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     isLoading,
     signInWithGoogle,
+    signInWithApple,
     signInWithEmail,
     signUpWithEmail,
+    resetPasswordForEmail,
     signOut,
   };
 

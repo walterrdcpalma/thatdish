@@ -1,1 +1,1 @@
-// Auth screens barrel
+export { AuthScreen } from "./AuthScreen";

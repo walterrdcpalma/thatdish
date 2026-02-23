@@ -1,124 +1,11 @@
 import { useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, TextInput } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/src/features/auth/context/AuthContext";
+import { AuthScreen } from "@/src/features/auth/screens/AuthScreen";
 import { AnimatedPressable } from "@/src/shared/components";
-
-function ProfileLoggedOutCTA({
-  onContinueWithGoogle,
-  onSignInWithEmail,
-  onSignUpWithEmail,
-  error,
-}: {
-  onContinueWithGoogle: () => void;
-  onSignInWithEmail: (email: string, password: string) => Promise<void>;
-  onSignUpWithEmail: (email: string, password: string) => Promise<void>;
-  error: string | null;
-}) {
-  const [loadingGoogle, setLoadingGoogle] = useState(false);
-  const [loadingEmailSignIn, setLoadingEmailSignIn] = useState(false);
-  const [loadingEmailSignUp, setLoadingEmailSignUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleGooglePress = async () => {
-    setLoadingGoogle(true);
-    await onContinueWithGoogle();
-    setLoadingGoogle(false);
-  };
-
-  const handleEmailSignInPress = async () => {
-    setLoadingEmailSignIn(true);
-    await onSignInWithEmail(email, password);
-    setLoadingEmailSignIn(false);
-  };
-
-  const handleEmailSignUpPress = async () => {
-    setLoadingEmailSignUp(true);
-    await onSignUpWithEmail(email, password);
-    setLoadingEmailSignUp(false);
-  };
-
-  return (
-    <View className="flex-1 items-center justify-center px-8">
-      <Text className="text-center text-xl font-semibold text-black">
-        Welcome to ThatDish
-      </Text>
-      <Text className="mt-3 text-center text-gray-600">
-        Sign in to access your profile, restaurants, and contributions.
-      </Text>
-      <View className="mt-8 w-full max-w-sm gap-3">
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          placeholder="Email"
-          className="w-full rounded-xl border border-gray-200 px-4 py-3 text-base text-black"
-        />
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          autoCapitalize="none"
-          autoCorrect={false}
-          secureTextEntry
-          textContentType="password"
-          placeholder="Password"
-          className="w-full rounded-xl border border-gray-200 px-4 py-3 text-base text-black"
-        />
-        <AnimatedPressable
-          onPress={handleEmailSignInPress}
-          disabled={loadingEmailSignIn || loadingEmailSignUp || loadingGoogle}
-          className="w-full rounded-xl bg-black px-6 py-4"
-        >
-          {loadingEmailSignIn ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-center text-base font-semibold text-white">
-              Sign in with email
-            </Text>
-          )}
-        </AnimatedPressable>
-        <AnimatedPressable
-          onPress={handleEmailSignUpPress}
-          disabled={loadingEmailSignIn || loadingEmailSignUp || loadingGoogle}
-          className="w-full rounded-xl border border-gray-300 bg-white px-6 py-4"
-        >
-          {loadingEmailSignUp ? (
-            <ActivityIndicator color="#111827" />
-          ) : (
-            <Text className="text-center text-base font-semibold text-gray-900">
-              Create account
-            </Text>
-          )}
-        </AnimatedPressable>
-      </View>
-      <AnimatedPressable
-        onPress={handleGooglePress}
-        disabled={loadingGoogle || loadingEmailSignIn || loadingEmailSignUp}
-        className="mt-8 w-full max-w-sm rounded-xl bg-black px-6 py-4"
-      >
-        {loadingGoogle ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <View className="flex-row items-center justify-center gap-2">
-            <Ionicons name="logo-google" size={22} color="#fff" />
-            <Text className="text-base font-semibold text-white">
-              Continue with Google
-            </Text>
-          </View>
-        )}
-      </AnimatedPressable>
-      {error ? (
-        <Text className="mt-4 text-center text-sm text-red-600">{error}</Text>
-      ) : null}
-    </View>
-  );
-}
 
 function ProfileLoggedInContent() {
   const router = useRouter();
@@ -222,27 +109,7 @@ function ProfileLoggedInContent() {
 }
 
 export function ProfileScreen() {
-  const { session, isLoading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
-  const [authError, setAuthError] = useState<string | null>(null);
-
-  const handleContinueWithGoogle = async (): Promise<{ error?: string }> => {
-    setAuthError(null);
-    const result = await signInWithGoogle();
-    if (result.error) setAuthError(result.error);
-    return result;
-  };
-
-  const handleSignInWithEmail = async (email: string, password: string): Promise<void> => {
-    setAuthError(null);
-    const result = await signInWithEmail(email, password);
-    if (result.error) setAuthError(result.error);
-  };
-
-  const handleSignUpWithEmail = async (email: string, password: string): Promise<void> => {
-    setAuthError(null);
-    const result = await signUpWithEmail(email, password);
-    if (result.error) setAuthError(result.error);
-  };
+  const { session, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -256,16 +123,7 @@ export function ProfileScreen() {
   }
 
   if (!session) {
-    return (
-      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-        <ProfileLoggedOutCTA
-          onContinueWithGoogle={handleContinueWithGoogle}
-          onSignInWithEmail={handleSignInWithEmail}
-          onSignUpWithEmail={handleSignUpWithEmail}
-          error={authError}
-        />
-      </SafeAreaView>
-    );
+    return <AuthScreen />;
   }
 
   return (
