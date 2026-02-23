@@ -12,8 +12,13 @@ export interface DishDto {
   restaurantName?: string;
   image: string;
   foodType: string;
+  dishCategoryId?: string;
+  dishCategoryName?: string;
+  dishFamilyName?: string;
   savedCount: number;
   savedByUserIds: string[];
+  likeCount: number;
+  likedByUserIds: string[];
   createdAt: string;
   updatedAt: string | null;
   createdByUserId: string;

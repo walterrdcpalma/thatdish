@@ -1,21 +1,23 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using ThatDish.Api.Exceptions;
 using ThatDish.Api.Services;
+using ThatDish.Application.Cuisines;
+using ThatDish.Application.DishCategories;
+using ThatDish.Application.DishFamilies;
 using ThatDish.Application.Dishes;
 using ThatDish.Application.Restaurants;
+using ThatDish.Infrastructure.Cuisines;
+using ThatDish.Infrastructure.DishCategories;
+using ThatDish.Infrastructure.DishFamilies;
 using ThatDish.Infrastructure.Dishes;
 using ThatDish.Infrastructure.Persistence;
 using ThatDish.Infrastructure.Restaurants;
 
 var builder = WebApplication.CreateBuilder(args);
-
- var conn2 = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("ConnectionString 'DefaultConnection' not configured.");
-    Console.WriteLine($"[Startup] Na conn: {conn2}");
-
 
 // Listen on all interfaces so LAN devices (e.g. Expo on phone) can reach the API. PORT env for production.
 var port = Environment.GetEnvironmentVariable("PORT") ?? "6000";
@@ -29,12 +31,6 @@ builder.Services.AddDbContext<ThatDishDbContext>(options =>
 {
     var conn = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("ConnectionString 'DefaultConnection' not configured.");
-    Console.WriteLine($"[Startup] Na conn: {conn}");
-
-    var connParts = conn.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-    var connHost = connParts.FirstOrDefault(p => p.StartsWith("Host=", StringComparison.OrdinalIgnoreCase)) ?? "Host=<missing>";
-    var connUser = connParts.FirstOrDefault(p => p.StartsWith("Username=", StringComparison.OrdinalIgnoreCase)) ?? "Username=<missing>";
-    Console.WriteLine($"[Startup] Resolved DefaultConnection -> {connHost}; {connUser}");
     // SQLite when connection string looks like "Data Source=..."
     if (conn.TrimStart().StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase))
         options.UseSqlite(conn);
@@ -44,6 +40,9 @@ builder.Services.AddDbContext<ThatDishDbContext>(options =>
 
 // Application services
 builder.Services.AddScoped<IDishRepository, DishRepository>();
+builder.Services.AddScoped<IDishFamilyRepository, DishFamilyRepository>();
+builder.Services.AddScoped<IDishCategoryRepository, DishCategoryRepository>();
+builder.Services.AddScoped<ICuisineRepository, CuisineRepository>();
 builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<IRestaurantRepository, RestaurantRepository>();
 builder.Services.AddScoped<RestaurantListService>();
@@ -54,11 +53,16 @@ builder.Services.AddScoped<ISupabaseStorageService, SupabaseStorageService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
-// Only enable JWT auth when Supabase is properly configured (not placeholders)
-var supabaseIssuer = builder.Configuration["Supabase:Issuer"];
+// Only enable JWT auth when Supabase is properly configured (not placeholders).
+// Issuer can be set explicitly or derived from ProjectUrl (Supabase standard: ProjectUrl + "/auth/v1").
+var supabaseProjectUrl = builder.Configuration["Supabase:ProjectUrl"]?.TrimEnd('/');
+var supabaseIssuer = builder.Configuration["Supabase:Issuer"]?.Trim();
+if (string.IsNullOrWhiteSpace(supabaseIssuer) && !string.IsNullOrWhiteSpace(supabaseProjectUrl))
+    supabaseIssuer = supabaseProjectUrl + "/auth/v1";
 var supabaseJwtSecret = builder.Configuration["Supabase:JwtSecret"];
 var isSupabaseConfigured = !string.IsNullOrWhiteSpace(supabaseIssuer)
     && !string.IsNullOrWhiteSpace(supabaseJwtSecret);
@@ -95,6 +99,15 @@ builder.Services.AddCors(options =>
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
+
+// In Development, ensure DB is migrated and seeded (idempotent). Aligns with Supabase/Postgres script.
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ThatDishDbContext>();
+    await db.Database.MigrateAsync();
+    await SeedData.SeedAsync(db);
+}
 
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();

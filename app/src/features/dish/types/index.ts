@@ -8,12 +8,13 @@ export interface Dish {
   image: string;
   /** Exact string from backend (e.g. "Traditional", "Seafood"). */
   foodType: string;
+  dishCategoryId?: string;
+  dishCategoryName?: string;
+  dishFamilyName?: string;
   savedCount: number;
   savedByUserIds: string[];
-  /** Client-side only until API supports it. */
-  likeCount?: number;
-  /** Client-side only until API supports it. */
-  likedByUserIds?: string[];
+  likeCount: number;
+  likedByUserIds: string[];
   createdAt: string;
   updatedAt: string;
   createdByUserId: string;

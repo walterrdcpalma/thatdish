@@ -8,6 +8,8 @@ public interface IDishService
     Task<DishDto> CreateDishAsync(
         string dishName,
         string restaurantName,
+        string dishFamilyName,
+        string dishCategoryName,
         string foodType,
         string image,
         string? cuisineType,

@@ -11,19 +11,52 @@ public class ThatDishDbContext : DbContext
     }
 
     public DbSet<Restaurant> Restaurants => Set<Restaurant>();
+    public DbSet<Cuisine> Cuisines => Set<Cuisine>();
     public DbSet<Dish> Dishes => Set<Dish>();
+    public DbSet<DishFamily> DishFamilies => Set<DishFamily>();
+    public DbSet<DishCategory> DishCategories => Set<DishCategory>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<SavedDish> SavedDishes => Set<SavedDish>();
     public DbSet<Like> Likes => Set<Like>();
     public DbSet<Rating> Ratings => Set<Rating>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Cuisine>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.HasIndex(x => x.Name).IsUnique();
+        });
+
         modelBuilder.Entity<Restaurant>(e =>
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
             e.Property(x => x.Cuisine).HasMaxLength(100);
             e.Property(x => x.Address).HasMaxLength(500);
+            e.HasOne(x => x.CuisineNavigation)
+                .WithMany(c => c.Restaurants)
+                .HasForeignKey(x => x.CuisineId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<DishFamily>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.HasIndex(x => x.Name).IsUnique();
+        });
+
+        modelBuilder.Entity<DishCategory>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.HasOne(x => x.DishFamily)
+                .WithMany(f => f.Categories)
+                .HasForeignKey(x => x.DishFamilyId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.DishFamilyId, x.Name }).IsUnique();
         });
 
         modelBuilder.Entity<Dish>(e =>
@@ -36,6 +69,10 @@ public class ThatDishDbContext : DbContext
                 .WithMany(r => r.Dishes)
                 .HasForeignKey(x => x.RestaurantId)
                 .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.DishCategory)
+                .WithMany(c => c.Dishes)
+                .HasForeignKey(x => x.DishCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<User>(e =>
@@ -45,6 +82,15 @@ public class ThatDishDbContext : DbContext
             e.HasIndex(x => x.ExternalId).IsUnique();
             e.Property(x => x.Email).HasMaxLength(256);
             e.Property(x => x.DisplayName).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<SavedDish>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.ToTable("SavedDishes");
+            e.HasOne(x => x.User).WithMany(u => u.SavedDishes).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Dish).WithMany(d => d.SavedDishes).HasForeignKey(x => x.DishId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.UserId, x.DishId }).IsUnique();
         });
 
         modelBuilder.Entity<Like>(e =>

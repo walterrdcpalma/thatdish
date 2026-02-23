@@ -59,6 +59,8 @@ public class DishesController : ControllerBase
     public async Task<ActionResult<DishDto>> Create(
         [FromForm] string name,
         [FromForm] string restaurantName,
+        [FromForm] string dishFamilyName,
+        [FromForm] string dishCategoryName,
         [FromForm] IFormFile? image,
         [FromForm] string? foodType,
         [FromForm] string? cuisineType,
@@ -66,12 +68,18 @@ public class DishesController : ControllerBase
     {
         var dishName = name?.Trim() ?? string.Empty;
         var restName = restaurantName?.Trim() ?? string.Empty;
+        var familyName = dishFamilyName?.Trim() ?? string.Empty;
+        var categoryName = dishCategoryName?.Trim() ?? string.Empty;
         var foodTypeValue = string.IsNullOrWhiteSpace(foodType) ? "Other" : foodType.Trim();
 
         if (string.IsNullOrEmpty(dishName))
             return BadRequest("name is required.");
         if (string.IsNullOrEmpty(restName))
             return BadRequest("restaurantName is required.");
+        if (string.IsNullOrEmpty(familyName))
+            return BadRequest("dishFamilyName is required.");
+        if (string.IsNullOrEmpty(categoryName))
+            return BadRequest("dishCategoryName is required.");
         if (image == null || image.Length == 0)
             return BadRequest("image is required.");
 
@@ -81,14 +89,14 @@ public class DishesController : ControllerBase
 
         try
         {
-            var dto = await _dishService.CreateDishAsync(dishName, restName, foodTypeValue, imageUrl, cuisineType, createdByUserId, cancellationToken);
+            var dto = await _dishService.CreateDishAsync(dishName, restName, familyName, categoryName, foodTypeValue, imageUrl, cuisineType, createdByUserId, cancellationToken);
             return Created($"/api/dishes/{dto.Id}", dto);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))
         {
             return Conflict(ex.Message);
         }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("cuisineType"))
+        catch (InvalidOperationException ex) when (ex.Message.Contains("cuisineType") || ex.Message.Contains("family") || ex.Message.Contains("category"))
         {
             return BadRequest(ex.Message);
         }

@@ -9,6 +9,7 @@ public class User
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
 
+    public ICollection<SavedDish> SavedDishes { get; set; } = new List<SavedDish>();
     public ICollection<Like> Likes { get; set; } = new List<Like>();
     public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 }

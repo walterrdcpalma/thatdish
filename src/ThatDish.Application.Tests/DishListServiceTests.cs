@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using ThatDish.Application.Cuisines;
+using ThatDish.Application.DishCategories;
+using ThatDish.Application.DishFamilies;
 using ThatDish.Application.Dishes;
 using ThatDish.Application.Restaurants;
 using ThatDish.Domain.Entities;
@@ -19,11 +22,14 @@ public class DishListServiceTests
     {
         _repo = Substitute.For<IDishRepository>();
         var restaurantRepo = Substitute.For<IRestaurantRepository>();
+        var dishFamilyRepo = Substitute.For<IDishFamilyRepository>();
+        var dishCategoryRepo = Substitute.For<IDishCategoryRepository>();
+        var cuisineRepo = Substitute.For<ICuisineRepository>();
         var options = new DbContextOptionsBuilder<ThatDishDbContext>()
             .UseInMemoryDatabase(databaseName: "DishServiceTests")
             .Options;
         var context = new ThatDishDbContext(options);
-        _sut = new DishService(_repo, restaurantRepo, context);
+        _sut = new DishService(_repo, restaurantRepo, dishFamilyRepo, dishCategoryRepo, cuisineRepo, context);
     }
 
     [Fact]
@@ -61,7 +67,8 @@ public class DishListServiceTests
             FoodType = FoodType.Pasta,
             IsMainDish = true,
             RestaurantId = restaurant.Id,
-            Restaurant = restaurant
+            Restaurant = restaurant,
+            DishCategoryId = Guid.NewGuid()
         };
         _repo.GetPagedAsync(Arg.Any<FoodType?>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(new List<Dish> { dish });
@@ -94,12 +101,15 @@ public class DishListServiceTests
     public async Task GetDishesAsync_ReturnsDtosMappedFromDomain()
     {
         var restaurant = new Restaurant { Id = Guid.NewGuid(), Name = "The Sea Grill" };
+        var categoryId = Guid.NewGuid();
         var dish = new Dish
         {
             Id = Guid.NewGuid(),
             Name = "Fish and Chips",
             RestaurantId = restaurant.Id,
             Restaurant = restaurant,
+            DishCategoryId = categoryId,
+            DishCategory = new DishCategory { Id = categoryId, Name = "Other", DishFamilyId = Guid.NewGuid(), DishFamily = new DishFamily { Name = "Other" } },
             ImageUrl = "https://example.com/fish.jpg",
             FoodType = FoodType.Other,
             CreatedAtUtc = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
