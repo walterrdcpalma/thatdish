@@ -33,6 +33,13 @@ public sealed class SupabaseStorageService : ISupabaseStorageService
         if (string.IsNullOrWhiteSpace(serviceRoleKey))
             throw new InvalidOperationException("Supabase ServiceRoleKey is not configured.");
 
+        var keyPrefix = serviceRoleKey.Length >= 8
+            ? serviceRoleKey[..8] + "..."
+            : new string('*', Math.Min(serviceRoleKey.Length, 4)) + "...";
+        _logger.LogInformation(
+            "Supabase config resolved. ProjectUrl: {ProjectUrl}, Bucket: {Bucket}, ServiceRoleKey set: {HasKey}, Length: {KeyLength}, Prefix: {KeyPrefix}",
+            projectUrl, bucket, true, serviceRoleKey.Length, keyPrefix);
+
         var ext = Path.GetExtension(image.FileName);
         if (string.IsNullOrWhiteSpace(ext)) ext = ".jpg";
         var objectPath = $"dishes/{Guid.NewGuid():N}{ext.ToLowerInvariant()}";
