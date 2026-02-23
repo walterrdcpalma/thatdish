@@ -27,6 +27,43 @@ const GRID_PADDING_H = 12;
 const CUISINE_OPTIONS = ["All", "Portuguese", "International", "Italian", "Fast food", "Other"] as const;
 type CuisineOption = (typeof CUISINE_OPTIONS)[number];
 
+const SORT_OPTIONS = ["Recentes", "Likes", "Rating"] as const;
+type SearchSort = (typeof SORT_OPTIONS)[number];
+
+/** Dish with optional fields used for sorting (fallback 0 if missing). */
+function getSortValues(dish: Dish): { createdAtMs: number; likes: number; rating: number } {
+  const createdAtMs = new Date(dish.createdAt ?? 0).getTime();
+  const likes = dish.likeCount ?? dish.likedByUserIds?.length ?? 0;
+  const rating = (dish as Dish & { averageRating?: number }).averageRating ?? 0;
+  return { createdAtMs, likes, rating };
+}
+
+/** Sorts a copy of the array by sortBy; tie-breaker is always Recentes (createdAt desc). */
+function sortSearchResults(items: Dish[], sortBy: SearchSort): Dish[] {
+  const copy = [...items];
+  return copy.sort((a, b) => {
+    const va = getSortValues(a);
+    const vb = getSortValues(b);
+    let cmp = 0;
+    switch (sortBy) {
+      case "Recentes":
+        cmp = vb.createdAtMs - va.createdAtMs;
+        break;
+      case "Likes":
+        cmp = vb.likes - va.likes;
+        if (cmp !== 0) return cmp;
+        cmp = vb.createdAtMs - va.createdAtMs;
+        break;
+      case "Rating":
+        cmp = vb.rating - va.rating;
+        if (cmp !== 0) return cmp;
+        cmp = vb.createdAtMs - va.createdAtMs;
+        break;
+    }
+    return cmp;
+  });
+}
+
 function matchesCuisine(dish: Dish, cuisine: CuisineOption): boolean {
   if (cuisine === "All") return true;
   const ft = (dish.foodType ?? "").trim().toLowerCase();
@@ -98,6 +135,7 @@ export function SearchScreen() {
   const { width } = useWindowDimensions();
   const [query, setQuery] = useState("");
   const [filterCuisine, setFilterCuisine] = useState<CuisineOption>("All");
+  const [sortBy, setSortBy] = useState<SearchSort>("Recentes");
   const [searchResults, setSearchResults] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -140,18 +178,13 @@ export function SearchScreen() {
 
   const ranked = getRankedDishes(searchResults);
   const filteredByCuisine = ranked.filter((d) => matchesCuisine(d, filterCuisine));
+  const sortedResults = sortSearchResults(filteredByCuisine, sortBy);
   const contentWidth = width - GRID_PADDING_H * 2;
   const itemSize = (contentWidth - GRID_GAP * 2) / 3;
 
   const renderItem = ({ item }: { item: Dish }) => {
     const badges = getDishBadges(item, searchResults);
-    return (
-      <SearchGridItem
-        dish={item}
-        badges={badges}
-        itemSize={itemSize}
-      />
-    );
+    return <SearchGridItem dish={item} badges={badges} itemSize={itemSize} />;
   };
 
   return (
@@ -185,12 +218,31 @@ export function SearchScreen() {
                 </Pressable>
               ))}
             </ScrollView>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 6, marginTop: 10 }}
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <Pressable
+                  key={opt}
+                  onPress={() => setSortBy(opt)}
+                  className={`rounded-full px-2.5 py-1.5 ${sortBy === opt ? "bg-orange-500" : "bg-gray-100"}`}
+                >
+                  <Text
+                    className={`text-[11px] font-medium ${sortBy === opt ? "text-white" : "text-gray-600"}`}
+                  >
+                    {opt}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
           {loading ? (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator size="large" color="#f97316" />
             </View>
-          ) : filteredByCuisine.length === 0 ? (
+          ) : sortedResults.length === 0 ? (
             <View className="flex-1 items-center justify-center">
               <Text className="text-gray-500">
                 {query.trim() ? "No results found." : "Type to search dishes or restaurants."}
@@ -198,7 +250,7 @@ export function SearchScreen() {
             </View>
           ) : (
             <FlatList
-              data={filteredByCuisine}
+              data={sortedResults}
               keyExtractor={(item) => item.id}
               numColumns={3}
               contentContainerStyle={{
