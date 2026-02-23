@@ -65,6 +65,10 @@ public class ThatDishDbContext : DbContext
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
             e.Property(x => x.Description).HasMaxLength(1000);
             e.Property(x => x.ImageUrl).IsRequired().HasMaxLength(2000);
+            e.Property(x => x.LikesCount).HasDefaultValue(0);
+            e.Property(x => x.SavesCount).HasDefaultValue(0);
+            e.Property(x => x.RatingsCount).HasDefaultValue(0);
+            e.Property(x => x.AverageRating).HasDefaultValue(0m);
             e.HasOne(x => x.Restaurant)
                 .WithMany(r => r.Dishes)
                 .HasForeignKey(x => x.RestaurantId)
@@ -84,12 +88,13 @@ public class ThatDishDbContext : DbContext
             e.Property(x => x.DisplayName).HasMaxLength(200);
         });
 
+        // Junction tables: no navigation collection on Dish; aggregates on Dish (LikesCount, SavesCount, etc.)
         modelBuilder.Entity<SavedDish>(e =>
         {
             e.HasKey(x => x.Id);
             e.ToTable("SavedDishes");
             e.HasOne(x => x.User).WithMany(u => u.SavedDishes).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(x => x.Dish).WithMany(d => d.SavedDishes).HasForeignKey(x => x.DishId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Dish).WithMany().HasForeignKey(x => x.DishId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.UserId, x.DishId }).IsUnique();
         });
 
@@ -97,7 +102,7 @@ public class ThatDishDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.HasOne(x => x.User).WithMany(u => u.Likes).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(x => x.Dish).WithMany(d => d.Likes).HasForeignKey(x => x.DishId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Dish).WithMany().HasForeignKey(x => x.DishId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.UserId, x.DishId }).IsUnique();
         });
 
@@ -106,7 +111,7 @@ public class ThatDishDbContext : DbContext
             e.HasKey(x => x.Id);
             e.Property(x => x.Score).IsRequired();
             e.HasOne(x => x.User).WithMany(u => u.Ratings).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(x => x.Dish).WithMany(d => d.Ratings).HasForeignKey(x => x.DishId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Dish).WithMany().HasForeignKey(x => x.DishId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.UserId, x.DishId }).IsUnique();
         });
     }

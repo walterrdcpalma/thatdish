@@ -33,8 +33,8 @@ type SearchSort = (typeof SORT_OPTIONS)[number];
 /** Dish with optional fields used for sorting (fallback 0 if missing). */
 function getSortValues(dish: Dish): { createdAtMs: number; likes: number; rating: number } {
   const createdAtMs = new Date(dish.createdAt ?? 0).getTime();
-  const likes = dish.likeCount ?? dish.likedByUserIds?.length ?? 0;
-  const rating = (dish as Dish & { averageRating?: number }).averageRating ?? 0;
+  const likes = dish.likesCount ?? 0;
+  const rating = dish.averageRating ?? 0;
   return { createdAtMs, likes, rating };
 }
 
@@ -115,7 +115,7 @@ function SearchGridItem({ dish, badges, itemSize }: SearchGridItemProps) {
       <View className="absolute inset-0 bg-black/20" />
       <View className="absolute bottom-1 left-1">
         <Text className="text-[10px] font-medium text-white" numberOfLines={1}>
-          {dish.savedCount} saved
+          {dish.savesCount} saved
         </Text>
       </View>
       {badge && (

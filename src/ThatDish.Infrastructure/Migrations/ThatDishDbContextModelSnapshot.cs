@@ -48,6 +48,11 @@ namespace ThatDish.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("AverageRating")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue(0m);
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -72,13 +77,28 @@ namespace ThatDish.Infrastructure.Migrations
                     b.Property<bool>("IsMainDish")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("LikesCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("RatingsCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
                     b.Property<Guid>("RestaurantId")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("SavesCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
@@ -354,7 +374,7 @@ namespace ThatDish.Infrastructure.Migrations
             modelBuilder.Entity("ThatDish.Domain.Entities.Like", b =>
                 {
                     b.HasOne("ThatDish.Domain.Entities.Dish", "Dish")
-                        .WithMany("Likes")
+                        .WithMany()
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -373,7 +393,7 @@ namespace ThatDish.Infrastructure.Migrations
             modelBuilder.Entity("ThatDish.Domain.Entities.Rating", b =>
                 {
                     b.HasOne("ThatDish.Domain.Entities.Dish", "Dish")
-                        .WithMany("Ratings")
+                        .WithMany()
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -402,7 +422,7 @@ namespace ThatDish.Infrastructure.Migrations
             modelBuilder.Entity("ThatDish.Domain.Entities.SavedDish", b =>
                 {
                     b.HasOne("ThatDish.Domain.Entities.Dish", "Dish")
-                        .WithMany("SavedDishes")
+                        .WithMany()
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -421,15 +441,6 @@ namespace ThatDish.Infrastructure.Migrations
             modelBuilder.Entity("ThatDish.Domain.Entities.Cuisine", b =>
                 {
                     b.Navigation("Restaurants");
-                });
-
-            modelBuilder.Entity("ThatDish.Domain.Entities.Dish", b =>
-                {
-                    b.Navigation("Likes");
-
-                    b.Navigation("Ratings");
-
-                    b.Navigation("SavedDishes");
                 });
 
             modelBuilder.Entity("ThatDish.Domain.Entities.DishCategory", b =>

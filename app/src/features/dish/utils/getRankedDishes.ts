@@ -16,11 +16,11 @@ function getRecencyBoost(createdAt: string, now: Date): number {
 
 /**
  * Computes a dynamic score for ranking. Not stored on the dish.
- * score = (savedByUserIds.length * 2) + recencyBoost
+ * score = (savesCount * 2) + recencyBoost
  * Recency: last 3 days +5, last 7 days +2, otherwise 0.
  */
 function computeScore(dish: Dish, now: Date): number {
-  const savePart = (dish.savedByUserIds?.length ?? 0) * 2;
+  const savePart = (dish.savesCount ?? 0) * 2;
   const recencyBoost = getRecencyBoost(dish.createdAt, now);
   return savePart + recencyBoost;
 }

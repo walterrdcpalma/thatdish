@@ -47,8 +47,8 @@ function feedCardPropsAreEqual(prev: FeedCardProps, next: FeedCardProps): boolea
     a.image === b.image &&
     (a.restaurantName ?? "") === (b.restaurantName ?? "") &&
     a.restaurantId === b.restaurantId &&
-    (a.likeCount ?? 0) === (b.likeCount ?? 0) &&
-    a.savedCount === b.savedCount
+    (a.likesCount ?? 0) === (b.likesCount ?? 0) &&
+    (a.savesCount ?? 0) === (b.savesCount ?? 0)
   );
 }
 
@@ -67,7 +67,7 @@ function FeedCardInner({
   );
   const restaurantName =
     item.restaurantName ?? restaurantNameFromStore ?? "Unknown";
-  const likeCount = item.likeCount ?? 0;
+  const likeCount = item.likesCount ?? 0;
 
   const handleSave = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();
@@ -158,7 +158,7 @@ function FeedCardInner({
                 size={24}
                 color="#262626"
               />
-              <Text style={styles.actionCount}>{item.savedCount}</Text>
+              <Text style={styles.actionCount}>{item.savesCount ?? 0}</Text>
             </View>
           </AnimatedPressable>
         </View>

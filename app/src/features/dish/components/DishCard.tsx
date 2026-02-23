@@ -86,7 +86,7 @@ export function DishCard({ dish, onPress, isSignature, badges, isNearby }: DishC
           <Text className="text-xl font-bold text-white">{dish.name}</Text>
           <Text className="mt-1 text-sm text-white/90">{restaurantName}</Text>
           <View className="mt-2 flex-row items-center justify-between">
-            <Text className="text-xs text-white/80">{dish.savedCount} saved</Text>
+            <Text className="text-xs text-white/80">{dish.savesCount} saved</Text>
             <AnimatedPressable
               onPress={handleSavePress}
               scale={0.9}

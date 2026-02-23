@@ -17,11 +17,11 @@ function getTrendingRecencyBoost(createdAt: string, now: Date): number {
 
 /**
  * Trending score: date-heavy so recent dishes rank higher.
- * trendingScore = recencyBoost * 2 + savedCount (recencyBoost is 10 or 4 or 0).
+ * trendingScore = recencyBoost * 2 + savesCount (recencyBoost is 10 or 4 or 0).
  */
 function getTrendingScore(dish: Dish, now: Date): number {
   const boost = getTrendingRecencyBoost(dish.createdAt, now);
-  return boost * 2 + (dish.savedCount ?? 0);
+  return boost * 2 + (dish.savesCount ?? 0);
 }
 
 /** Top 5 by trending score (date-heavy), among non-archived, created within 7 days. */
@@ -53,7 +53,7 @@ export function getDishBadges(dish: Dish, allDishes: Dish[]): DishBadges {
   const isNew = days <= 7;
 
   const top3BySaves = [...active]
-    .sort((a, b) => b.savedCount - a.savedCount)
+    .sort((a, b) => (b.savesCount ?? 0) - (a.savesCount ?? 0))
     .slice(0, 3);
   const isTop = top3BySaves.some((d) => d.id === dish.id);
 

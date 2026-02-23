@@ -273,6 +273,13 @@ public static class SeedData
                 UpdatedAtUtc = DaysAgo(now, 14),
             },
         };
+        foreach (var d in dishes)
+        {
+            d.LikesCount = 0;
+            d.SavesCount = 0;
+            d.RatingsCount = 0;
+            d.AverageRating = 0m;
+        }
         db.Dishes.AddRange(dishes);
         await db.SaveChangesAsync(cancellationToken);
 
@@ -395,32 +402,50 @@ public static class SeedData
             await db.SaveChangesAsync(ct);
         }
 
-        if (await db.Ratings.AnyAsync(ct))
-            return;
-
-        var ratings = new List<Rating>
+        if (!await db.Ratings.AnyAsync(ct))
         {
-            new Rating { Id = SeedIds.Rating1, UserId = SeedIds.User1, DishId = SeedIds.DishFrancesinha, Score = 5, CreatedAtUtc = now.AddDays(-1) },
-            new Rating { Id = SeedIds.Rating2, UserId = SeedIds.User2, DishId = SeedIds.DishFrancesinha, Score = 5, CreatedAtUtc = now.AddDays(-1) },
-            new Rating { Id = SeedIds.Rating3, UserId = SeedIds.User3, DishId = SeedIds.DishBacalhauBras, Score = 4, CreatedAtUtc = now.AddDays(-3) },
-            new Rating { Id = SeedIds.Rating4, UserId = SeedIds.User4, DishId = SeedIds.DishBacalhauBras, Score = 5, CreatedAtUtc = now.AddDays(-4) }
-        };
-
-        var rndRating = new Random(42);
-        var usedRatingPairs = new HashSet<(Guid, Guid)> { (SeedIds.User1, SeedIds.DishFrancesinha), (SeedIds.User2, SeedIds.DishFrancesinha), (SeedIds.User3, SeedIds.DishBacalhauBras), (SeedIds.User4, SeedIds.DishBacalhauBras) };
-        for (int i = 0; i < 25; i++)
-        {
-            var user = userIds[rndRating.Next(userIds.Length)];
-            var dish = dishIds[rndRating.Next(dishIds.Length)];
-            if (usedRatingPairs.Add((user, dish)))
+            var ratings = new List<Rating>
             {
-                var score = 3 + rndRating.Next(3);
-                var ratingId = Guid.Parse($"91000000-0000-0000-0000-0000000000{(5 + i):x2}");
-                ratings.Add(new Rating { Id = ratingId, UserId = user, DishId = dish, Score = score, CreatedAtUtc = now.AddDays(-rndRating.Next(1, 30)) });
+                new Rating { Id = SeedIds.Rating1, UserId = SeedIds.User1, DishId = SeedIds.DishFrancesinha, Score = 5, CreatedAtUtc = now.AddDays(-1) },
+                new Rating { Id = SeedIds.Rating2, UserId = SeedIds.User2, DishId = SeedIds.DishFrancesinha, Score = 5, CreatedAtUtc = now.AddDays(-1) },
+                new Rating { Id = SeedIds.Rating3, UserId = SeedIds.User3, DishId = SeedIds.DishBacalhauBras, Score = 4, CreatedAtUtc = now.AddDays(-3) },
+                new Rating { Id = SeedIds.Rating4, UserId = SeedIds.User4, DishId = SeedIds.DishBacalhauBras, Score = 5, CreatedAtUtc = now.AddDays(-4) }
+            };
+            var rndRating = new Random(42);
+            var usedRatingPairs = new HashSet<(Guid, Guid)> { (SeedIds.User1, SeedIds.DishFrancesinha), (SeedIds.User2, SeedIds.DishFrancesinha), (SeedIds.User3, SeedIds.DishBacalhauBras), (SeedIds.User4, SeedIds.DishBacalhauBras) };
+            for (int i = 0; i < 25; i++)
+            {
+                var user = userIds[rndRating.Next(userIds.Length)];
+                var dish = dishIds[rndRating.Next(dishIds.Length)];
+                if (usedRatingPairs.Add((user, dish)))
+                {
+                    var score = 3 + rndRating.Next(3);
+                    var ratingId = Guid.Parse($"91000000-0000-0000-0000-0000000000{(5 + i):x2}");
+                    ratings.Add(new Rating { Id = ratingId, UserId = user, DishId = dish, Score = score, CreatedAtUtc = now.AddDays(-rndRating.Next(1, 30)) });
+                }
             }
+            db.Ratings.AddRange(ratings);
+            await db.SaveChangesAsync(ct);
         }
-        db.Ratings.AddRange(ratings);
-        await db.SaveChangesAsync(ct);
+
+        await SyncDishAggregatesAsync(db, ct);
+    }
+
+    /// <summary>Recalculates LikesCount, SavesCount, RatingsCount, AverageRating on all Dishes from junction tables.</summary>
+    private static async Task SyncDishAggregatesAsync(ThatDishDbContext db, CancellationToken ct)
+    {
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE Dishes SET LikesCount = (SELECT COUNT(*) FROM Likes WHERE Likes.DishId = Dishes.Id)",
+            ct);
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE Dishes SET SavesCount = (SELECT COUNT(*) FROM SavedDishes WHERE SavedDishes.DishId = Dishes.Id)",
+            ct);
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE Dishes SET RatingsCount = (SELECT COUNT(*) FROM Ratings WHERE Ratings.DishId = Dishes.Id)",
+            ct);
+        await db.Database.ExecuteSqlRawAsync(
+            "UPDATE Dishes SET AverageRating = COALESCE((SELECT AVG(CAST(Score AS REAL)) FROM Ratings WHERE Ratings.DishId = Dishes.Id), 0)",
+            ct);
     }
 
     /// <summary>Backfill CuisineId from existing Restaurants.Cuisine (distinct names). Run after migration.</summary>

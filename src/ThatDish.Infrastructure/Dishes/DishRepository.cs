@@ -21,7 +21,6 @@ public class DishRepository : IDishRepository
             .AsNoTracking()
             .Include(d => d.Restaurant)
             .Include(d => d.DishCategory).ThenInclude(c => c!.DishFamily)
-            .Include(d => d.SavedDishes).Include(d => d.Likes)
             .OrderBy(d => d.CreatedAtUtc)
             .ToListAsync(cancellationToken);
     }
@@ -32,7 +31,6 @@ public class DishRepository : IDishRepository
             .AsNoTracking()
             .Include(d => d.Restaurant)
             .Include(d => d.DishCategory).ThenInclude(c => c!.DishFamily)
-            .Include(d => d.SavedDishes).Include(d => d.Likes)
             .Where(d => !foodType.HasValue || d.FoodType == foodType.Value);
 
         return await query
@@ -50,7 +48,6 @@ public class DishRepository : IDishRepository
             .AsNoTracking()
             .Include(d => d.Restaurant)
             .Include(d => d.DishCategory).ThenInclude(c => c!.DishFamily)
-            .Include(d => d.SavedDishes).Include(d => d.Likes)
             .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
     }
 

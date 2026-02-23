@@ -31,12 +31,7 @@ export const useDishStore = create<DishStore>((set, get) => ({
   loadDishes: async () => {
     set({ loading: true, error: null });
     try {
-      const raw = await fetchDishes(config.apiBaseUrl);
-      const dishes = raw.map((d) => ({
-        ...d,
-        likeCount: d.likeCount ?? 0,
-        likedByUserIds: d.likedByUserIds ?? [],
-      }));
+      const dishes = await fetchDishes(config.apiBaseUrl);
       set({ dishes, loading: false, error: null });
     } catch (e) {
       const message = e instanceof Error ? e.message : "Failed to load dishes.";
@@ -45,12 +40,7 @@ export const useDishStore = create<DishStore>((set, get) => ({
   },
 
   createDish: async (name: string, restaurantName: string, foodType?: string, image?: string) => {
-    const raw = await createDishApi(config.apiBaseUrl, { name, restaurantName, foodType, image });
-    const dish: Dish = {
-      ...raw,
-      likeCount: raw.likeCount ?? 0,
-      likedByUserIds: raw.likedByUserIds ?? [],
-    };
+    const dish = await createDishApi(config.apiBaseUrl, { name, restaurantName, foodType, image });
     set((state) => ({ dishes: [dish, ...state.dishes] }));
     return dish;
   },
@@ -60,36 +50,31 @@ export const useDishStore = create<DishStore>((set, get) => ({
     const { currentUser } = userStore;
     const isSaved = currentUser.savedDishIds.includes(dishId);
     userStore.toggleSavedDish(dishId);
-    set((state) => {
-      const nextDishes = state.dishes.map((d) => {
+    set((state) => ({
+      dishes: state.dishes.map((d) => {
         if (d.id !== dishId) return d;
-        const savedByUserIds = isSaved
-          ? (d.savedByUserIds ?? []).filter((uid) => uid !== currentUser.id)
-          : [...(d.savedByUserIds ?? []), currentUser.id];
+        const delta = isSaved ? -1 : 1;
         return {
           ...d,
-          savedByUserIds,
-          savedCount: savedByUserIds.length,
+          savesCount: Math.max(0, (d.savesCount ?? 0) + delta),
+          isSavedByCurrentUser: !isSaved,
         };
-      });
-      return { dishes: nextDishes };
-    });
+      }),
+    }));
   },
 
   toggleLike: (dishId: string) => {
     const { currentUser } = useUserStore.getState();
+    const isLiked = currentUser.likedDishIds.includes(dishId);
+    useUserStore.getState().toggleLikedDish(dishId);
     set((state) => ({
       dishes: state.dishes.map((d) => {
         if (d.id !== dishId) return d;
-        const ids = d.likedByUserIds ?? [];
-        const isLiked = ids.includes(currentUser.id);
-        const likedByUserIds = isLiked
-          ? ids.filter((id) => id !== currentUser.id)
-          : [...ids, currentUser.id];
+        const delta = isLiked ? -1 : 1;
         return {
           ...d,
-          likedByUserIds,
-          likeCount: likedByUserIds.length,
+          likesCount: Math.max(0, (d.likesCount ?? 0) + delta),
+          isLikedByCurrentUser: !isLiked,
         };
       }),
     }));
@@ -150,8 +135,8 @@ export const useDishStore = create<DishStore>((set, get) => ({
           lastEditedByUserId: currentUser.id,
         };
         if (nameChanged) {
-          next.savedByUserIds = [];
-          next.savedCount = 0;
+          next.savesCount = Math.max(0, (next.savesCount ?? 0) - 1);
+          next.isSavedByCurrentUser = false;
         }
         return next;
       }),

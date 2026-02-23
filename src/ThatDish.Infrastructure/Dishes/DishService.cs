@@ -38,7 +38,7 @@ public class DishService : IDishService
     public async Task<List<DishDto>> GetDishesAsync(CancellationToken cancellationToken = default)
     {
         var dishes = await _dishRepository.GetAllAsync(cancellationToken);
-        return dishes.Select(DishDtoMapping.ToDto).ToList();
+        return dishes.Select(d => d.ToDto()).ToList();
     }
 
     public async Task<List<DishDto>> SearchDishesAsync(string query, int limit, CancellationToken cancellationToken = default)
@@ -52,12 +52,11 @@ public class DishService : IDishService
             .AsNoTracking()
             .Include(d => d.Restaurant)
             .Include(d => d.DishCategory).ThenInclude(c => c!.DishFamily)
-            .Include(d => d.SavedDishes).Include(d => d.Likes)
             .Where(d => EF.Functions.Like(d.Name, pattern) || EF.Functions.Like(d.Restaurant.Name, pattern))
             .OrderBy(d => d.Name)
             .Take(limit)
             .ToListAsync(cancellationToken);
-        return list.Select(DishDtoMapping.ToDto).ToList();
+        return list.Select(d => d.ToDto()).ToList();
     }
 
     public async Task<List<DishListDto>> GetPagedAsync(ListDishesQuery query, CancellationToken cancellationToken = default)
@@ -146,6 +145,10 @@ public class DishService : IDishService
             CreatedAtUtc = now,
             UpdatedAtUtc = now,
             CreatedByUserId = createdByUserId,
+            LikesCount = 0,
+            SavesCount = 0,
+            RatingsCount = 0,
+            AverageRating = 0m,
         };
         _dishRepository.Add(dish);
 
@@ -212,10 +215,9 @@ public class DishService : IDishService
             .AsNoTracking()
             .Include(d => d.Restaurant)
             .Include(d => d.DishCategory).ThenInclude(c => c!.DishFamily)
-            .Include(d => d.SavedDishes).Include(d => d.Likes)
             .Where(d => d.CreatedByUserId == userId)
             .OrderByDescending(d => d.CreatedAtUtc)
             .ToListAsync(cancellationToken);
-        return list.Select(DishDtoMapping.ToDto).ToList();
+        return list.Select(d => d.ToDto()).ToList();
     }
 }

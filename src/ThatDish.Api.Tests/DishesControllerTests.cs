@@ -48,8 +48,10 @@ public class DishesControllerTests : IClassFixture<ThatDishApiFactory>
         Assert.True(first.TryGetProperty("name", out _), "Expected camelCase 'name'");
         Assert.True(first.TryGetProperty("restaurantId", out _), "Expected camelCase 'restaurantId'");
         Assert.True(first.TryGetProperty("restaurantName", out _), "Expected camelCase 'restaurantName'");
-        Assert.True(first.TryGetProperty("savedCount", out _), "Expected camelCase 'savedCount'");
-        Assert.True(first.TryGetProperty("savedByUserIds", out _), "Expected camelCase 'savedByUserIds'");
+        Assert.True(first.TryGetProperty("likesCount", out _), "Expected camelCase 'likesCount'");
+        Assert.True(first.TryGetProperty("savesCount", out _), "Expected camelCase 'savesCount'");
+        Assert.True(first.TryGetProperty("ratingsCount", out _), "Expected camelCase 'ratingsCount'");
+        Assert.True(first.TryGetProperty("averageRating", out _), "Expected camelCase 'averageRating'");
         Assert.True(first.TryGetProperty("createdAt", out _), "Expected camelCase 'createdAt'");
         Assert.True(first.TryGetProperty("updatedAt", out _), "Expected camelCase 'updatedAt'");
         Assert.True(first.TryGetProperty("createdByUserId", out _), "Expected camelCase 'createdByUserId'");

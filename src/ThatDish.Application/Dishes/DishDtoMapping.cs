@@ -3,21 +3,16 @@ using ThatDish.Domain.Entities;
 namespace ThatDish.Application.Dishes;
 
 /// <summary>
-/// Maps domain Dish to transport DTO. Keeps mapping in Application layer; controller stays thin.
+/// Maps domain Dish to transport DTO. Uses aggregate counters; user-context flags set by caller when authenticated.
 /// </summary>
 public static class DishDtoMapping
 {
-    public static DishDto ToDto(this Dish dish)
+    public static DishDto ToDto(
+        this Dish dish,
+        bool? isLikedByCurrentUser = null,
+        bool? isSavedByCurrentUser = null,
+        int? myRating = null)
     {
-        var savedCount = dish.SavedDishes?.Count ?? 0;
-        var savedByUserIds = dish.SavedDishes != null
-            ? dish.SavedDishes.Select(s => s.UserId.ToString()).ToArray()
-            : Array.Empty<string>();
-        var likeCount = dish.Likes?.Count ?? 0;
-        var likedByUserIds = dish.Likes != null
-            ? dish.Likes.Select(l => l.UserId.ToString()).ToArray()
-            : Array.Empty<string>();
-
         return new DishDto(
             Id: dish.Id,
             Name: dish.Name,
@@ -28,10 +23,13 @@ public static class DishDtoMapping
             DishCategoryId: dish.DishCategoryId,
             DishCategoryName: dish.DishCategory?.Name,
             DishFamilyName: dish.DishCategory?.DishFamily?.Name,
-            SavedCount: savedCount,
-            SavedByUserIds: savedByUserIds,
-            LikeCount: likeCount,
-            LikedByUserIds: likedByUserIds,
+            LikesCount: dish.LikesCount,
+            SavesCount: dish.SavesCount,
+            RatingsCount: dish.RatingsCount,
+            AverageRating: dish.AverageRating,
+            IsLikedByCurrentUser: isLikedByCurrentUser,
+            IsSavedByCurrentUser: isSavedByCurrentUser,
+            MyRating: myRating,
             CreatedAt: dish.CreatedAtUtc,
             UpdatedAt: dish.UpdatedAtUtc,
             CreatedByUserId: dish.CreatedByUserId?.ToString() ?? string.Empty,

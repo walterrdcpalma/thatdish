@@ -86,7 +86,7 @@ export function DishDetailScreen() {
           <Text className="mt-1 text-sm text-gray-500">{dish.foodType}</Text>
         ) : null}
         <View className="mt-3 flex-row items-center justify-between">
-          <Text className="text-sm text-gray-500">{dish.savedCount} saved</Text>
+          <Text className="text-sm text-gray-500">{dish.savesCount} saved</Text>
           {!dish.isArchived && (
             <AnimatedPressable
               onPress={() => toggleSave(dish.id)}

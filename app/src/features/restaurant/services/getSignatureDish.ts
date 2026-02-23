@@ -26,6 +26,6 @@ export function getSignatureDish(
   }
 
   return forRestaurant.reduce((best, d) =>
-    d.savedCount > best.savedCount ? d : best
+    (d.savesCount ?? 0) > (best.savesCount ?? 0) ? d : best
   );
 }

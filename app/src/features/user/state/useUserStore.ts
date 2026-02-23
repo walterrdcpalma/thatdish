@@ -5,12 +5,14 @@ const MOCK_USER: User = {
   id: "u1",
   name: "Walter",
   savedDishIds: [],
+  likedDishIds: [],
 };
 
 interface UserStore {
   currentUser: User;
   setCurrentUser: (user: User) => void;
   toggleSavedDish: (dishId: string) => void;
+  toggleLikedDish: (dishId: string) => void;
 }
 
 export const useUserStore = create<UserStore>((set) => ({
@@ -25,6 +27,16 @@ export const useUserStore = create<UserStore>((set) => ({
         : [...state.currentUser.savedDishIds, dishId];
       return {
         currentUser: { ...state.currentUser, savedDishIds: ids },
+      };
+    }),
+
+  toggleLikedDish: (dishId: string) =>
+    set((state) => {
+      const ids = state.currentUser.likedDishIds.includes(dishId)
+        ? state.currentUser.likedDishIds.filter((id) => id !== dishId)
+        : [...state.currentUser.likedDishIds, dishId];
+      return {
+        currentUser: { ...state.currentUser, likedDishIds: ids },
       };
     }),
 }));

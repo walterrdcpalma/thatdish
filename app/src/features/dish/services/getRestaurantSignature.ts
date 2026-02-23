@@ -1,7 +1,7 @@
 import type { Dish } from "../types";
 
 /**
- * Returns the signature dish for a restaurant: the dish with the highest savedCount
+ * Returns the signature dish for a restaurant: the dish with the highest savesCount
  * among all dishes for that restaurantId. Returns undefined if no dishes exist for the restaurant.
  */
 export function getRestaurantSignature(
@@ -13,6 +13,6 @@ export function getRestaurantSignature(
   );
   if (forRestaurant.length === 0) return undefined;
   return forRestaurant.reduce((best, d) =>
-    d.savedCount > best.savedCount ? d : best
+    (d.savesCount ?? 0) > (best.savesCount ?? 0) ? d : best
   );
 }

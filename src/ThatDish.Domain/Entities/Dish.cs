@@ -18,9 +18,15 @@ public class Dish
     /// <summary>User who created the dish. Null for legacy data.</summary>
     public Guid? CreatedByUserId { get; set; }
 
+    /// <summary>Aggregated count of likes (thumbs up). Kept in sync with Likes table.</summary>
+    public int LikesCount { get; set; }
+    /// <summary>Aggregated count of saves (bookmarks). Kept in sync with SavedDishes table.</summary>
+    public int SavesCount { get; set; }
+    /// <summary>Aggregated count of ratings. Kept in sync with Ratings table.</summary>
+    public int RatingsCount { get; set; }
+    /// <summary>Average rating (1-5). 0 when no ratings.</summary>
+    public decimal AverageRating { get; set; }
+
     public Restaurant Restaurant { get; set; } = null!;
     public DishCategory DishCategory { get; set; } = null!;
-    public ICollection<SavedDish> SavedDishes { get; set; } = new List<SavedDish>();
-    public ICollection<Like> Likes { get; set; } = new List<Like>();
-    public ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 }

@@ -125,8 +125,10 @@ public class DishListServiceTests
         Assert.Equal(dish.RestaurantId, result[0].RestaurantId);
         Assert.Equal("The Sea Grill", result[0].RestaurantName);
         Assert.Equal("https://example.com/fish.jpg", result[0].Image);
-        Assert.Equal(0, result[0].SavedCount);
-        Assert.Empty(result[0].SavedByUserIds);
+        Assert.Equal(0, result[0].SavesCount);
+        Assert.Equal(0, result[0].LikesCount);
+        Assert.Equal(0, result[0].RatingsCount);
+        Assert.Equal(0m, result[0].AverageRating);
         Assert.Equal(dish.CreatedAtUtc, result[0].CreatedAt);
         Assert.Null(result[0].UpdatedAt);
         Assert.False(result[0].IsArchived);

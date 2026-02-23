@@ -2,8 +2,8 @@ import type { DishDto } from "@/src/shared/api/dishesApi";
 import type { Dish } from "../types";
 
 /**
- * Maps backend DTO to frontend Dish. Uses backend values as-is (image, foodType).
- * Supports both camelCase (foodType) and PascalCase (FoodType) from API.
+ * Maps backend DTO to frontend Dish. Uses aggregate counts and optional user-context flags.
+ * Supports both camelCase and PascalCase from API.
  */
 export function mapDishDtoToDish(dto: DishDto): Dish {
   const raw = dto as unknown as Record<string, unknown>;
@@ -12,14 +12,14 @@ export function mapDishDtoToDish(dto: DishDto): Dish {
   const dishCategoryId = (raw.dishCategoryId ?? raw.DishCategoryId) as string | undefined;
   const dishCategoryName = (raw.dishCategoryName ?? raw.DishCategoryName) as string | undefined;
   const dishFamilyName = (raw.dishFamilyName ?? raw.DishFamilyName) as string | undefined;
-  const savedCountRaw = raw.savedCount ?? raw.SavedCount;
-  const savedCount = typeof savedCountRaw === "number" && !Number.isNaN(savedCountRaw) ? savedCountRaw : 0;
-  const savedByUserIdsRaw = raw.savedByUserIds ?? raw.SavedByUserIds;
-  const savedByUserIds = Array.isArray(savedByUserIdsRaw) ? savedByUserIdsRaw as string[] : [];
-  const likeCountRaw = raw.likeCount ?? raw.LikeCount;
-  const likeCount = typeof likeCountRaw === "number" && !Number.isNaN(likeCountRaw) ? likeCountRaw : 0;
-  const likedByUserIdsRaw = raw.likedByUserIds ?? raw.LikedByUserIds;
-  const likedByUserIds = Array.isArray(likedByUserIdsRaw) ? likedByUserIdsRaw as string[] : [];
+  const n = (v: unknown): number => (typeof v === "number" && !Number.isNaN(v) ? v : 0);
+  const likesCount = n(raw.likesCount ?? raw.LikesCount);
+  const savesCount = n(raw.savesCount ?? raw.SavesCount);
+  const ratingsCount = n(raw.ratingsCount ?? raw.RatingsCount);
+  const averageRating = n(raw.averageRating ?? raw.AverageRating);
+  const isLikedByCurrentUser = raw.isLikedByCurrentUser ?? raw.IsLikedByCurrentUser;
+  const isSavedByCurrentUser = raw.isSavedByCurrentUser ?? raw.IsSavedByCurrentUser;
+  const myRating = raw.myRating ?? raw.MyRating;
 
   return {
     id: dto.id,
@@ -31,10 +31,13 @@ export function mapDishDtoToDish(dto: DishDto): Dish {
     ...(typeof dishCategoryId === "string" && dishCategoryId ? { dishCategoryId } : {}),
     ...(typeof dishCategoryName === "string" ? { dishCategoryName } : {}),
     ...(typeof dishFamilyName === "string" ? { dishFamilyName } : {}),
-    savedCount,
-    savedByUserIds,
-    likeCount,
-    likedByUserIds,
+    likesCount,
+    savesCount,
+    ratingsCount,
+    averageRating,
+    ...(isLikedByCurrentUser !== undefined && isLikedByCurrentUser !== null ? { isLikedByCurrentUser: Boolean(isLikedByCurrentUser) } : {}),
+    ...(isSavedByCurrentUser !== undefined && isSavedByCurrentUser !== null ? { isSavedByCurrentUser: Boolean(isSavedByCurrentUser) } : {}),
+    ...(typeof myRating === "number" && !Number.isNaN(myRating) ? { myRating } : {}),
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt ?? dto.createdAt,
     createdByUserId: dto.createdByUserId,

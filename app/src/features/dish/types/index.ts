@@ -11,10 +11,14 @@ export interface Dish {
   dishCategoryId?: string;
   dishCategoryName?: string;
   dishFamilyName?: string;
-  savedCount: number;
-  savedByUserIds: string[];
-  likeCount: number;
-  likedByUserIds: string[];
+  likesCount: number;
+  savesCount: number;
+  ratingsCount: number;
+  averageRating: number;
+  /** Set when API has current user context. */
+  isLikedByCurrentUser?: boolean | null;
+  isSavedByCurrentUser?: boolean | null;
+  myRating?: number | null;
   createdAt: string;
   updatedAt: string;
   createdByUserId: string;
@@ -25,5 +29,5 @@ export interface Dish {
 /** Minimal shape for feed card: image, author, dish name, like/save counts and state. */
 export type FeedDishItem = Pick<
   Dish,
-  "id" | "name" | "image" | "restaurantName" | "savedCount" | "savedByUserIds" | "likeCount" | "likedByUserIds"
+  "id" | "name" | "image" | "restaurantName" | "savesCount" | "likesCount" | "isLikedByCurrentUser" | "isSavedByCurrentUser"
 > & { restaurantId: Dish["restaurantId"] };

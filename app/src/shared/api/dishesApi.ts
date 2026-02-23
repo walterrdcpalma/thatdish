@@ -15,10 +15,13 @@ export interface DishDto {
   dishCategoryId?: string;
   dishCategoryName?: string;
   dishFamilyName?: string;
-  savedCount: number;
-  savedByUserIds: string[];
-  likeCount: number;
-  likedByUserIds: string[];
+  likesCount: number;
+  savesCount: number;
+  ratingsCount: number;
+  averageRating: number;
+  isLikedByCurrentUser?: boolean | null;
+  isSavedByCurrentUser?: boolean | null;
+  myRating?: number | null;
   createdAt: string;
   updatedAt: string | null;
   createdByUserId: string;
