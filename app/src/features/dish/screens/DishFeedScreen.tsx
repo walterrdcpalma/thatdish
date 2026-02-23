@@ -77,7 +77,7 @@ export function DishFeedScreen() {
   const loadDishes = useDishStore((s) => s.loadDishes);
   const restaurantsLoading = useRestaurantStore((s) => s.loading);
   const restaurantsError = useRestaurantStore((s) => s.error);
-  const [tab, setTab] = useState<DiscoverTab>("All");
+  const [tab, setTab] = useState<DiscoverTab>("Nearby");
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
