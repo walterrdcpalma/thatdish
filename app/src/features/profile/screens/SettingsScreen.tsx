@@ -3,14 +3,19 @@ import { View, Text, ScrollView, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/src/features/auth/context/AuthContext";
+import { isEmailPasswordUser } from "@/src/features/auth/utils/userProvider";
 import { AnimatedPressable } from "@/src/shared/components";
 
 const APP_VERSION = "1.0.0";
 
 export function SettingsScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+
+  const canChangePassword = isEmailPasswordUser(user);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -34,17 +39,32 @@ export function SettingsScreen() {
           Account
         </Text>
         <View className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <AnimatedPressable onPress={() => {}} scale={0.99} className="w-full px-4 py-3">
-            <View className="flex-row items-center justify-between" style={{ width: "100%" }}>
-              <View className="flex-row flex-1 items-center gap-3" style={{ minWidth: 0 }}>
-                <Ionicons name="lock-closed-outline" size={22} color="#374151" />
-                <Text className="text-base text-gray-800" numberOfLines={1}>
-                  Change password
+          {canChangePassword ? (
+            <AnimatedPressable
+              onPress={() => router.push("/change-password")}
+              scale={0.99}
+              className="w-full px-4 py-3"
+            >
+              <View className="flex-row items-center justify-between" style={{ width: "100%" }}>
+                <View className="flex-row flex-1 items-center gap-3" style={{ minWidth: 0 }}>
+                  <Ionicons name="lock-closed-outline" size={22} color="#374151" />
+                  <Text className="text-base text-gray-800" numberOfLines={1}>
+                    Alterar password
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+              </View>
+            </AnimatedPressable>
+          ) : (
+            <View className="px-4 py-3">
+              <View className="flex-row items-center gap-3">
+                <Ionicons name="lock-closed-outline" size={22} color="#9ca3af" />
+                <Text className="text-base text-gray-500" numberOfLines={1}>
+                  Password gerida pelo Google/Apple
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
             </View>
-          </AnimatedPressable>
+          )}
         </View>
 
         <Text className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">

@@ -14,6 +14,7 @@ export interface AuthState {
   signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
   signUpWithEmail: (email: string, password: string, fullName?: string) => Promise<{ error?: string }>;
   resetPasswordForEmail: (email: string) => Promise<{ error?: string }>;
+  updatePassword: (newPassword: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -106,6 +107,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return {};
   }, []);
 
+  const updatePassword = useCallback(async (newPassword: string) => {
+    if (!newPassword || newPassword.length < 8) {
+      return { error: "Password must be at least 8 characters." };
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return { error: error.message };
+    return {};
+  }, []);
+
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
@@ -119,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithEmail,
     signUpWithEmail,
     resetPasswordForEmail,
+    updatePassword,
     signOut,
   };
 
