@@ -12,10 +12,6 @@ export function SettingsScreen() {
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 
-  const handleLogOut = () => {
-    router.back();
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <View className="border-b border-gray-100 px-4 pb-3 pt-1">
@@ -38,16 +34,16 @@ export function SettingsScreen() {
           Account
         </Text>
         <View className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <AnimatedPressable
-            onPress={() => {}}
-            scale={0.99}
-            className="flex-row items-center justify-between px-4 py-3"
-          >
-            <View className="flex-row items-center gap-3">
-              <Ionicons name="lock-closed-outline" size={22} color="#374151" />
-              <Text className="text-base text-gray-800">Change password</Text>
+          <AnimatedPressable onPress={() => {}} scale={0.99} className="w-full px-4 py-3">
+            <View className="flex-row items-center justify-between" style={{ width: "100%" }}>
+              <View className="flex-row flex-1 items-center gap-3" style={{ minWidth: 0 }}>
+                <Ionicons name="lock-closed-outline" size={22} color="#374151" />
+                <Text className="text-base text-gray-800" numberOfLines={1}>
+                  Change password
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
           </AnimatedPressable>
         </View>
 
@@ -95,28 +91,23 @@ export function SettingsScreen() {
           <AnimatedPressable
             onPress={() => {}}
             scale={0.99}
-            className="flex-row items-center justify-between border-b border-gray-100 px-4 py-3"
+            className="w-full border-b border-gray-100 px-4 py-3"
           >
-            <View className="flex-row items-center gap-3">
-              <Ionicons name="shield-checkmark-outline" size={22} color="#374151" />
-              <Text className="text-base text-gray-800">Privacy policy</Text>
+            <View className="flex-row items-center justify-between" style={{ width: "100%" }}>
+              <View className="flex-row flex-1 items-center gap-3" style={{ minWidth: 0 }}>
+                <Ionicons name="shield-checkmark-outline" size={22} color="#374151" />
+                <Text className="text-base text-gray-800" numberOfLines={1}>
+                  Privacy policy
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
           </AnimatedPressable>
           <View className="flex-row items-center justify-between px-4 py-3">
             <Text className="text-base text-gray-800">Version</Text>
             <Text className="text-base text-gray-500">{APP_VERSION}</Text>
           </View>
         </View>
-
-        <AnimatedPressable
-          onPress={handleLogOut}
-          scale={0.98}
-          className="flex-row items-center justify-center gap-2 rounded-xl bg-red-50 py-3.5"
-        >
-          <Ionicons name="log-out-outline" size={22} color="#b91c1c" />
-          <Text className="text-base font-medium text-red-700">Log out</Text>
-        </AnimatedPressable>
       </ScrollView>
     </SafeAreaView>
   );

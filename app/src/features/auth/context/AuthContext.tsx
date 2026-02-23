@@ -9,6 +9,8 @@ export interface AuthState {
   user: User | null;
   isLoading: boolean;
   signInWithGoogle: () => Promise<{ error?: string }>;
+  signInWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
+  signUpWithEmail: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -53,6 +55,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return signInWithGoogleService();
   }, []);
 
+  const signInWithEmail = useCallback(async (email: string, password: string) => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      return { error: "Email and password are required." };
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password,
+    });
+    if (error) return { error: error.message };
+    return {};
+  }, []);
+
+  const signUpWithEmail = useCallback(async (email: string, password: string) => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      return { error: "Email and password are required." };
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email: trimmedEmail,
+      password,
+    });
+    if (error) return { error: error.message };
+    return {};
+  }, []);
+
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
@@ -62,6 +92,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     isLoading,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
   };
 
