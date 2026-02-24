@@ -7,6 +7,7 @@ import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { AnimatedPressable } from "@/src/shared/components";
 import { setLastPickedLocation } from "@/src/features/dish/pickLocationResult";
+import { reverseGeocode } from "@/src/shared/api/geocodingApi";
 
 const DEFAULT_LAT = 38.7223;
 const DEFAULT_LNG = -9.1393;
@@ -32,7 +33,9 @@ export default function PickLocationScreen() {
   });
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
   const [loadingMyLocation, setLoadingMyLocation] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const mapRef = useRef<MapView>(null);
+  const confirmAbortRef = useRef<AbortController | null>(null);
 
   const initialRegion: Region = {
     latitude: center.lat,
@@ -80,9 +83,43 @@ export default function PickLocationScreen() {
     }
   }, []);
 
-  const handleConfirm = useCallback(() => {
-    setLastPickedLocation(center);
-    router.back();
+  const handleConfirm = useCallback(async () => {
+    if (confirmAbortRef.current) {
+      confirmAbortRef.current.abort();
+      confirmAbortRef.current = null;
+    }
+    const controller = new AbortController();
+    confirmAbortRef.current = controller;
+    setConfirming(true);
+    try {
+      const geo = await reverseGeocode(center.lat, center.lng, controller.signal);
+      if (confirmAbortRef.current !== controller) return;
+      setLastPickedLocation({
+        lat: center.lat,
+        lng: center.lng,
+        address: geo.address ?? null,
+        city: geo.city ?? null,
+        country: geo.country ?? null,
+        displayText: geo.displayText,
+      });
+      router.back();
+    } catch (err) {
+      if (confirmAbortRef.current !== controller) return;
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      if (!isAbort) {
+        setLastPickedLocation({
+          lat: center.lat,
+          lng: center.lng,
+          displayText: "Location selected",
+        });
+        router.back();
+      }
+    } finally {
+      if (confirmAbortRef.current === controller) {
+        confirmAbortRef.current = null;
+        setConfirming(false);
+      }
+    }
   }, [center, router]);
 
   const handleCancel = useCallback(() => {
@@ -130,10 +167,18 @@ export default function PickLocationScreen() {
         </AnimatedPressable>
         <AnimatedPressable
           onPress={handleConfirm}
+          disabled={confirming}
           style={[styles.btn, styles.btnPrimary]}
           scale={0.98}
         >
-          <Text style={styles.btnPrimaryText}>Confirm location</Text>
+          {confirming ? (
+            <>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text style={styles.btnPrimaryText}>Confirming...</Text>
+            </>
+          ) : (
+            <Text style={styles.btnPrimaryText}>Confirm location</Text>
+          )}
         </AnimatedPressable>
         <AnimatedPressable
           onPress={handleCancel}

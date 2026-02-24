@@ -1,0 +1,12 @@
+---
+description: Commit messages must be at most 200 characters
+alwaysApply: true
+---
+
+# Commit messages
+
+When generating or suggesting commit messages (e.g. for git commits):
+
+- **Maximum length: 200 characters** for the entire message (subject + body if present, or subject only).
+- Prefer a short, clear subject line under 72 characters when possible; only extend up to 200 if needed.
+- If the user asks for a commit message, ensure the output does not exceed 200 characters in total.

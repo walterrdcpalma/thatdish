@@ -1,17 +1,25 @@
 /**
- * Phase 1: Frontend-only. Passes picked location from PickRestaurantLocationScreen
- * back to CreateDishScreen (no backend persistence).
+ * Phase 1–3: Passes picked location (and optional reverse-geocode result) from
+ * PickRestaurantLocationScreen back to CreateDishScreen (no backend persistence).
  */
 
 export type PickedLocation = { lat: number; lng: number };
 
-let lastPickedLocation: PickedLocation | null = null;
+/** Result after confirm on map; includes coords and optional reverse-geocode display text. */
+export interface PickedLocationResult extends PickedLocation {
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
+  displayText: string;
+}
 
-export function setLastPickedLocation(location: PickedLocation | null): void {
+let lastPickedLocation: PickedLocationResult | null = null;
+
+export function setLastPickedLocation(location: PickedLocationResult | null): void {
   lastPickedLocation = location;
 }
 
-export function consumeLastPickedLocation(): PickedLocation | null {
+export function consumeLastPickedLocation(): PickedLocationResult | null {
   const value = lastPickedLocation;
   lastPickedLocation = null;
   return value;
@@ -19,13 +27,9 @@ export function consumeLastPickedLocation(): PickedLocation | null {
 
 /**
  * Returns user-friendly location text for the form. No lat/lng in output.
- * In a later phase, pass address (e.g. from reverse geocode) to show address/city instead of "Location selected".
+ * Use the label from a PickedLocationResult when available; otherwise fallback.
  */
-export function getLocationDisplayText(
-  _location: PickedLocation | null,
-  address: string | null
-): string {
-  if (_location == null) return "Location not set";
-  if (address != null && address.trim() !== "") return address.trim();
-  return "Location selected";
+export function getLocationDisplayText(result: PickedLocationResult | null): string {
+  if (result == null) return "Location not set";
+  return result.displayText;
 }

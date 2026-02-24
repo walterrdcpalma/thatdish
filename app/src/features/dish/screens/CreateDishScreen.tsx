@@ -112,6 +112,9 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [restaurantLocation, setRestaurantLocation] = useState<PickedLocation | null>(null);
   const [restaurantAddress, setRestaurantAddress] = useState<string | null>(null);
+  const [restaurantCity, setRestaurantCity] = useState<string | null>(null);
+  const [restaurantCountry, setRestaurantCountry] = useState<string | null>(null);
+  const [restaurantLocationLabel, setRestaurantLocationLabel] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -136,7 +139,13 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   useFocusEffect(
     useCallback(() => {
       const picked = consumeLastPickedLocation();
-      if (picked) setRestaurantLocation(picked);
+      if (picked) {
+        setRestaurantLocation({ lat: picked.lat, lng: picked.lng });
+        setRestaurantAddress(picked.address ?? null);
+        setRestaurantCity(picked.city ?? null);
+        setRestaurantCountry(picked.country ?? null);
+        setRestaurantLocationLabel(picked.displayText);
+      }
     }, [])
   );
 
@@ -433,6 +442,9 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       setImageUri(null);
       setRestaurantLocation(null);
       setRestaurantAddress(null);
+      setRestaurantCity(null);
+      setRestaurantCountry(null);
+      setRestaurantLocationLabel("");
       setError(null);
       restaurantSelectionCommittedRef.current = false;
       lastSelectedRestaurantNameRef.current = null;
@@ -466,6 +478,9 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
     setImageUri(null);
     setRestaurantLocation(null);
     setRestaurantAddress(null);
+    setRestaurantCity(null);
+    setRestaurantCountry(null);
+    setRestaurantLocationLabel("");
     setError(null);
     restaurantSelectionCommittedRef.current = false;
     lastSelectedRestaurantNameRef.current = null;
@@ -685,7 +700,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
               {restaurantLocation == null ? (
                 <>
                   <Text style={{ fontSize: 14, color: "#6b7280", marginBottom: 8 }}>
-                    {getLocationDisplayText(null, null)}
+                    {getLocationDisplayText(null)}
                   </Text>
                   <AnimatedPressable
                     onPress={() =>
@@ -704,6 +719,10 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                   </AnimatedPressable>
                 </>
               ) : (
+                <>
+                  <Text style={{ fontSize: 14, color: "#374151", marginBottom: 8 }}>
+                    {restaurantLocationLabel || "Location selected"}
+                  </Text>
                 <AnimatedPressable
                   onPress={() =>
                     router.push({
@@ -723,6 +742,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                     <Text style={{ fontSize: 16, fontWeight: "600", color: "#374151" }}>Edit location</Text>
                   </View>
                 </AnimatedPressable>
+                </>
               )}
             </View>
             <Text style={inputStyle.fieldLabel}>Image</Text>
