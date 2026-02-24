@@ -13,7 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { AnimatedPressable } from "@/src/shared/components";
@@ -28,6 +28,7 @@ import type { DishCategoryItemDto } from "@/src/shared/api/dishCategoriesApi";
 import { fetchCuisines } from "@/src/shared/api/cuisinesApi";
 import type { CuisineItemDto } from "@/src/shared/api/cuisinesApi";
 import { config } from "@/src/config";
+import { consumeLastPickedLocation, type PickedLocation } from "../pickLocationResult";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SUGGESTION_LIMIT = 10;
@@ -109,6 +110,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   const [categorySuggestions, setCategorySuggestions] = useState<DishCategoryItemDto[]>([]);
   const [cuisineSuggestions, setCuisineSuggestions] = useState<CuisineItemDto[]>([]);
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [restaurantLocation, setRestaurantLocation] = useState<PickedLocation | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -129,6 +131,13 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   const categorySelectionCommittedRef = useRef(false);
   const lastSelectedCategoryNameRef = useRef<string | null>(null);
   const categoryInputRef = useRef<TextInput>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const picked = consumeLastPickedLocation();
+      if (picked) setRestaurantLocation(picked);
+    }, [])
+  );
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -421,6 +430,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       setCategorySuggestions([]);
       setCuisineSuggestions([]);
       setImageUri(null);
+      setRestaurantLocation(null);
       setError(null);
       restaurantSelectionCommittedRef.current = false;
       lastSelectedRestaurantNameRef.current = null;
@@ -452,6 +462,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
     setCategorySuggestions([]);
     setCuisineSuggestions([]);
     setImageUri(null);
+    setRestaurantLocation(null);
     setError(null);
     restaurantSelectionCommittedRef.current = false;
     lastSelectedRestaurantNameRef.current = null;
@@ -666,6 +677,46 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                 </View>
               </>
             )}
+            <Text style={inputStyle.fieldLabel}>Location</Text>
+            <View style={inputStyle.fieldBlock}>
+              {restaurantLocation == null ? (
+                <AnimatedPressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/pick-location",
+                    })
+                  }
+                  scale={0.98}
+                  className="flex-row items-center justify-center rounded-xl border border-gray-200 bg-gray-50"
+                  style={{ minHeight: 48, gap: 10 }}
+                >
+                  <View className="flex-row items-center" style={{ gap: 10 }}>
+                    <Ionicons name="location-outline" size={22} color="#6b7280" />
+                    <Text style={{ fontSize: 16, fontWeight: "600", color: "#374151" }}>Add location</Text>
+                  </View>
+                </AnimatedPressable>
+              ) : (
+                <AnimatedPressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/pick-location",
+                      params: {
+                        initialLat: String(restaurantLocation.lat),
+                        initialLng: String(restaurantLocation.lng),
+                      },
+                    })
+                  }
+                  scale={0.98}
+                  className="flex-row items-center justify-center rounded-xl border border-gray-200 bg-gray-50"
+                  style={{ minHeight: 48, gap: 10 }}
+                >
+                  <View className="flex-row items-center" style={{ gap: 10 }}>
+                    <Ionicons name="location" size={22} color="#f97316" />
+                    <Text style={{ fontSize: 16, fontWeight: "600", color: "#374151" }}>Edit location</Text>
+                  </View>
+                </AnimatedPressable>
+              )}
+            </View>
             <Text style={inputStyle.fieldLabel}>Image</Text>
             {imageUri ? (
               <View style={inputStyle.fieldBlock}>
@@ -686,10 +737,13 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
               <AnimatedPressable
                 onPress={pickImage}
                 scale={0.98}
-                style={[inputStyle.fieldBlock, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 12, borderWidth: 2, borderStyle: "dashed", borderColor: "#d1d5db", backgroundColor: "#f9fafb", paddingVertical: 32 }]}
+                className="flex-row items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50"
+                style={[inputStyle.fieldBlock, { minHeight: 120, gap: 10 }]}
               >
-                <Ionicons name="image-outline" size={28} color="#9ca3af" />
-                <Text className="text-base text-gray-500">Pick image</Text>
+                <View className="flex-row items-center" style={{ gap: 10 }}>
+                  <Ionicons name="image-outline" size={28} color="#9ca3af" />
+                  <Text className="text-base text-gray-500">Pick image</Text>
+                </View>
               </AnimatedPressable>
             )}
             {error ? (
