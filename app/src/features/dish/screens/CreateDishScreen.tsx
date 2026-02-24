@@ -425,6 +425,13 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
         name: filename,
         type: mime,
       } as unknown as Blob);
+      if (restaurantLocation != null) {
+        formData.append("restaurantLatitude", String(restaurantLocation.lat));
+        formData.append("restaurantLongitude", String(restaurantLocation.lng));
+        if (restaurantAddress?.trim()) formData.append("restaurantAddress", restaurantAddress.trim());
+        if (restaurantCity?.trim()) formData.append("restaurantCity", restaurantCity.trim());
+        if (restaurantCountry?.trim()) formData.append("restaurantCountry", restaurantCountry.trim());
+      }
       await createDishMultipart(config.apiBaseUrl, formData);
       if (!isMountedRef.current) return;
       await loadDishes();

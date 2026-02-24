@@ -35,6 +35,8 @@ public class ThatDishDbContext : DbContext
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
             e.Property(x => x.Cuisine).HasMaxLength(100);
             e.Property(x => x.Address).HasMaxLength(500);
+            e.Property(x => x.City).HasMaxLength(200);
+            e.Property(x => x.Country).HasMaxLength(200);
             e.HasOne(x => x.CuisineNavigation)
                 .WithMany(c => c.Restaurants)
                 .HasForeignKey(x => x.CuisineId)

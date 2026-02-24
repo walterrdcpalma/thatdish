@@ -88,6 +88,11 @@ public class DishService : IDishService
         string image,
         string? cuisineType,
         Guid? createdByUserId,
+        double? restaurantLatitude = null,
+        double? restaurantLongitude = null,
+        string? restaurantAddress = null,
+        string? restaurantCity = null,
+        string? restaurantCountry = null,
         CancellationToken cancellationToken = default)
     {
         var name = dishName.Trim();
@@ -95,6 +100,10 @@ public class DishService : IDishService
         var familyName = dishFamilyName?.Trim() ?? string.Empty;
         var categoryName = dishCategoryName?.Trim() ?? string.Empty;
         var imageUrl = image?.Trim() ?? string.Empty;
+        var address = string.IsNullOrWhiteSpace(restaurantAddress) ? null : restaurantAddress.Trim();
+        var city = string.IsNullOrWhiteSpace(restaurantCity) ? null : restaurantCity.Trim();
+        var country = string.IsNullOrWhiteSpace(restaurantCountry) ? null : restaurantCountry.Trim();
+        var now = DateTime.UtcNow;
 
         if (string.IsNullOrWhiteSpace(familyName))
             throw new InvalidOperationException("Dish family is required.");
@@ -115,8 +124,13 @@ public class DishService : IDishService
                 Name = restName,
                 Cuisine = cuisine.Name,
                 CuisineId = cuisine.Id,
-                CreatedAtUtc = DateTime.UtcNow,
-                UpdatedAtUtc = DateTime.UtcNow,
+                Address = address,
+                City = city,
+                Country = country,
+                Latitude = restaurantLatitude,
+                Longitude = restaurantLongitude,
+                CreatedAtUtc = now,
+                UpdatedAtUtc = now,
                 OwnershipType = OwnershipType.Community,
                 ClaimStatus = ClaimStatus.None,
                 ClaimedByUserId = null,
@@ -125,13 +139,23 @@ public class DishService : IDishService
             };
             _restaurantRepository.Add(restaurant);
         }
+        else
+        {
+            var updated = false;
+            if (restaurant.Address == null && address != null) { restaurant.Address = address; updated = true; }
+            if (restaurant.City == null && city != null) { restaurant.City = city; updated = true; }
+            if (restaurant.Country == null && country != null) { restaurant.Country = country; updated = true; }
+            if (restaurant.Latitude == null && restaurantLatitude.HasValue) { restaurant.Latitude = restaurantLatitude; updated = true; }
+            if (restaurant.Longitude == null && restaurantLongitude.HasValue) { restaurant.Longitude = restaurantLongitude; updated = true; }
+            if (updated)
+                restaurant.UpdatedAtUtc = now;
+        }
 
         var exists = await _dishRepository.ExistsAsync(restaurant.Id, name, cancellationToken);
         if (exists)
             throw new InvalidOperationException("A dish with this name already exists for this restaurant.");
 
         var foodTypeEnum = Enum.TryParse<FoodType>(foodType, ignoreCase: true, out var ft) ? ft : FoodType.Other;
-        var now = DateTime.UtcNow;
         var dish = new Dish
         {
             Id = Guid.NewGuid(),

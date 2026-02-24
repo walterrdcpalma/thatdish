@@ -178,3 +178,4 @@ BenchmarkDotNet.Artifacts/
 .DS_Store
 src/ThatDish.Api/appsettings.Development.json
 src/ThatDish.Api/thatdish.db-wal
+src/ThatDish.Api/thatdish.db-shm

@@ -74,6 +74,8 @@ namespace ThatDish.Infrastructure.Migrations
                     Cuisine = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     CuisineId = table.Column<Guid>(type: "TEXT", nullable: true),
                     Address = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    City = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    Country = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
                     Latitude = table.Column<double>(type: "REAL", nullable: true),
                     Longitude = table.Column<double>(type: "REAL", nullable: true),
                     ContactInfo = table.Column<string>(type: "TEXT", nullable: true),

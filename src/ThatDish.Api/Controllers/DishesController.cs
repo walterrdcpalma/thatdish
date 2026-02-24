@@ -64,6 +64,11 @@ public class DishesController : ControllerBase
         [FromForm] IFormFile? image,
         [FromForm] string? foodType,
         [FromForm] string? cuisineType,
+        [FromForm] double? restaurantLatitude,
+        [FromForm] double? restaurantLongitude,
+        [FromForm] string? restaurantAddress,
+        [FromForm] string? restaurantCity,
+        [FromForm] string? restaurantCountry,
         CancellationToken cancellationToken)
     {
         var dishName = name?.Trim() ?? string.Empty;
@@ -83,13 +88,28 @@ public class DishesController : ControllerBase
         if (image == null || image.Length == 0)
             return BadRequest("image is required.");
 
+        var hasLat = restaurantLatitude.HasValue;
+        var hasLng = restaurantLongitude.HasValue;
+        if (hasLat != hasLng)
+            return BadRequest("restaurantLatitude and restaurantLongitude must be provided together or both omitted.");
+        if (hasLat)
+        {
+            if (restaurantLatitude!.Value < -90 || restaurantLatitude.Value > 90)
+                return BadRequest("restaurantLatitude must be between -90 and 90.");
+            if (restaurantLongitude!.Value < -180 || restaurantLongitude.Value > 180)
+                return BadRequest("restaurantLongitude must be between -180 and 180.");
+        }
+
         var imageUrl = await _storageService.UploadDishImageAsync(image, cancellationToken);
 
         var createdByUserId = await DevCurrentUserResolver.GetOrCreateSeedUserIdAsync(_db, cancellationToken);
 
         try
         {
-            var dto = await _dishService.CreateDishAsync(dishName, restName, familyName, categoryName, foodTypeValue, imageUrl, cuisineType, createdByUserId, cancellationToken);
+            var dto = await _dishService.CreateDishAsync(
+                dishName, restName, familyName, categoryName, foodTypeValue, imageUrl, cuisineType, createdByUserId,
+                restaurantLatitude, restaurantLongitude, restaurantAddress, restaurantCity, restaurantCountry,
+                cancellationToken);
             return Created($"/api/dishes/{dto.Id}", dto);
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))

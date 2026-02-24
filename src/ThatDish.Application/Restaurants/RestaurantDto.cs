@@ -9,6 +9,8 @@ public record RestaurantDto(
     Guid Id,
     string Name,
     string? Address,
+    string? City,
+    string? Country,
     double? Latitude,
     double? Longitude,
     string? ContactInfo,

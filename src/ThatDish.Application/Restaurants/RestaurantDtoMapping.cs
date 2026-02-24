@@ -10,6 +10,8 @@ public static class RestaurantDtoMapping
             Id: r.Id,
             Name: r.Name,
             Address: r.Address,
+            City: r.City,
+            Country: r.Country,
             Latitude: r.Latitude,
             Longitude: r.Longitude,
             ContactInfo: r.ContactInfo,
