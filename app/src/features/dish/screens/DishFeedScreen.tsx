@@ -164,7 +164,7 @@ export function DishFeedScreen() {
         primaryBadge={badgeByDishId[item.id] ?? null}
         onPressRestaurant={handlePressRestaurant}
         isSaved={item.isSavedByCurrentUser ?? currentUser.savedDishIds.includes(item.id)}
-        isLiked={item.isLikedByCurrentUser ?? currentUser.likedDishIds.includes(item.id)}
+        isLiked={currentUser.likedDishIds.includes(item.id)}
       />
     ),
     [windowWidth, badgeByDishId, handlePressRestaurant, currentUser]

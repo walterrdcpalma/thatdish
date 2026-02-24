@@ -9,6 +9,8 @@ import {
   ScrollView,
   Keyboard,
   TouchableWithoutFeedback,
+  StyleSheet,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -30,6 +32,51 @@ import { config } from "@/src/config";
 const SEARCH_DEBOUNCE_MS = 300;
 const SUGGESTION_LIMIT = 10;
 const CUISINE_SUGGESTION_LIMIT = 8;
+
+const INPUT_HEIGHT = 48;
+const INPUT_FONT_SIZE = 16;
+const INPUT_LINE_HEIGHT = 22;
+const INPUT_PADDING_VERTICAL = 12;
+const INPUT_PADDING_HORIZONTAL = 16;
+const INPUT_BORDER_WIDTH = 1;
+
+const inputStyle = StyleSheet.create({
+  common: {
+    height: INPUT_HEIGHT,
+    minHeight: INPUT_HEIGHT,
+    paddingVertical: INPUT_PADDING_VERTICAL,
+    paddingHorizontal: INPUT_PADDING_HORIZONTAL,
+    fontSize: INPUT_FONT_SIZE,
+    lineHeight: INPUT_LINE_HEIGHT,
+    borderWidth: INPUT_BORDER_WIDTH,
+    borderRadius: 12,
+    borderColor: "#d1d5db",
+    backgroundColor: "#fff",
+    color: "#111827",
+    ...(Platform.OS === "android" ? { textAlignVertical: "center" as const } : {}),
+  },
+  dropdownAnchor: {
+    position: "relative" as const,
+    minHeight: INPUT_HEIGHT,
+  },
+  dropdownAbsolute: {
+    position: "absolute",
+    top: INPUT_HEIGHT + 4,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    overflow: "hidden",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+});
 
 interface CreateDishScreenProps {
   showBackButton?: boolean;
@@ -59,6 +106,17 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   const categoryDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cuisineDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeSuggestionsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** When true, dropdown must stay closed; cleared when user edits restaurant name again. */
+  const restaurantSelectionCommittedRef = useRef(false);
+  /** Name last selected from dropdown; used to avoid re-opening while showing that value. */
+  const lastSelectedRestaurantNameRef = useRef<string | null>(null);
+  const restaurantInputRef = useRef<TextInput>(null);
+  const familySelectionCommittedRef = useRef(false);
+  const lastSelectedFamilyNameRef = useRef<string | null>(null);
+  const familyInputRef = useRef<TextInput>(null);
+  const categorySelectionCommittedRef = useRef(false);
+  const lastSelectedCategoryNameRef = useRef<string | null>(null);
+  const categoryInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -73,9 +131,16 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   }, []);
 
   useEffect(() => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
     const term = restaurantName.trim();
     if (!term) {
+      setRestaurantSuggestions([]);
+      return;
+    }
+    if (restaurantSelectionCommittedRef.current && term === lastSelectedRestaurantNameRef.current) {
       setRestaurantSuggestions([]);
       return;
     }
@@ -85,14 +150,16 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       fetchRestaurantSearch(config.apiBaseUrl, term)
         .then((list) => {
           if (!isMountedRef.current) return;
-          // Ensure only names that contain the search term are shown (safety filter)
+          if (restaurantSelectionCommittedRef.current) return;
           const filtered = list.filter((r) =>
             r.name.toLowerCase().includes(searchTerm)
           );
           setRestaurantSuggestions(filtered.slice(0, SUGGESTION_LIMIT));
         })
         .catch(() => {
-          if (isMountedRef.current) setRestaurantSuggestions([]);
+          if (isMountedRef.current && !restaurantSelectionCommittedRef.current) {
+            setRestaurantSuggestions([]);
+          }
         });
     }, SEARCH_DEBOUNCE_MS);
     return () => {
@@ -101,9 +168,16 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   }, [restaurantName]);
 
   useEffect(() => {
-    if (familyDebounceRef.current) clearTimeout(familyDebounceRef.current);
+    if (familyDebounceRef.current) {
+      clearTimeout(familyDebounceRef.current);
+      familyDebounceRef.current = null;
+    }
     const term = dishFamilyName.trim();
     if (!term) {
+      setFamilySuggestions([]);
+      return;
+    }
+    if (familySelectionCommittedRef.current && term === lastSelectedFamilyNameRef.current) {
       setFamilySuggestions([]);
       return;
     }
@@ -111,10 +185,14 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       familyDebounceRef.current = null;
       fetchDishFamilies(config.apiBaseUrl, term)
         .then((list) => {
-          if (isMountedRef.current) setFamilySuggestions(list.slice(0, SUGGESTION_LIMIT));
+          if (!isMountedRef.current) return;
+          if (familySelectionCommittedRef.current) return;
+          setFamilySuggestions(list.slice(0, SUGGESTION_LIMIT));
         })
         .catch(() => {
-          if (isMountedRef.current) setFamilySuggestions([]);
+          if (isMountedRef.current && !familySelectionCommittedRef.current) {
+            setFamilySuggestions([]);
+          }
         });
     }, SEARCH_DEBOUNCE_MS);
     return () => {
@@ -123,20 +201,35 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   }, [dishFamilyName]);
 
   useEffect(() => {
-    if (categoryDebounceRef.current) clearTimeout(categoryDebounceRef.current);
+    if (categoryDebounceRef.current) {
+      clearTimeout(categoryDebounceRef.current);
+      categoryDebounceRef.current = null;
+    }
     if (!selectedFamilyId) {
       setCategorySuggestions([]);
       return;
     }
     const term = dishCategoryName.trim();
+    if (!term) {
+      setCategorySuggestions([]);
+      return;
+    }
+    if (categorySelectionCommittedRef.current && term === lastSelectedCategoryNameRef.current) {
+      setCategorySuggestions([]);
+      return;
+    }
     categoryDebounceRef.current = setTimeout(() => {
       categoryDebounceRef.current = null;
       fetchDishCategories(config.apiBaseUrl, selectedFamilyId, term)
         .then((list) => {
-          if (isMountedRef.current) setCategorySuggestions(list.slice(0, SUGGESTION_LIMIT));
+          if (!isMountedRef.current) return;
+          if (categorySelectionCommittedRef.current) return;
+          setCategorySuggestions(list.slice(0, SUGGESTION_LIMIT));
         })
         .catch(() => {
-          if (isMountedRef.current) setCategorySuggestions([]);
+          if (isMountedRef.current && !categorySelectionCommittedRef.current) {
+            setCategorySuggestions([]);
+          }
         });
     }, SEARCH_DEBOUNCE_MS);
     return () => {
@@ -175,29 +268,61 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   }, []);
 
   const selectRestaurantSuggestion = useCallback((id: string, name: string) => {
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = null;
+    }
     if (closeSuggestionsTimeoutRef.current) {
       clearTimeout(closeSuggestionsTimeoutRef.current);
       closeSuggestionsTimeoutRef.current = null;
     }
+    restaurantSelectionCommittedRef.current = true;
+    lastSelectedRestaurantNameRef.current = name;
     setSelectedRestaurantId(id);
     setRestaurantName(name);
     setRestaurantSuggestions([]);
     setError(null);
+    restaurantInputRef.current?.blur();
+    Keyboard.dismiss();
   }, []);
 
   const selectFamilySuggestion = useCallback((id: string, name: string) => {
+    if (familyDebounceRef.current) {
+      clearTimeout(familyDebounceRef.current);
+      familyDebounceRef.current = null;
+    }
+    if (closeSuggestionsTimeoutRef.current) {
+      clearTimeout(closeSuggestionsTimeoutRef.current);
+      closeSuggestionsTimeoutRef.current = null;
+    }
+    familySelectionCommittedRef.current = true;
+    lastSelectedFamilyNameRef.current = name;
     setSelectedFamilyId(id);
     setDishFamilyName(name);
     setFamilySuggestions([]);
     setDishCategoryName("");
     setCategorySuggestions([]);
     setError(null);
+    familyInputRef.current?.blur();
+    Keyboard.dismiss();
   }, []);
 
   const selectCategorySuggestion = useCallback((id: string, name: string) => {
+    if (categoryDebounceRef.current) {
+      clearTimeout(categoryDebounceRef.current);
+      categoryDebounceRef.current = null;
+    }
+    if (closeSuggestionsTimeoutRef.current) {
+      clearTimeout(closeSuggestionsTimeoutRef.current);
+      closeSuggestionsTimeoutRef.current = null;
+    }
+    categorySelectionCommittedRef.current = true;
+    lastSelectedCategoryNameRef.current = name;
     setDishCategoryName(name);
     setCategorySuggestions([]);
     setError(null);
+    categoryInputRef.current?.blur();
+    Keyboard.dismiss();
   }, []);
 
   const selectCuisineSuggestion = useCallback((name: string) => {
@@ -285,6 +410,12 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       setCuisineSuggestions([]);
       setImageUri(null);
       setError(null);
+      restaurantSelectionCommittedRef.current = false;
+      lastSelectedRestaurantNameRef.current = null;
+      familySelectionCommittedRef.current = false;
+      lastSelectedFamilyNameRef.current = null;
+      categorySelectionCommittedRef.current = false;
+      lastSelectedCategoryNameRef.current = null;
       setSubmissionSuccess(true);
     } catch (e) {
       if (isMountedRef.current) {
@@ -310,6 +441,12 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
     setCuisineSuggestions([]);
     setImageUri(null);
     setError(null);
+    restaurantSelectionCommittedRef.current = false;
+    lastSelectedRestaurantNameRef.current = null;
+    familySelectionCommittedRef.current = false;
+    lastSelectedFamilyNameRef.current = null;
+    categorySelectionCommittedRef.current = false;
+    lastSelectedCategoryNameRef.current = null;
     router.replace("/(tabs)");
   };
 
@@ -353,16 +490,19 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
               value={dishName}
               onChangeText={(t) => { setDishName(t); setError(null); }}
               placeholder="e.g. Piri-Piri Chicken"
-              className="mb-5 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
+              style={[inputStyle.common, { marginBottom: 20 }]}
               placeholderTextColor="#9ca3af"
             />
             <Text className="mb-2 text-sm font-semibold text-gray-600">Restaurant name</Text>
-            <View className="mb-1">
+            <View style={[inputStyle.dropdownAnchor, { marginBottom: 4 }]}>
               <TextInput
+                ref={restaurantInputRef}
                 value={restaurantName}
                 onChangeText={(t) => {
                   setRestaurantName(t);
                   setSelectedRestaurantId(null);
+                  restaurantSelectionCommittedRef.current = false;
+                  lastSelectedRestaurantNameRef.current = null;
                   setError(null);
                 }}
                 onBlur={() => {
@@ -370,11 +510,11 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                   closeSuggestionsTimeoutRef.current = setTimeout(closeSuggestions, 200);
                 }}
                 placeholder="e.g. Nando's"
-                className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
+                style={inputStyle.common}
                 placeholderTextColor="#9ca3af"
               />
               {restaurantSuggestions.length > 0 && (
-                <View className="mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <View style={inputStyle.dropdownAbsolute}>
                   <ScrollView
                     keyboardShouldPersistTaps="handled"
                     nestedScrollEnabled
@@ -397,12 +537,15 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
               )}
             </View>
             <Text className="mb-2 text-sm font-semibold text-gray-600">Dish family</Text>
-            <View className="mb-1">
+            <View style={[inputStyle.dropdownAnchor, { marginBottom: 4 }]}>
               <TextInput
+                ref={familyInputRef}
                 value={dishFamilyName}
                 onChangeText={(t) => {
                   setDishFamilyName(t);
                   setSelectedFamilyId(null);
+                  familySelectionCommittedRef.current = false;
+                  lastSelectedFamilyNameRef.current = null;
                   setError(null);
                 }}
                 onBlur={() => {
@@ -410,11 +553,11 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                   closeSuggestionsTimeoutRef.current = setTimeout(() => setFamilySuggestions([]), 200);
                 }}
                 placeholder="Ex: Bacalhau (grupo geral para organizar rankings e pesquisa)"
+                style={inputStyle.common}
                 placeholderTextColor="#9ca3af"
-                className="mb-2 rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
               />
               {familySuggestions.length > 0 && (
-                <View className="mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <View style={inputStyle.dropdownAbsolute}>
                   <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={{ maxHeight: 200 }}>
                     {familySuggestions.map((f) => (
                       <AnimatedPressable
@@ -431,11 +574,14 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
               )}
             </View>
             <Text className="mb-2 text-sm font-semibold text-gray-600">Dish category</Text>
-            <View className="mb-1">
+            <View style={[inputStyle.dropdownAnchor, { marginBottom: 4 }]}>
               <TextInput
+                ref={categoryInputRef}
                 value={dishCategoryName}
                 onChangeText={(t) => {
                   setDishCategoryName(t);
+                  categorySelectionCommittedRef.current = false;
+                  lastSelectedCategoryNameRef.current = null;
                   setError(null);
                 }}
                 onBlur={() => {
@@ -443,11 +589,11 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                   closeSuggestionsTimeoutRef.current = setTimeout(() => setCategorySuggestions([]), 200);
                 }}
                 placeholder={'Ex: Bacalhau à Brás (prato específico para encontrar "o melhor ...")'}
+                style={inputStyle.common}
                 placeholderTextColor="#9ca3af"
-                className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
               />
               {categorySuggestions.length > 0 && (
-                <View className="mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <View style={inputStyle.dropdownAbsolute}>
                   <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={{ maxHeight: 200 }}>
                     {categorySuggestions.map((c) => (
                       <AnimatedPressable
@@ -466,7 +612,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
             {selectedRestaurantId === null && (
               <>
                 <Text className="mb-2 mt-3 text-sm font-semibold text-gray-600">Cuisine (restaurant)</Text>
-                <View className="mb-1">
+                <View style={[inputStyle.dropdownAnchor, { marginBottom: 4 }]}>
                   <TextInput
                     value={cuisineName}
                     onChangeText={(t) => {
@@ -478,11 +624,11 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                       closeSuggestionsTimeoutRef.current = setTimeout(() => setCuisineSuggestions([]), 200);
                     }}
                     placeholder="Ex: Portuguesa (tipo de cozinha do restaurante para melhorar filtros e descoberta)"
+                    style={inputStyle.common}
                     placeholderTextColor="#9ca3af"
-                    className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-base text-black"
                   />
                   {cuisineSuggestions.length > 0 && (
-                    <View className="mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <View style={inputStyle.dropdownAbsolute}>
                       <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={{ maxHeight: 200 }}>
                         {cuisineSuggestions.map((c) => (
                           <AnimatedPressable

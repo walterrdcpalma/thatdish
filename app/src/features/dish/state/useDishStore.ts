@@ -3,7 +3,12 @@ import type { Dish } from "../types";
 import { canEditDish } from "../services/canEditDish";
 import { useUserStore } from "@/src/features/user/state";
 import { useRestaurantStore } from "@/src/features/restaurant/state";
-import { createDish as createDishApi, fetchDishes } from "@/src/shared/api/dishesApi";
+import {
+  createDish as createDishApi,
+  fetchDishes,
+  likeDish as likeDishApi,
+  unlikeDish as unlikeDishApi,
+} from "@/src/shared/api/dishesApi";
 import { config } from "@/src/config";
 
 interface DishStore {
@@ -64,20 +69,59 @@ export const useDishStore = create<DishStore>((set, get) => ({
   },
 
   toggleLike: (dishId: string) => {
-    const { currentUser } = useUserStore.getState();
+    const userStore = useUserStore.getState();
+    const currentUser = userStore.currentUser;
+    if (!currentUser) return;
+
+    const dish = get().dishes.find((d) => d.id === dishId);
+    if (!dish) return;
+
     const isLiked = currentUser.likedDishIds.includes(dishId);
-    useUserStore.getState().toggleLikedDish(dishId);
+
+    // UNLIKE: already liked → remove from user and decrement (never below 0)
+    if (isLiked) {
+      const prevLikedIds = currentUser.likedDishIds;
+      const prevLikeCount = dish.likesCount ?? 0;
+      userStore.toggleLikedDish(dishId);
+      set((state) => ({
+        dishes: state.dishes.map((d) => {
+          if (d.id !== dishId) return d;
+          return { ...d, likesCount: Math.max(0, prevLikeCount - 1) };
+        }),
+      }));
+      unlikeDishApi(config.apiBaseUrl, dishId).catch(() => {
+        useUserStore.setState((s) => ({
+          currentUser: { ...s.currentUser, likedDishIds: prevLikedIds },
+        }));
+        set((state) => ({
+          dishes: state.dishes.map((d) =>
+            d.id === dishId ? { ...d, likesCount: prevLikeCount } : d
+          ),
+        }));
+      });
+      return;
+    }
+
+    // LIKE: not liked → add to user and increment (avoid double-add)
+    const prevLikedIds = currentUser.likedDishIds;
+    const prevLikeCount = dish.likesCount ?? 0;
+    userStore.toggleLikedDish(dishId);
     set((state) => ({
       dishes: state.dishes.map((d) => {
         if (d.id !== dishId) return d;
-        const delta = isLiked ? -1 : 1;
-        return {
-          ...d,
-          likesCount: Math.max(0, (d.likesCount ?? 0) + delta),
-          isLikedByCurrentUser: !isLiked,
-        };
+        return { ...d, likesCount: prevLikeCount + 1 };
       }),
     }));
+    likeDishApi(config.apiBaseUrl, dishId).catch(() => {
+      useUserStore.setState((s) => ({
+        currentUser: { ...s.currentUser, likedDishIds: prevLikedIds },
+      }));
+      set((state) => ({
+        dishes: state.dishes.map((d) =>
+          d.id === dishId ? { ...d, likesCount: prevLikeCount } : d
+        ),
+      }));
+    });
   },
 
   archiveDish: (dishId: string) => {

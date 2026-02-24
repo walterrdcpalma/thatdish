@@ -121,6 +121,22 @@ export async function createDish(
 }
 
 /**
+ * Like a dish (POST /api/dishes/:id/like or similar).
+ * Stub: no backend yet; resolve so optimistic update is not rolled back.
+ */
+export async function likeDish(_baseUrl: string, _dishId: string): Promise<void> {
+  await Promise.resolve();
+}
+
+/**
+ * Unlike a dish (DELETE /api/dishes/:id/like or similar).
+ * Stub: no backend yet; resolve so optimistic update is not rolled back.
+ */
+export async function unlikeDish(_baseUrl: string, _dishId: string): Promise<void> {
+  await Promise.resolve();
+}
+
+/**
  * Creates a dish via POST /api/dishes with multipart/form-data (name, restaurantName, image file).
  * Do not set Content-Type header so fetch sets multipart/form-data with boundary.
  */
