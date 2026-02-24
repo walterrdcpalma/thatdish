@@ -8,6 +8,7 @@ import { useDishStore } from "@/src/features/dish/state";
 import { useUserStore } from "@/src/features/user/state";
 import { getSignatureDish } from "../services";
 import { formatRestaurantLocation } from "../utils/formatRestaurantLocation";
+import { isLatLngValid } from "@/src/shared/utils/openDirections";
 import { AnimatedPressable } from "@/src/shared/components";
 import { fetchRestaurantById } from "@/src/shared/api/restaurantsApi";
 import { config } from "@/src/config";
@@ -124,6 +125,34 @@ export function RestaurantDetailScreen() {
             <Text className="mt-1 text-base text-gray-600">
               {formatRestaurantLocation(restaurant) ?? "Location not available"}
             </Text>
+            {restaurant.latitude != null &&
+              restaurant.longitude != null &&
+              isLatLngValid(restaurant.latitude, restaurant.longitude) && (
+                <AnimatedPressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/restaurant-map",
+                      params: {
+                        id: restaurant.id,
+                        lat: String(restaurant.latitude),
+                        lng: String(restaurant.longitude),
+                        name: restaurant.name,
+                        locationLabel:
+                          formatRestaurantLocation(restaurant) ?? "",
+                      },
+                    })
+                  }
+                  scale={0.98}
+                  className="mt-3 self-start rounded-lg border border-orange-200 bg-orange-50 px-3 py-2"
+                >
+                  <View className="flex-row items-center" style={{ gap: 10 }}>
+                    <Ionicons name="map" size={18} color="#c2410c" />
+                    <Text className="text-sm font-medium text-orange-700">
+                      View on map
+                    </Text>
+                  </View>
+                </AnimatedPressable>
+              )}
           </View>
           <View className="mt-4 flex-row flex-wrap items-center gap-2">
             <View className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
