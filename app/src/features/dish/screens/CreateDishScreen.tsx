@@ -40,6 +40,9 @@ const INPUT_PADDING_VERTICAL = 12;
 const INPUT_PADDING_HORIZONTAL = 16;
 const INPUT_BORDER_WIDTH = 1;
 
+const LABEL_MARGIN_BOTTOM = 8;
+const FIELD_BLOCK_MARGIN_BOTTOM = 20;
+
 const inputStyle = StyleSheet.create({
   common: {
     height: INPUT_HEIGHT,
@@ -75,6 +78,15 @@ const inputStyle = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 2,
+  },
+  fieldLabel: {
+    marginBottom: LABEL_MARGIN_BOTTOM,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#4b5563",
+  },
+  fieldBlock: {
+    marginBottom: FIELD_BLOCK_MARGIN_BOTTOM,
   },
 });
 
@@ -471,7 +483,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       <View className="flex-1 p-5">
         {submissionSuccess ? (
           <>
-            <Text className="mb-4 text-base text-gray-700">
+            <Text style={{ marginBottom: FIELD_BLOCK_MARGIN_BOTTOM, fontSize: 16, color: "#374151" }}>
               Your submission has been received. We will review and approve it shortly.
             </Text>
             <AnimatedPressable
@@ -483,18 +495,99 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
             </AnimatedPressable>
           </>
         ) : (
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <View className="flex-1">
-            <Text className="mb-2 text-sm font-semibold text-gray-600">Dish name</Text>
-            <TextInput
-              value={dishName}
-              onChangeText={(t) => { setDishName(t); setError(null); }}
-              placeholder="e.g. Piri-Piri Chicken"
-              style={[inputStyle.common, { marginBottom: 20 }]}
-              placeholderTextColor="#9ca3af"
-            />
-            <Text className="mb-2 text-sm font-semibold text-gray-600">Restaurant name</Text>
-            <View style={[inputStyle.dropdownAnchor, { marginBottom: 4 }]}>
+          <ScrollView
+            className="flex-1"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 24 }}
+          >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+              <View>
+            <Text style={inputStyle.fieldLabel}>Dish name</Text>
+            <View style={inputStyle.fieldBlock}>
+              <TextInput
+                value={dishName}
+                onChangeText={(t) => { setDishName(t); setError(null); }}
+                placeholder="e.g. Piri-Piri Chicken"
+                style={inputStyle.common}
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+            <Text style={inputStyle.fieldLabel}>Dish family</Text>
+            <View style={[inputStyle.dropdownAnchor, inputStyle.fieldBlock]}>
+              <TextInput
+                ref={familyInputRef}
+                value={dishFamilyName}
+                onChangeText={(t) => {
+                  setDishFamilyName(t);
+                  setSelectedFamilyId(null);
+                  familySelectionCommittedRef.current = false;
+                  lastSelectedFamilyNameRef.current = null;
+                  setError(null);
+                }}
+                onBlur={() => {
+                  if (closeSuggestionsTimeoutRef.current) clearTimeout(closeSuggestionsTimeoutRef.current);
+                  closeSuggestionsTimeoutRef.current = setTimeout(() => setFamilySuggestions([]), 200);
+                }}
+                placeholder="e.g. Seafood (group for rankings and search)"
+                style={inputStyle.common}
+                placeholderTextColor="#9ca3af"
+              />
+              {familySuggestions.length > 0 && (
+                <View style={inputStyle.dropdownAbsolute}>
+                  <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={{ maxHeight: 200 }}>
+                    {familySuggestions.map((f) => (
+                      <AnimatedPressable
+                        key={f.id}
+                        onPress={() => selectFamilySuggestion(f.id, f.name)}
+                        scale={0.99}
+                        className="border-b border-gray-100 px-4 py-3 last:border-b-0"
+                      >
+                        <Text className="text-base text-gray-800" numberOfLines={1}>{f.name}</Text>
+                      </AnimatedPressable>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+            <Text style={inputStyle.fieldLabel}>Dish category</Text>
+            <View style={[inputStyle.dropdownAnchor, inputStyle.fieldBlock]}>
+              <TextInput
+                ref={categoryInputRef}
+                value={dishCategoryName}
+                onChangeText={(t) => {
+                  setDishCategoryName(t);
+                  categorySelectionCommittedRef.current = false;
+                  lastSelectedCategoryNameRef.current = null;
+                  setError(null);
+                }}
+                onBlur={() => {
+                  if (closeSuggestionsTimeoutRef.current) clearTimeout(closeSuggestionsTimeoutRef.current);
+                  closeSuggestionsTimeoutRef.current = setTimeout(() => setCategorySuggestions([]), 200);
+                }}
+                placeholder='e.g. Fish and chips (specific dish for "the best...")'
+                style={inputStyle.common}
+                placeholderTextColor="#9ca3af"
+              />
+              {categorySuggestions.length > 0 && (
+                <View style={inputStyle.dropdownAbsolute}>
+                  <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={{ maxHeight: 200 }}>
+                    {categorySuggestions.map((c) => (
+                      <AnimatedPressable
+                        key={c.id}
+                        onPress={() => selectCategorySuggestion(c.id, c.name)}
+                        scale={0.99}
+                        className="border-b border-gray-100 px-4 py-3 last:border-b-0"
+                      >
+                        <Text className="text-base text-gray-800" numberOfLines={1}>{c.name}</Text>
+                      </AnimatedPressable>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+            <Text style={inputStyle.fieldLabel}>Restaurant name</Text>
+            <View style={[inputStyle.dropdownAnchor, inputStyle.fieldBlock]}>
               <TextInput
                 ref={restaurantInputRef}
                 value={restaurantName}
@@ -536,83 +629,10 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                 </View>
               )}
             </View>
-            <Text className="mb-2 text-sm font-semibold text-gray-600">Dish family</Text>
-            <View style={[inputStyle.dropdownAnchor, { marginBottom: 4 }]}>
-              <TextInput
-                ref={familyInputRef}
-                value={dishFamilyName}
-                onChangeText={(t) => {
-                  setDishFamilyName(t);
-                  setSelectedFamilyId(null);
-                  familySelectionCommittedRef.current = false;
-                  lastSelectedFamilyNameRef.current = null;
-                  setError(null);
-                }}
-                onBlur={() => {
-                  if (closeSuggestionsTimeoutRef.current) clearTimeout(closeSuggestionsTimeoutRef.current);
-                  closeSuggestionsTimeoutRef.current = setTimeout(() => setFamilySuggestions([]), 200);
-                }}
-                placeholder="Ex: Bacalhau (grupo geral para organizar rankings e pesquisa)"
-                style={inputStyle.common}
-                placeholderTextColor="#9ca3af"
-              />
-              {familySuggestions.length > 0 && (
-                <View style={inputStyle.dropdownAbsolute}>
-                  <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={{ maxHeight: 200 }}>
-                    {familySuggestions.map((f) => (
-                      <AnimatedPressable
-                        key={f.id}
-                        onPress={() => selectFamilySuggestion(f.id, f.name)}
-                        scale={0.99}
-                        className="border-b border-gray-100 px-4 py-3 last:border-b-0"
-                      >
-                        <Text className="text-base text-gray-800" numberOfLines={1}>{f.name}</Text>
-                      </AnimatedPressable>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-            <Text className="mb-2 text-sm font-semibold text-gray-600">Dish category</Text>
-            <View style={[inputStyle.dropdownAnchor, { marginBottom: 4 }]}>
-              <TextInput
-                ref={categoryInputRef}
-                value={dishCategoryName}
-                onChangeText={(t) => {
-                  setDishCategoryName(t);
-                  categorySelectionCommittedRef.current = false;
-                  lastSelectedCategoryNameRef.current = null;
-                  setError(null);
-                }}
-                onBlur={() => {
-                  if (closeSuggestionsTimeoutRef.current) clearTimeout(closeSuggestionsTimeoutRef.current);
-                  closeSuggestionsTimeoutRef.current = setTimeout(() => setCategorySuggestions([]), 200);
-                }}
-                placeholder={'Ex: Bacalhau à Brás (prato específico para encontrar "o melhor ...")'}
-                style={inputStyle.common}
-                placeholderTextColor="#9ca3af"
-              />
-              {categorySuggestions.length > 0 && (
-                <View style={inputStyle.dropdownAbsolute}>
-                  <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={{ maxHeight: 200 }}>
-                    {categorySuggestions.map((c) => (
-                      <AnimatedPressable
-                        key={c.id}
-                        onPress={() => selectCategorySuggestion(c.id, c.name)}
-                        scale={0.99}
-                        className="border-b border-gray-100 px-4 py-3 last:border-b-0"
-                      >
-                        <Text className="text-base text-gray-800" numberOfLines={1}>{c.name}</Text>
-                      </AnimatedPressable>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
             {selectedRestaurantId === null && (
               <>
-                <Text className="mb-2 mt-3 text-sm font-semibold text-gray-600">Cuisine (restaurant)</Text>
-                <View style={[inputStyle.dropdownAnchor, { marginBottom: 4 }]}>
+                <Text style={inputStyle.fieldLabel}>Restaurant cuisine</Text>
+                <View style={[inputStyle.dropdownAnchor, inputStyle.fieldBlock]}>
                   <TextInput
                     value={cuisineName}
                     onChangeText={(t) => {
@@ -623,7 +643,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                       if (closeSuggestionsTimeoutRef.current) clearTimeout(closeSuggestionsTimeoutRef.current);
                       closeSuggestionsTimeoutRef.current = setTimeout(() => setCuisineSuggestions([]), 200);
                     }}
-                    placeholder="Ex: Portuguesa (tipo de cozinha do restaurante para melhorar filtros e descoberta)"
+                    placeholder="e.g. Portuguese (cuisine type for filters and discovery)"
                     style={inputStyle.common}
                     placeholderTextColor="#9ca3af"
                   />
@@ -646,12 +666,12 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                 </View>
               </>
             )}
-            <Text className="mb-2 text-sm font-semibold text-gray-600">Image</Text>
+            <Text style={inputStyle.fieldLabel}>Image</Text>
             {imageUri ? (
-              <View className="mb-5">
+              <View style={inputStyle.fieldBlock}>
                 <Image
                   source={{ uri: imageUri }}
-                  className="mb-2 h-40 w-full rounded-xl bg-gray-100"
+                  style={{ width: "100%", height: 160, marginBottom: LABEL_MARGIN_BOTTOM, borderRadius: 12, backgroundColor: "#f3f4f6" }}
                   resizeMode="cover"
                 />
                 <AnimatedPressable
@@ -666,14 +686,14 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
               <AnimatedPressable
                 onPress={pickImage}
                 scale={0.98}
-                className="mb-5 flex-row items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-8"
+                style={[inputStyle.fieldBlock, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 12, borderWidth: 2, borderStyle: "dashed", borderColor: "#d1d5db", backgroundColor: "#f9fafb", paddingVertical: 32 }]}
               >
                 <Ionicons name="image-outline" size={28} color="#9ca3af" />
                 <Text className="text-base text-gray-500">Pick image</Text>
               </AnimatedPressable>
             )}
             {error ? (
-              <Text className="mb-4 text-sm text-red-600">{error}</Text>
+              <Text style={{ marginBottom: FIELD_BLOCK_MARGIN_BOTTOM, fontSize: 14, color: "#dc2626" }}>{error}</Text>
             ) : null}
             <AnimatedPressable
               onPress={handleSubmit}
@@ -687,8 +707,9 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
                 <Text className="text-center font-semibold text-white">Create Dish</Text>
               )}
             </AnimatedPressable>
-            </View>
-          </TouchableWithoutFeedback>
+              </View>
+            </TouchableWithoutFeedback>
+          </ScrollView>
         )}
       </View>
     </SafeAreaView>
