@@ -113,12 +113,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="saved"
+        name="rankings"
         options={{
-          title: "Saved",
+          title: "Rankings",
           tabBarIcon: ({ color, focused }) => (
             <ScaleOnFocus focused={focused}>
-              <Ionicons name={focused ? "bookmark" : "bookmark-outline"} size={24} color={color} />
+              <Ionicons name={focused ? "trophy" : "trophy-outline"} size={24} color={color} />
             </ScaleOnFocus>
           ),
         }}

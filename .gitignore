@@ -176,3 +176,5 @@ BenchmarkDotNet.Artifacts/
 
 # macOS
 .DS_Store
+src/ThatDish.Api/appsettings.Development.json
+src/ThatDish.Api/thatdish.db-wal
