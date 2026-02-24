@@ -7,6 +7,7 @@ import { useRestaurantStore } from "../state";
 import { useDishStore } from "@/src/features/dish/state";
 import { useUserStore } from "@/src/features/user/state";
 import { getSignatureDish } from "../services";
+import { formatRestaurantLocation } from "../utils/formatRestaurantLocation";
 import { AnimatedPressable } from "@/src/shared/components";
 import { fetchRestaurantById } from "@/src/shared/api/restaurantsApi";
 import { config } from "@/src/config";
@@ -116,14 +117,14 @@ export function RestaurantDetailScreen() {
       >
         <View className="p-5">
           <Text className="text-2xl font-bold text-black">{restaurant.name}</Text>
-          <Text className="mt-2 text-base text-gray-600">
-            {restaurant.address ?? restaurant.location}
-          </Text>
-          <Text className="mt-1 text-sm text-gray-500">
-            {restaurant.latitude != null && restaurant.longitude != null
-              ? "Location available"
-              : "Location not verified"}
-          </Text>
+          <View className="mt-4">
+            <Text className="text-sm font-semibold text-gray-500">
+              Location
+            </Text>
+            <Text className="mt-1 text-base text-gray-600">
+              {formatRestaurantLocation(restaurant) ?? "Location not available"}
+            </Text>
+          </View>
           <View className="mt-4 flex-row flex-wrap items-center gap-2">
             <View className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
               <Text className="text-sm text-gray-600">

@@ -9,6 +9,8 @@ export interface Restaurant {
   name: string;
   location: string;
   address?: string;
+  city?: string;
+  country?: string;
   latitude?: number;
   longitude?: number;
   signatureDishId: string | null;

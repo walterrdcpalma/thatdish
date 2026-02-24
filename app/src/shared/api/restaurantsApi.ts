@@ -9,6 +9,8 @@ export interface RestaurantDto {
   id: string;
   name: string;
   address: string | null;
+  city: string | null;
+  country: string | null;
   latitude: number | null;
   longitude: number | null;
   contactInfo: string | null;
