@@ -16,3 +16,16 @@ export function consumeLastPickedLocation(): PickedLocation | null {
   lastPickedLocation = null;
   return value;
 }
+
+/**
+ * Returns user-friendly location text for the form. No lat/lng in output.
+ * In a later phase, pass address (e.g. from reverse geocode) to show address/city instead of "Location selected".
+ */
+export function getLocationDisplayText(
+  _location: PickedLocation | null,
+  address: string | null
+): string {
+  if (_location == null) return "Location not set";
+  if (address != null && address.trim() !== "") return address.trim();
+  return "Location selected";
+}

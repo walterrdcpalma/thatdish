@@ -28,7 +28,7 @@ import type { DishCategoryItemDto } from "@/src/shared/api/dishCategoriesApi";
 import { fetchCuisines } from "@/src/shared/api/cuisinesApi";
 import type { CuisineItemDto } from "@/src/shared/api/cuisinesApi";
 import { config } from "@/src/config";
-import { consumeLastPickedLocation, type PickedLocation } from "../pickLocationResult";
+import { consumeLastPickedLocation, getLocationDisplayText, type PickedLocation } from "../pickLocationResult";
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SUGGESTION_LIMIT = 10;
@@ -111,6 +111,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
   const [cuisineSuggestions, setCuisineSuggestions] = useState<CuisineItemDto[]>([]);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [restaurantLocation, setRestaurantLocation] = useState<PickedLocation | null>(null);
+  const [restaurantAddress, setRestaurantAddress] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -431,6 +432,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
       setCuisineSuggestions([]);
       setImageUri(null);
       setRestaurantLocation(null);
+      setRestaurantAddress(null);
       setError(null);
       restaurantSelectionCommittedRef.current = false;
       lastSelectedRestaurantNameRef.current = null;
@@ -463,6 +465,7 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
     setCuisineSuggestions([]);
     setImageUri(null);
     setRestaurantLocation(null);
+    setRestaurantAddress(null);
     setError(null);
     restaurantSelectionCommittedRef.current = false;
     lastSelectedRestaurantNameRef.current = null;
@@ -680,21 +683,26 @@ export function CreateDishScreen({ showBackButton = true }: CreateDishScreenProp
             <Text style={inputStyle.fieldLabel}>Location</Text>
             <View style={inputStyle.fieldBlock}>
               {restaurantLocation == null ? (
-                <AnimatedPressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/pick-location",
-                    })
-                  }
-                  scale={0.98}
-                  className="flex-row items-center justify-center rounded-xl border border-gray-200 bg-gray-50"
-                  style={{ minHeight: 48, gap: 10 }}
-                >
-                  <View className="flex-row items-center" style={{ gap: 10 }}>
-                    <Ionicons name="location-outline" size={22} color="#6b7280" />
-                    <Text style={{ fontSize: 16, fontWeight: "600", color: "#374151" }}>Add location</Text>
-                  </View>
-                </AnimatedPressable>
+                <>
+                  <Text style={{ fontSize: 14, color: "#6b7280", marginBottom: 8 }}>
+                    {getLocationDisplayText(null, null)}
+                  </Text>
+                  <AnimatedPressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/pick-location",
+                      })
+                    }
+                    scale={0.98}
+                    className="flex-row items-center justify-center rounded-xl border border-gray-200 bg-gray-50"
+                    style={{ minHeight: 48, gap: 10 }}
+                  >
+                    <View className="flex-row items-center" style={{ gap: 10 }}>
+                      <Ionicons name="location-outline" size={22} color="#6b7280" />
+                      <Text style={{ fontSize: 16, fontWeight: "600", color: "#374151" }}>Add location</Text>
+                    </View>
+                  </AnimatedPressable>
+                </>
               ) : (
                 <AnimatedPressable
                   onPress={() =>
