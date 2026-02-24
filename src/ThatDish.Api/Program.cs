@@ -20,7 +20,7 @@ using ThatDish.Infrastructure.Restaurants;
 var builder = WebApplication.CreateBuilder(args);
 
 // Listen on all interfaces so LAN devices (e.g. Expo on phone) can reach the API. PORT env for production.
-var port = Environment.GetEnvironmentVariable("PORT") ?? "6000";
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddProblemDetails();
